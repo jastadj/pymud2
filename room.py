@@ -1,5 +1,7 @@
 import os.path
 
+from tools import *
+
 rooms = []
 rooms_filename = "./data/rooms.dat"
 rooms_loaded = False
@@ -106,8 +108,8 @@ def doLookRoom(tclient):
 		tclient.send("Error, current room not valid!\n")
 		return
 		
-	tclient.send(troom.name + "\n")
-	tclient.send(troom.desc + "\n")
+	tclient.send("%s%s%s\n" % (setColor(COLOR_CYAN, True), troom.name, resetColor()) )
+	tclient.send("\n" + troom.desc + "\n\n")
 
 
 if __name__ == "__main__":

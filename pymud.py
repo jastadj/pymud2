@@ -21,3 +21,11 @@ print "Room count:%d" % len(room.rooms)
 pymud_server.startMainLoop()
 
 pymud_server.shutdownServer()
+
+# save credential file
+print "Saving credentials..."
+credential.credentials.save()
+
+# save rooms
+print "Saving rooms..."
+room.save()

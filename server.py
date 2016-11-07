@@ -151,9 +151,5 @@ class Server(object):
 		Server.server_start = False
 		Server.server_shutdown = False
 		
-		# save credential file
-		print "Saving credentials..."
-		credential.credentials.save()
-		
 		return True
 
