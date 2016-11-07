@@ -1,15 +1,19 @@
 import socket
 import select
 import client
+import handler
+import credential
+from tools import *
 
 class Server(object):
 	server_started = False
+	server_shutdown = False
 	def __init__(self):
 		
 		self.socket = None
 		self.clients = []
-		self.shutdownFlag = False
-
+		self.credentials = credential.Credentials()
+		
 	def initServer(self):
 		
 		if Server.server_started:
@@ -64,10 +68,13 @@ class Server(object):
 
 	def startMainLoop(self):
 		
-		while not self.shutdownFlag:
+		while not Server.server_shutdown:
 			
 			# get sockets with selector
-			read_sockets,write_sockets,error_sockets = select.select( self.getAllSockets(),[],[])
+			try:
+				read_sockets,write_sockets,error_sockets = select.select( self.getAllSockets(),[],[])
+			except:
+				pass
 			
 			for tsock in read_sockets:
 				
@@ -83,8 +90,9 @@ class Server(object):
 					# add new client to list
 					self.clients.append(newclient)
 					print "Client %s:%d connected." %(newclient.ip, newclient.port)
-					newclient.send("Welcome!\n\n")
-					newclient.send(">")
+					newclient.send("%sWelcome!%s\n\n" %(setColor(COLOR_GREEN, True),
+														resetColor()) )
+					newclient.send("login:")
 				
 				# else a client has something to do
 				else:
@@ -106,8 +114,19 @@ class Server(object):
 						self.clients.remove(tclient)
 						continue
 					
-					# loopback test
-					tclient.send("OK..." + cdata)
+					# remove junk from received data
+					cdata = cdata[:-2]
+					
+					# debug
+					if cdata == "shutdown":
+						tclient.send("Commanded server shutdown.\n")
+						Server.server_shutdown = True
+					
+					# input is valid
+					tclient.last_input = cdata
+					
+					# now give client feedback
+					handler.handleClient(tclient)
 					
 					
 			
@@ -121,9 +140,16 @@ class Server(object):
 		print "Shutting down server..."
 		
 		# shutdown and close server socket
-		self.socket.shutdown
-		self.socket.close
+		self.socket.shutdown(0)
+		self.socket.close()
+		self.socket = None
 		
 		Server.server_start = False
+		Server.server_shutdown = False
+		
+		# save credential file
+		print "Saving credentials..."
+		self.credentials.save()
+		
 		
 		return True

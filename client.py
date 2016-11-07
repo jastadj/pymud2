@@ -1,4 +1,5 @@
 import socket
+import server
 
 class Client(object):
 	REC_BUFFER = 4096
@@ -7,6 +8,9 @@ class Client(object):
 		self.socket = tsock
 		self.ip = tsock.getpeername()[0]
 		self.port = int(tsock.getpeername()[1])
+		
+		self.mode = "login0"
+		self.last_input = ""
 	
 	def send(self, msg):
 		
@@ -39,3 +43,4 @@ class Client(object):
 		#close socket
 		self.socket.close()
 		
+
