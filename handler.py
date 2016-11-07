@@ -13,6 +13,7 @@ client_modes.update( {"loginnewpass2":login.loginMenu}) # new login pass verify
 
 
 # main modes
+client_modes.update( {"maingamestart":game.mainGame}) # main game prompt
 client_modes.update( {"maingame":game.mainGame}) # main game prompt
 
 def handleClient(tclient):
