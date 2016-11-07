@@ -2,8 +2,15 @@ import socket
 import select
 import client
 import handler
+import game
+import login
 import credential
 from tools import *
+
+
+
+
+
 
 class Server(object):
 	server_started = False
@@ -12,7 +19,6 @@ class Server(object):
 		
 		self.socket = None
 		self.clients = []
-		self.credentials = credential.Credentials()
 		
 	def initServer(self):
 		
@@ -90,12 +96,15 @@ class Server(object):
 					# add new client to list
 					self.clients.append(newclient)
 					print "Client %s:%d connected." %(newclient.ip, newclient.port)
-					newclient.send("%sWelcome!%s\n\n" %(setColor(COLOR_GREEN, True),
+					
+					#print WELCOME screen
+					newclient.send("\n%sWelcome!%s\n\n" %(setColor(COLOR_GREEN, True),
 														resetColor()) )
 					newclient.send("login:")
 				
 				# else a client has something to do
 				else:
+					
 					tclient = self.getClient(tsock)
 					
 					if tclient == None:
@@ -114,17 +123,12 @@ class Server(object):
 						self.clients.remove(tclient)
 						continue
 					
-					# remove junk from received data
-					cdata = cdata[:-2]
-					
 					# debug
 					if cdata == "shutdown":
 						tclient.send("Commanded server shutdown.\n")
 						Server.server_shutdown = True
 					
 					# input is valid
-					tclient.last_input = cdata
-					
 					# now give client feedback
 					handler.handleClient(tclient)
 					
@@ -149,7 +153,7 @@ class Server(object):
 		
 		# save credential file
 		print "Saving credentials..."
-		self.credentials.save()
-		
+		credential.credentials.save()
 		
 		return True
+

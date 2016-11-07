@@ -1,5 +1,4 @@
 import socket
-import server
 
 class Client(object):
 	REC_BUFFER = 4096
@@ -8,8 +7,17 @@ class Client(object):
 		self.socket = tsock
 		self.ip = tsock.getpeername()[0]
 		self.port = int(tsock.getpeername()[1])
+		self.account_name = None
 		
-		self.mode = "login0"
+		# starting user mode
+		self.mode = "login1"
+
+		# skip next user input how many times?
+		self.skip_input = 0
+
+		# used to store temporary variables or input hist
+		self.temp_var1 = ""
+		self.temp_var2 = ""
 		self.last_input = ""
 	
 	def send(self, msg):
@@ -25,6 +33,9 @@ class Client(object):
 			
 			# if client data valid
 			if cdata:
+				# trim junk from cdata
+				cdata = cdata[:-2]
+				self.last_input = cdata
 				return cdata
 			
 			# else data is not valid, something happened

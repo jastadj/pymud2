@@ -1,7 +1,5 @@
 import os.path
 
-# credentials object stored in server
-
 class Credentials(object):
 	
 	credentials = {}
@@ -89,6 +87,40 @@ class Credentials(object):
 				pass
 		
 		rfile.close()
+	
+	def getAccount(self, ta):
+		
+		if len(ta) != 1:
+			return None
+		
+		# check that target account is valid
+		if type(ta) != dict:
+			return None
+		
+		for k in self.credentials.keys():
+			# if login name found
+			if ta.keys()[0] == k:
+				# if password matches
+				if ta.values()[0] == self.credentials[k]:
+					# return account name
+					return k
+		
+		# nothing found
+		return None
+	
+	def usernameExists(self, uname):
+		return uname in self.credentials
+		
+	def addAccount(self, newaccount):
+		if type(newaccount) == dict:
+			self.credentials.update( newaccount)
+			return True
+		else:
+			return False
+		
+		
+			
+credentials = Credentials()
 
 if __name__ == "__main__":
 	
