@@ -42,7 +42,7 @@ def loginMenu(tclient):
 			# login good!
 			else:
 				tc.account_name = ca
-				tc.mode = "maingame"
+				tc.mode = "maingamestart"
 				tc.send("Login successful!\n")
 				tc.skip_input = 1
 				return
@@ -83,7 +83,7 @@ def loginMenu(tclient):
 				if na != None:
 					tc.send("New account created!\n")
 					tc.account = na
-					tc.mode = "maingame"
+					tc.mode = "maingamestart"
 					tc.skip_input = 1
 					return
 					
