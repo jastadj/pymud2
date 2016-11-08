@@ -1,32 +1,39 @@
-import socket
-import select
-import client
-import handler
-import game
-import login
+
+
+import socket, select
 import credential
+import client
+import room
+import command
+import game
+import handler
+
+import login
+
 from tools import *
 
-
-
-
-
-
 class Server(object):
-	server_started = False
-	server_shutdown = False
 	def __init__(self):
-		
+				
 		self.socket = None
 		self.clients = []
+		#0=uninit, 1=initialized, -1=shutdown
+		self.status = 0 
+		self.accounts = None
 		
+	def isRunning(self):
+		if self.status == 1:
+			return True
+		else: return False
+	
 	def initServer(self):
 		
-		if Server.server_started:
-			print "Unable to start server, already running!"
+		if self.isRunning():
+			print "Unable to start server!"
 			return False
 
 		print "Starting server..."
+		self.status = 1
 		
 		#create an INET, STREAMing socket
 		self.socket = socket.socket(
@@ -39,13 +46,36 @@ class Server(object):
 		self.socket.listen(5)
 		
 		print "Socket is listening..."
+		
+		
+		# callbacks
+		game.server = self
+		game.ROOM = room.Room
+		game.COMMAND = command.command
 
-		Server.server_started = True
+		
+		# load credentials
+		self.accounts = credential.Credentials()
+		self.accounts.load()
+		print "%d accounts loaded." % self.accounts.getCount()
+		login.credentials = self.accounts
+		
+		# load rooms
+		game.rooms = room.load("./data/rooms.dat")
+		if game.rooms:
+			print "%d rooms loaded." % len(game.rooms)
+		else:
+			print "No rooms loaded!  Adding empty default room."
+			game.rooms = []
+			game.rooms.append(game.ROOM())
+		
+		# init commands
+		initCommands(game.commands)
 		
 		return True
 		
 	def getAllSockets(self):
-		if not Server.server_started:
+		if not self.isRunning():
 			print "Unable to get all sockets, server is not running!"
 			return None
 		
@@ -58,7 +88,6 @@ class Server(object):
 		# add all client sockets
 		for cnt in self.clients:
 			slist.append( cnt.socket)
-		
 		
 		return slist
 
@@ -74,7 +103,7 @@ class Server(object):
 
 	def startMainLoop(self):
 		
-		while not Server.server_shutdown:
+		while self.isRunning():
 			
 			# get sockets with selector
 			try:
@@ -126,7 +155,7 @@ class Server(object):
 					# debug
 					if cdata == "shutdown":
 						tclient.send("Commanded server shutdown.\n")
-						Server.server_shutdown = True
+						self.status = -1
 					
 					# input is valid
 					# now give client feedback
@@ -135,21 +164,36 @@ class Server(object):
 					
 			
 
-	def shutdownServer(self):
+	def shutdownServer(self):			
 		
-		if not Server.server_started:
-			print "Unable to shutdown, server is not running!"
-			return False
-			
 		print "Shutting down server..."
+		
+		if self.status != -1:
+			self.status = -1
+		
+		
+		# save stuff
+		self.accounts.save()
+		print "Credentials saved."
+		
+		if room.save(game.rooms, "./data/rooms.dat"):
+			print "Rooms saved."
+		else: print "Error saving rooms!"
 		
 		# shutdown and close server socket
 		self.socket.shutdown(0)
 		self.socket.close()
 		self.socket = None
-		
-		Server.server_start = False
-		Server.server_shutdown = False
+
 		
 		return True
 
+def initCommands(cmdlist):
+	commandlist = []
+	commandlist.append( command.command("help", "Show help menu", game.showHelp) )
+	return commandlist
+
+if __name__ == "__main__":
+	testserver = Server()
+	testserver.initServer()
+	testserver.shutdownServer()

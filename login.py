@@ -1,5 +1,5 @@
 
-import credential
+credentials = None
 
 def loginMenu(tclient):
 	
@@ -25,11 +25,11 @@ def loginMenu(tclient):
 			
 		# authenticate login
 		elif tc.mode == "login2":
-			ca = credential.credentials.getAccount({tc.temp_var1:tc.last_input})
+			ca = credentials.getAccount({tc.temp_var1:tc.last_input})
 			
 			if ca == None:
 				# if username exists, it was a bad login
-				if credential.credentials.usernameExists(tc.temp_var1):					
+				if credentials.usernameExists(tc.temp_var1):					
 					tc.send("Invalid username / pass!\n")
 					tc.mode = "login0"
 					dopasses = 1
@@ -76,10 +76,10 @@ def loginMenu(tclient):
 			# new user account established
 			else:
 				# add account
-				credential.credentials.addAccount({tc.temp_var1:tc.last_input})
+				credentials.addAccount({tc.temp_var1:tc.last_input})
 				
 				#verify account was created and present
-				na = credential.credentials.getAccount({tc.temp_var1:tc.last_input})
+				na = credentials.getAccount({tc.temp_var1:tc.last_input})
 				if na != None:
 					tc.send("New account created!\n")
 					tc.account = na

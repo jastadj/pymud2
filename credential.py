@@ -17,6 +17,9 @@ class Credentials(object):
 				Credentials.credentials_loaded = False
 			Credentials.credentials_file = altfile
 	
+	def getCount(self):
+		return len(Credentials.credentials.keys())
+	
 	def load(self):
 		if Credentials.credentials_loaded:
 			print "Credentials have already been loaded!"
@@ -49,7 +52,6 @@ class Credentials(object):
 			
 			# if directory doesnt exist, create one
 			cdir = os.path.dirname(cpath)
-			print "cdir=" + cdir
 			if cdir != ".":
 				try:
 					os.path.stat(cdir)
@@ -117,15 +119,11 @@ class Credentials(object):
 			return True
 		else:
 			return False
-		
-		
-			
-credentials = Credentials()
 
 if __name__ == "__main__":
 	
 	# save credentials to test file
-	testpath = "testcred.dat"
+	testpath = "./testcred/testcred.dat"
 	testcred = Credentials(testpath)
 	newcreds = {"john":"postal", "mel":"melly", "alyssa":"monkey"}
 	Credentials.credentials = newcreds
@@ -144,20 +142,6 @@ if __name__ == "__main__":
 	
 	print "\n"
 	
-	# save credentials to testfile with directory
-	testpath = "./testcred/anotherdir/testcred2.dat"
-	testcred = Credentials(testpath)
-	Credentials.credentials = newcreds
-	testcred.save()
-	print "Saved %d credentials:" % len(Credentials.credentials.keys())
-	for cred in Credentials.credentials:
-		print cred + ":" + Credentials.credentials[cred]	
-	
-	# erase and load credentials from testfile
-	Credentials.credentials = {}
-	testcred.load()
-	print "Loaded %d credentials" % len(Credentials.credentials.keys())
-	db = Credentials.credentials
-	for cred in db:
-		print cred + ":" + db[cred]
+
 		
+	

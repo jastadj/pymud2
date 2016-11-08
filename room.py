@@ -2,10 +2,6 @@ import os.path
 
 from tools import *
 
-rooms = []
-rooms_filename = "./data/rooms.dat"
-rooms_loaded = False
-
 class Room(object):
 	def __init__(self):
 		self.name = "unnamed"
@@ -17,16 +13,14 @@ class Room(object):
 		print "Test:%d" % self.test
 
 
-def load(altfile = None):
-	if rooms_loaded:
-		print "Rooms have already been loaded!"
-		return False
+def load(roomsfile = None):
+	if not roomsfile:
+		print "Unable to load rooms, no file provided!"
+		return None
 	
-	fp = rooms_filename
+	fp = roomsfile
 	
-	# alternative file name provided?
-	if altfile != None:
-		fp = altfile
+	rooms = []
 	
 	# if file exists
 	if os.path.isfile(fp):
@@ -60,18 +54,27 @@ def load(altfile = None):
 			else:
 				f.close()	
 				
-				return True
+				return rooms
 			
 	else:
-		return False
+		print "%s does not exist." % fp
+		return None
 
-def save(altfile = None):
+def save(rooms, roomsfile):
 	
-	fp = rooms_filename
+	if not roomsfile:
+		print "Unable to save rooms, no file provided!"
+		return False
 	
-	# alternative file name provided?
-	if altfile != None:
-		fp = altfile
+	if not rooms:
+		print "Unable to save rooms, no rooms list provided!"
+		return False
+	
+	if type(rooms) != list:
+		print "Rooms list parameter is not a list!"
+		return False
+	
+	fp = roomsfile
 
 	# if directory doesnt exist, create one
 	fdir = os.path.dirname(fp)
@@ -93,26 +96,10 @@ def save(altfile = None):
 	
 	return True
 
-def getCurrentRoom(tclient):
-	cr = tclient.current_room
-	
-	if cr < 0 or cr >= len(rooms):
-		return None
-	
-	return rooms[cr]
-
-def doLookRoom(tclient):
-	troom = getCurrentRoom(tclient)
-	
-	if troom == None:
-		tclient.send("Error, current room not valid!\n")
-		return
-		
-	tclient.send("%s%s%s\n" % (setColor(COLOR_CYAN, True), troom.name, resetColor()) )
-	tclient.send("\n" + troom.desc + "\n\n")
-
 
 if __name__ == "__main__":
+	tests = {1:True, 2:True, 3:True, 4:True}
+	rooms = []
 	
 	room1 = Room()
 	room1.name = "Bathroom"
@@ -127,26 +114,25 @@ if __name__ == "__main__":
 	rooms.append(room1)
 	rooms.append(room2)
 	
-	if True:
-		if save("testrooms.dat"):
+	if tests[1]:
+		if save(rooms, "testrooms.dat"):
 			print "Rooms saved"
+
+		for room in rooms:
+			room.show()
+		print "Saved rooms:"
 	
-	print "Saved rooms:"
-	for room in rooms:
-		room.show()
-		
-	if False:
-		if not load("testroofms.dat"):
-			print "Load error!"
+
 	
-	if True:
+	if tests[3]:
 		rooms = []
-		print "Rooms cleared."
+		print "\nRooms cleared.\n"
 	
-	print "\n"
 	
-	if True:
-		if load("testrooms.dat"):
+	if tests[4]:
+		rooms = load("testrooms.dat")
+		
+		if rooms:
 			print "Rooms loaded."
 		else:
 			print "Error loading room!"
