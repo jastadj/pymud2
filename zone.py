@@ -62,7 +62,7 @@ class Zone(object):
         rooms = []
         
         # if file exists
-        if os.path.isfile(fp):
+        if os.path.isfile(fp) != None:
             
             # config attributes
             dstr = ["name", "desc"]
@@ -153,22 +153,20 @@ def loadZones():
      # if file exists
     if createNewFile(zf) == None:
         
-        dbgf = open(zf, "w")
-        if not dbgf:
-			print "ERROR OPENING ZINDEX FILE FOR LOADING"
-        dbgf.close()
         
         #read in index files
-        with open(zf, "w") as f:
+        with open(zf, "r") as f:
             line = f.readline()
             
             if line != "":
-                zonefiles.append(defs.ZONES_PATH + line)
+                line = line[:-1]
+                zonefiles.append(line)
             
         f.close()
                 
         # load in each zone from file
         for zt in zonefiles:
+            print "DEBUG:zonefile=%s" %zt
             newzone = Zone()
             newzone.load(zt)
             zones.append(newzone)
