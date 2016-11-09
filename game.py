@@ -4,12 +4,13 @@ import defs
 
 # class refs
 ROOM = None
+ZONE = None
 COMMAND = None
 COMMAND_SET = None
 
 # objects
 server = None
-rooms = None
+zones = None
 cmds_main = None
 clients = None
 
@@ -106,34 +107,36 @@ def doLookRoom(tuser, troom):
     tuser.send("%s\n" %troom.desc)
 
 def doMove(tuser, cdict):
-	tdir = cdict["dir"]
-	
-	oroom = getCurrentRoom(tuser)
-	
-	if oroom == None:
-		tuser.send("Error getting origin room, null!\n")
-		return
-		
-	if tdir < 0 or tdir >= len(rooms):
-		tuser.send("Error moving, target room id#%dout of bounds!\n" %tdir)
-		return
-	
-	if oroom.exits[tdir] == None:
-		tuser.send("No exit in that direction!\n")
-		return
-	
-	tuser.current_room = tdir
-	
+    tdir = cdict["dir"]
+    
+    tuser.send("tdir=%d\n" %tdir)
+    
+    oroom = getCurrentRoom(tuser)
+    
+    if oroom == None:
+        tuser.send("Error getting origin room, null!\n")
+        return
+        
+    if tdir < 0 or tdir >= len(rooms):
+        tuser.send("Error moving, target room id#%dout of bounds!\n" %tdir)
+        return
+    
+    if oroom.exits[tdir] == None:
+        tuser.send("No exit in that direction!\n")
+        return
+    
+    tuser.current_room = tdir
+    
 def doDebug(tuser, cdict):
-	troom = getCurrentRoom(tuser)
-	troom.show()
+    troom = getCurrentRoom(tuser)
+    troom.show()
+
 
 if __name__ == "__main__":
     
     import testuser
     import command
     import room
-    global rooms  
     
     rooms = []
     rooms.append(room.Room())
@@ -144,6 +147,7 @@ if __name__ == "__main__":
     tuser.send("Test\n")
 
     doquit = False
+
 
     doLookRoom(tuser, rooms[0])
 

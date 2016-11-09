@@ -3,6 +3,7 @@
 import socket, select
 import credential
 import client
+import zone
 import room
 import command
 import game
@@ -52,6 +53,7 @@ class Server(object):
 		game.server = self
 		game.clients = self.clients
 		game.ROOM = room.Room
+		game.ZONE = zone.Zone
 		game.COMMAND = command.Command
 		game.COMMAND_SET = command.CommandSet
 
@@ -62,14 +64,8 @@ class Server(object):
 		print "%d accounts loaded." % self.accounts.getCount()
 		login.credentials = self.accounts
 		
-		# load rooms
-		game.rooms = room.load("./data/rooms.dat")
-		if game.rooms:
-			print "%d rooms loaded." % len(game.rooms)
-		else:
-			print "No rooms loaded!  Adding empty default room."
-			game.rooms = []
-			game.rooms.append(game.ROOM())
+		# load zones
+		
 		
 		# init commands
 		game.cmds_main = command.initMainCommands()
