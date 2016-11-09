@@ -8,7 +8,9 @@ class Client(object):
 		self.ip = tsock.getpeername()[0]
 		self.port = int(tsock.getpeername()[1])
 		self.account_name = None
+		
 		self.current_room = 0
+		self.current_zone = 0
 		
 		# starting user mode
 		self.mode = "login1"

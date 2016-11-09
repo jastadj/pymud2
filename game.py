@@ -53,16 +53,13 @@ def mainGame(tclient):
         do_passes -= 1
 
 def getCurrentRoomNum(tuser):
-    for room in range(0, len(rooms) ):
-        if tuser.current_room == room:
-            return room
-    return None
+    pass
 
 def getCurrentRoom(tuser):
-    for room in range(0, len(rooms) ):
-        if tuser.current_room == room:
-            return rooms[room]
-    return None
+    pass
+
+def getCurrentZone(tuser):
+	pass
 
 def showHelpMenu(tuser, cdict):
     
@@ -95,7 +92,7 @@ def doLook(tuser, cdict, *argv):
         print "doing item or other look"
     else:
         print "Doing room look"
-        doLookRoom(tuser, getCurrentRoom(tuser) )       
+        doLookRoom(tuser, getCurrentRoom(tuser))       
         
 
 def doLookRoom(tuser, troom):

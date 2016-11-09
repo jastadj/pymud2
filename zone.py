@@ -166,7 +166,6 @@ def loadZones():
                 
         # load in each zone from file
         for zt in zonefiles:
-            print "DEBUG:zonefile=%s" %zt
             newzone = Zone()
             newzone.load(zt)
             zones.append(newzone)
@@ -176,7 +175,7 @@ def loadZones():
         
         # create default zone and room
         newzone = Zone()
-        newzone.append( room.Room())
+        newzone.addRoom( room.Room())
         newzone.zonefile = "default.zn"
         newzone.save()
         

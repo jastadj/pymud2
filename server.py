@@ -65,6 +65,9 @@ class Server(object):
 		login.credentials = self.accounts
 		
 		# load zones
+		game.zones = []
+		zone.loadZones()
+		print "%d zones loaded." % len(game.zones)
 		
 		
 		# init commands
