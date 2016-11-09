@@ -2,19 +2,27 @@ from __future__ import print_function
 # need future import to use python 3 print function
 
 import client
+import socket
 
 
-
-class testuser(client.Client):
+class TestUser(client.Client):
 	def __init__(self):
-		pass
+		self.last_input = ""
+		self.mode = "maingame"
+		
 	def send(self, astr):
 		print(astr, end="")
+		
 
 
 
 if __name__ == "__main__":
-	me = testuser()
+	tuser = TestUser()
 	
-	me.send("yo!")
-	me.send("another test")
+	tuser.send("yo!")
+	tuser.send("another test\n")
+	
+	print("TEST MODE=%s" %tuser.mode)
+	
+	
+	

@@ -50,8 +50,10 @@ class Server(object):
 		
 		# callbacks
 		game.server = self
+		game.clients = self.clients
 		game.ROOM = room.Room
-		game.COMMAND = command.command
+		game.COMMAND = command.Command
+		game.COMMAND_SET = command.CommandSet
 
 		
 		# load credentials
@@ -70,7 +72,8 @@ class Server(object):
 			game.rooms.append(game.ROOM())
 		
 		# init commands
-		initCommands(game.commands)
+		game.cmds_main = command.initMainCommands()
+		print "%d commands loaded." % game.cmds_main.count()
 		
 		return True
 		
@@ -188,10 +191,8 @@ class Server(object):
 		
 		return True
 
-def initCommands(cmdlist):
-	commandlist = []
-	commandlist.append( command.command("help", "Show help menu", game.showHelp) )
-	return commandlist
+
+
 
 if __name__ == "__main__":
 	testserver = Server()

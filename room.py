@@ -2,15 +2,26 @@ import os.path
 
 from tools import *
 
+import defs
+
 class Room(object):
 	def __init__(self):
 		self.name = "unnamed"
 		self.desc = "no description"
-		self.test = 0
+		
+		self.exits = []
+		for a in range(0, len(defs.DIRECTIONS) ):
+			self.exits.append(None)
 	def show(self):
 		print "Name:" + self.name
 		print "Desc:" + self.desc
-		print "Test:%d" % self.test
+		for d in self.exits:
+			print d
+	def getRoomNum(self, rooms):
+		if self in rooms:
+			return rooms.index(self)
+		else:
+			return None
 
 
 def load(roomsfile = None):
@@ -27,8 +38,7 @@ def load(roomsfile = None):
 		
 		# config attributes
 		dstr = ["name", "desc"]
-		dint = ["test"]
-		
+		dint = []
 		# open file for reading
 		ifile = open(fp, 'r')
 		with open(fp, 'r') as f:
@@ -50,6 +60,14 @@ def load(roomsfile = None):
 							setattr(rooms[-1], key, val)
 						elif key in dint:
 							setattr(rooms[-1], key, int(val))	
+						elif key == "exits":
+							elist = val.split(",")
+							for e in range(0, len(elist)):
+								if elist[e] == "-1":
+									rooms[-1].exits[e] = None
+								else:
+									rooms[-1].exits[e] = int(elist[e])
+								
 
 			else:
 				f.close()	
@@ -89,7 +107,15 @@ def save(rooms, roomsfile):
 		ofile.write("ROOM:\n")
 		ofile.write("name:%s\n" % room.name)
 		ofile.write("desc:%s\n" % room.desc)
-		ofile.write("test:%d\n" % room.test)
+		ofile.write("exits:")
+		for e in range(0, len(room.exits) ):
+			delim = ","
+			if e is len(room.exits)-1:
+				delim = ""
+			if room.exits[e] == None:
+				ofile.write("-1" + delim)
+			else:
+				ofile.write("%d%s" %(room.exits[e], delim) )
 		ofile.write("\n")
 	
 	ofile.close()
@@ -104,22 +130,27 @@ if __name__ == "__main__":
 	room1 = Room()
 	room1.name = "Bathroom"
 	room1.desc = "This is a bathroom."
-	room1.test = 5
+	room1.exits[1] = 1
 	
 	room2 = Room()
 	room2.name = "Living Room"
 	room2.desc = "Spacious living room."
-	room2.test = 8
+	room2.exits[0] = 0
 	
 	rooms.append(room1)
 	rooms.append(room2)
+	
+	def myroomprint(troom):
+		print "Room Num:%d" % troom.getRoomNum(rooms)
+		troom.show()
 	
 	if tests[1]:
 		if save(rooms, "testrooms.dat"):
 			print "Rooms saved"
 
 		for room in rooms:
-			room.show()
+			print "Room num:%d" % room.getRoomNum(rooms)
+			myroomprint(room)
 		print "Saved rooms:"
 	
 
@@ -138,4 +169,4 @@ if __name__ == "__main__":
 			print "Error loading room!"
 	
 	for room in rooms:
-		room.show()
+		myroomprint(room)
