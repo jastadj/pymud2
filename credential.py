@@ -1,4 +1,5 @@
 import os.path
+from tools import *
 
 class Credentials(object):
 	
@@ -25,19 +26,19 @@ class Credentials(object):
 			print "Credentials have already been loaded!"
 			return False
 		
-		cpath = Credentials.credentials_file
+		cf = Credentials.credentials_file
 		
-		# if credentials file exists
-		if os.path.isfile(cpath):
+		# if file already exists
+		if createNewFile(cf) == None:
 			
 			# open file for reading
-			rfile = open(cpath, 'r')
+			f = open(cf, 'r')
 			
 			done = False
 			
 			# read line
 			while not done:
-				fcred = rfile.readline().split()
+				fcred = f.readline().split()
 				
 				if len(fcred) == 2:
 					Credentials.credentials.update( {fcred[0] : fcred[1] })
@@ -45,50 +46,31 @@ class Credentials(object):
 				if not fcred:
 					done = True
 			
-			rfile.close()
+			f.close()
 		
-		# else file doesnt exist, create new one
+		# else file was created
 		else:
-			
-			# if directory doesnt exist, create one
-			cdir = os.path.dirname(cpath)
-			if cdir != ".":
-				try:
-					os.path.stat(cdir)
-				except:
-					os.mkdir(cdir)
-			
-			# create new file
-			try:
-				newfile = open(cpath, 'w')
-			except:
-				print "Unable find or create credential file!"
-				return False
-			
-			newfile.close()
 			
 			print "Created new credentials file."
 	
 	def save(self):
 		
-		cpath = Credentials.credentials_file
-
-		# if directory doesnt exist, create one
-		cdir = os.path.dirname(cpath)
-		if not os.path.isdir(cdir) and cdir != "":
-			os.mkdir(cdir)
+		cf = Credentials.credentials_file
+		
+		# if file doesnt exist, create it
+		createNewFile(cf)
 
 		# open file for writing
-		rfile = open(cpath, 'w')
+		f = open(cf, 'w')
 		
 		# write all credentials to file
 		for cred in Credentials.credentials:
 			try:
-				rfile.write("%s %s\n" % (cred, Credentials.credentials[cred]) )
+				f.write("%s %s\n" % (cred, Credentials.credentials[cred]) )
 			except:
 				pass
 		
-		rfile.close()
+		f.close()
 	
 	def getAccount(self, ta):
 		

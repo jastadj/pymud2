@@ -1,3 +1,5 @@
+import os
+
 def unsplit(words):
     sentence = ""
     wcount = len(words)
@@ -37,13 +39,47 @@ def setColor(tcolor, tbold = False):
 	else:
 		return "%c[%d;%dm" %(TERM_ESCAPE, 30+tcolor, 1)
 
+def createNewFile(fp, create_dirs = False):
+	
+	if os.path.isfile(fp):
+		#print "Error creating new file, already exists:%s" %fp
+		return None
+	
+	# get file directory path
+	fd = os.path.dirname(fp)
+	
+	# get directory tree list delim by /
+	dtree = fd.split("/")
+	
+	# clean up relative paths
+	for d in dtree:
+		if d == "." or d == "..":
+			dtree.remove(d)	
+	
+	# build directory tree
+	dstring = "."
+	for d in dtree:
+		dstring += "/" + d
+		if not os.path.isdir(dstring):
+			os.mkdir(dstring)
+	
+	# create empty file
+	newfile = open( fp, "w")
+	newfile.close()
+	
+	return True
+		
+
 if __name__ == "__main__":
 	
-	# test opposite directions
-	testdirs = ["north","south","east","west"]
-	for td in range(0, len(testdirs)):
-		print "%d - %s" %(td, testdirs[td])
-	
-	mydir = 2
-	print "opposite of %s is %s" %(testdirs[mydir], testdirs[getOppositeDirection(mydir)])
+	if False:
+		# test opposite directions
+		testdirs = ["north","south","east","west"]
+		for td in range(0, len(testdirs)):
+			print "%d - %s" %(td, testdirs[td])
 		
+		mydir = 2
+		print "opposite of %s is %s" %(testdirs[mydir], testdirs[getOppositeDirection(mydir)])
+		
+	createNewFile("./mytest/test1/john.txt")
+	

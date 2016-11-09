@@ -1,7 +1,13 @@
 import os.path
 import room
+import defs
+import game
+from tools import *
 
 class Zone(object):
+    
+    zoneiterator = 0
+    
     def __init__(self):
         self.rooms = []
         # add blank default room
@@ -51,7 +57,7 @@ class Zone(object):
         
         self.zonefile = zonefile
         
-        fp = zonefile
+        fp = defs.ZONES_PATH + zonefile
         
         rooms = []
         
@@ -102,16 +108,17 @@ class Zone(object):
 
     def save(self):
         
+        # if zone has no file specified, save as iterative default
         if self.zonefile == None:
-            print "Unable to save zone, no file provided!"
+            self.zonefile = "zone" + str(Zone.zoneiterator) + ".zn"
+            Zone.zoneiterator += 1
+            print "No zone file provided, saving as %s" %self.zonefile
             return False
         
-        fp = self.zonefile
+        fp = defs.ZONES_PATH + self.zonefile
 
-        # if directory doesnt exist, create one
-        fdir = os.path.dirname(fp)
-        if not os.path.isdir(fdir) and fdir != "":
-            os.mkdir(fdir)
+        # if file doesnt exist, create it
+        createNewFile(fp)
 
         # open file for writing
         ofile = open(fp, 'w')
@@ -136,61 +143,102 @@ class Zone(object):
         
         return True
             
- def loadZones(zonelist, zoneindexfile):
-	 
-	zf = zoneindexfile
-	zonelist = []
-	 
-	makenew = False
-	 
-	if zf == None:
-		 print "Zone index file is null!"
-		 return False
-	
-	if zonelist == None:
-		print "Zone list is null!"
-		return
-	 
-	# check to make sure data directory exists, if not, create it
-	ddir = os.path.dirname(fp)
-	if not os.path.isdir(ddir) and ddir != "":
-		os.mkdir(ddir)
-		makenew = True
-	
-	# check if zoneindex file exists
-	if not makenew:
-		if not os.path.isfile(zf):
-			makenew = True
-	
-	# if making a new zone index and default zone file
-	if makenew:
-		# open file for writing
-		f = open(zf, 'w')
-	 
+def loadZones():
+     
+    zf = defs.ZONES_INDEX_FILE
+    
+    zones = []
+    zonefiles = []
+ 
+     # if file exists
+    if createNewFile(zf) == None:
+        
+        dbgf = open(zf, "w")
+        if not dbgf:
+			print "ERROR OPENING ZINDEX FILE FOR LOADING"
+        dbgf.close()
+        
+        #read in index files
+        with open(zf, "w") as f:
+            line = f.readline()
+            
+            if line != "":
+                zonefiles.append(defs.ZONES_PATH + line)
+            
+        f.close()
+                
+        # load in each zone from file
+        for zt in zonefiles:
+            newzone = Zone()
+            newzone.load(zt)
+            zones.append(newzone)
+    
+    # else file is new, create defaults
+    else:
+        
+        # create default zone and room
+        newzone = Zone()
+        newzone.append( room.Room())
+        newzone.zonefile = "default.zn"
+        newzone.save()
+        
+        # add this zone to zonelist
+        zones.append(newzone)
+        
+        # save zonelist
+        saveZones()
+    
+    #pass back loaded zones
+    game.zones = zones
+        
+def saveZones():
+    
+    zones = game.zones
+    
+    # if necessary, create new zone index file
+    createNewFile(defs.ZONES_INDEX_FILE)
+    
+    # save each zone
+    for z in zones:
+        z.save()
+        
+    # write zone index file
+    f = open(defs.ZONES_INDEX_FILE, "w")
+    
+    for z in zones:
+        f.write(z.zonefile + "\n")
+    f.close()
+    
+        
 if __name__ == "__main__":
-    import room
     
-    myzone = Zone()
+    defs.ZONES_INDEX_FILE = "./zonetest/zones.dat"
+    defs.ZONES_PATH = "./zonetest/"
     
-    myzone.addRoom( room.Room())
-    myzone.addRoom( room.Room())
-    myzone.zonefile = "testzone.dat"
+    game.zones = []
     
-    print "Added room to zone."
-    myzone.show()
+    mode = 2
     
-    print "Saving zone..."
-    myzone.save()
+    if mode == 1:
+        # create empty zone
+        newzone = Zone()
+        newzone.zonefile = "meadows.zn"
+        newzone.addRoom(room.Room())
+        newzone.rooms[-1].name = "room 1"
+        newzone.addRoom(room.Room())
+        newzone.rooms[-1].name = "room 2"    
+        #add to zoneslist
+        game.zones.append(newzone)
+        #save zone list
+        saveZones()
+        newzone.show()
     
-    print "Clearing zone..."
-    myzone.rooms = []
+    if mode == 2:
+        loadZones()
+        game.zones[0].show()
     
-    print "Loading zones..."
-    myzone.load("testzone.dat")
     
-    for r in myzone.rooms:
-		myzone.showRoom(r)
-    
+
     
     
     
