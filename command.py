@@ -1,36 +1,8 @@
 import game
+from tools import *
 
-class CommandSet(object):
-    
-    def __init__(self):
-        self.commands = []
-        self.aliases = {}
-    
-    def add(self, name, helpstr, fptr, hasargs = False):
-        self.commands.append( Command(name, helpstr, fptr, hasargs) )
-
-    def count(self):        
-        return len(self.commands)
-    
-    def getCommand(self, cstr):
-        foundcmds = []
-        
-        # if command string is an alias
-        if cstr in self.aliases.keys():
-			cstr = self.aliases[cstr]
-        
-        for i in range(0, self.count() ):
-            #found absolute
-            if self.commands[i].cdict["name"] == cstr:
-                return [self.commands[i]]
-            #found partial match
-            elif self.commands[i].cdict["name"].startswith(cstr):
-                foundcmds.append(self.commands[i])
-        if len(foundcmds) == 0:
-            return None
-        else:
-            return foundcmds
-           
+def commandError(tuser, cdict):
+    tuser.send("Unrecognized command!\n")
 
 class Command(object):
     def __init__(self, name, helpstr, fptr, hasargs = False):
@@ -41,7 +13,9 @@ class Command(object):
         if hasargs:
             self.cdict.update({"hasargs":True})
         
-        
+    def getFunction(self):
+        return self.cdict["function"]
+
     def execute(self, tuser, *argv):
         if self.cdict["function"] == None:
             pass
@@ -57,23 +31,60 @@ class Command(object):
                     args.append(a)
             self.cdict["function"](tuser, self.cdict, args)
 
+class CommandSet(object):
+
+    invalidcmd = Command("invalidcmd", "invalidcmd", commandError)
+    
+    def __init__(self):
+        self.commands = []
+        self.aliases = {}
+    
+    def add(self, name, helpstr, fptr, hasargs = False):
+        self.commands.append( Command(name, helpstr, fptr, hasargs) )
+
+    def count(self):        
+        return len(self.commands)
+    
+    def getAndExecute(self, tuser, cstr, *argv):
+		tcmds = self.getCommand(cstr)
+		tcmds[0].execute(tuser, argv)
+    
+    def getCommand(self, cstr):
+        foundcmds = []
+        
+        # if command string is an alias
+        if cstr in self.aliases.keys():
+            cstr = self.aliases[cstr]
+        
+        for i in range(0, self.count() ):
+            #found absolute
+            if self.commands[i].cdict["name"] == cstr:
+                return [self.commands[i]]
+            #found partial match
+            elif self.commands[i].cdict["name"].startswith(cstr):
+                foundcmds.append(self.commands[i])
+        if len(foundcmds) == 0:
+            return [self.invalidcmd]
+        else:
+            return foundcmds
+           
 
 def initMainCommands():
     cs = CommandSet()
-    cs.add("help", "Show help menu", game.showHelpMenu)
+    cs.add("help", "Show help menu", showHelpMenu)
     cs.commands[-1].cdict.update({"source":cs})
     
-    cs.add("look", "Look at something", game.doLook, True)
-    cs.add("north", "Move north", game.doMove)
+    cs.add("look", "Look at something", doLook, True)
+    cs.add("north", "Move north", doMove)
     cs.commands[-1].cdict.update({"dir":0})
-    cs.add("south", "Move south", game.doMove)
+    cs.add("south", "Move south", doMove)
     cs.commands[-1].cdict.update({"dir":1})
-    cs.add("east", "Move east", game.doMove)
+    cs.add("east", "Move east", doMove)
     cs.commands[-1].cdict.update({"dir":2})
-    cs.add("west", "Move west", game.doMove)
+    cs.add("west", "Move west", doMove)
     cs.commands[-1].cdict.update({"dir":3})
     
-    cs.add("debug", "do something", game.doDebug)
+    #cs.add("debug", "do something", doDebug)
     
     
     # setup command aliases
@@ -81,6 +92,86 @@ def initMainCommands():
     
     return cs
 
+#####################################################################
+##      COMMANDS
+
+
+
+def showHelpMenu(tuser, cdict):
+    
+    tset = None
+    
+    try:
+        tset = cdict["source"]
+    except:
+        tuser.send("Unable to print help menu, no source in dictionary!")
+        return
+    
+    tuser.send("%sHelp Menu%s\n" % (setColor(COLOR_MAGENTA, True), resetColor() ) )
+    tuser.send("%s---------%s\n" % ( setColor(COLOR_MAGENTA, False) , resetColor() ) )
+    tuser.send("%s" % setColor(COLOR_GREEN) )
+    for i in range(0, tset.count() ) :
+        tuser.send("%s - %s\n" %(tset.commands[i].cdict["name"], tset.commands[i].cdict["helpstring"]) )
+    tuser.send("%s" % resetColor() )
+
+def doLook(tuser, cdict, *argv):
+    args = []
+    if argv[0] == None:
+        print "look - no arguments"
+        args = None
+    else:
+        print "look - arguments"
+        for a in argv[0]:
+            args.append(a)
+
+    if args:
+        print "doing item or other look"
+    else:
+        print "Doing room look"
+        doLookRoom(tuser, getCurrentRoom(tuser))       
+        
+
+def doLookRoom(tuser, troom):
+    if troom == None:
+        tuser.send("Invalid room look - room is null!\n")
+        return
+
+    tuser.send("%s%s%s\n\n" %(setColor(COLOR_CYAN, True), troom.name, resetColor()) )
+    tuser.send("%s\n" %troom.desc)
+
+def doMove(tuser, cdict):
+    tdir = cdict["dir"]
+    
+    tuser.send("tdir=%d\n" %tdir)
+    
+    oroom = getCurrentRoom(tuser)
+    
+    if oroom == None:
+        tuser.send("Error getting origin room, null!\n")
+        return
+        
+    if tdir < 0 or tdir >= len(getCurrentZone().rooms):
+        tuser.send("Error moving, target room id#%dout of bounds!\n" %tdir)
+        return
+    
+    if oroom.exits[tdir] == None:
+        tuser.send("No exit in that direction!\n")
+        return
+    
+    tuser.current_room = tdir
+    
+
+def getCurrentRoomNum(tuser):
+    pass
+
+def getCurrentRoom(tuser):
+    pass
+
+def getCurrentZone(tuser):
+    pass
+
+
+#####################################################################
 if __name__ == "__main__":
     import testuser
     
