@@ -2,6 +2,7 @@ import os.path
 import room
 import defs
 import game
+import command
 from tools import *
 
 class Zone(object):
@@ -10,8 +11,6 @@ class Zone(object):
     
     def __init__(self):
         self.rooms = []
-        # add blank default room
-        self.addRoom( room.Room())
         self.zonefile = None
         
         
@@ -50,6 +49,26 @@ class Zone(object):
         print "Room #:%d" %rnum
         troom.show()
 
+    def getAllClients(self):
+        znum = None
+        zusers = []
+        
+        for z in game.zones:
+            if z == self:
+                znum = game.zones.index(self)
+        
+        if znum == None:
+            print "Error getting all clients in zone, zone not found!\n"
+            return []
+        
+        for u in game.clients:
+            if u.current_zone == znum:
+                zusers.append(u)
+        
+        return zusers
+        
+        
+
     def load(self, zonefile):
         if not zonefile:
             print "Unable to load zone, no file provided!"
@@ -69,9 +88,15 @@ class Zone(object):
             dint = []
             # open file for reading
             ifile = open(fp, 'r')
+            
+            
+            
             with open(fp, 'r') as f:
                 for line in f:
                     ln = line[:-1]
+
+                    if ln == "":
+                        continue
 
                     # object entry found, create new
                     if ln == "ROOM:":
@@ -95,6 +120,13 @@ class Zone(object):
                                         rooms[-1].exits[e] = None
                                     else:
                                         rooms[-1].exits[e] = int(elist[e])
+                            elif key == "descriptors":
+                                dfind = val.find(':')
+                                dkey = val[0:dfind]
+                                dval = val[dfind+1:]
+                                rooms[-1].descriptors.update({dkey, dval})
+                            elif key == "additem":
+								rooms[-1].addNewItem(val)
                                     
 
                 else:
@@ -113,10 +145,9 @@ class Zone(object):
             self.zonefile = "zone" + str(Zone.zoneiterator) + ".zn"
             Zone.zoneiterator += 1
             print "No zone file provided, saving as %s" %self.zonefile
-            return False
         
         fp = defs.ZONES_PATH + self.zonefile
-
+        
         # if file doesnt exist, create it
         createNewFile(fp)
 
@@ -125,9 +156,18 @@ class Zone(object):
         
         # write to file
         for room in self.rooms:
+            ofile.write("\n")
             ofile.write("ROOM:\n")
+            
+            # save basic info
             ofile.write("name:%s\n" % room.name)
             ofile.write("desc:%s\n" % room.desc)
+            
+            #save descriptors:
+            for d in room.descriptors.keys():
+                ofile.write("descriptor:%s:%s\n" %(d, room.descriptors[d]))
+            
+            #save exits
             ofile.write("exits:")
             for e in range(0, len(room.exits) ):
                 delim = ","
@@ -138,6 +178,11 @@ class Zone(object):
                 else:
                     ofile.write("%d%s" %(room.exits[e], delim) )
             ofile.write("\n")
+            #save items
+            for i in room.inventory:
+				ofile.write("additem:%s\n" %i.getDescName())
+            
+            ofile.write("\n")
         
         ofile.close()
         
@@ -147,7 +192,8 @@ def loadZones():
      
     zf = defs.ZONES_INDEX_FILE
     
-    zones = []
+    game.zones = []
+    
     zonefiles = []
  
      # if file exists
@@ -168,25 +214,24 @@ def loadZones():
         for zt in zonefiles:
             newzone = Zone()
             newzone.load(zt)
-            zones.append(newzone)
+            game.zones.append(newzone)
     
     # else file is new, create defaults
     else:
         
+        print "No zones present.  Creating default zone..."
         # create default zone and room
         newzone = Zone()
         newzone.addRoom( room.Room())
         newzone.zonefile = "default.zn"
         newzone.save()
-        
         # add this zone to zonelist
-        zones.append(newzone)
+        game.zones.append(newzone)
         
         # save zonelist
         saveZones()
     
-    #pass back loaded zones
-    game.zones = zones
+
         
 def saveZones():
     
@@ -208,11 +253,12 @@ def saveZones():
     
         
 if __name__ == "__main__":
+    import item
     
-    defs.ZONES_INDEX_FILE = "./zonetest/zones.dat"
-    defs.ZONES_PATH = "./zonetest/"
+    defs.configTestMode()
     
     game.zones = []
+    item.loadItems()
     
     mode = 2
     

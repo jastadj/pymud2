@@ -68,7 +68,42 @@ def createNewFile(fp, create_dirs = False):
 	newfile.close()
 	
 	return True
+
+def fitStringToWidth(s, width = 80):
+	
+	lines = []
+	
+	#print "Length of string=%d" %len(s)
+	
+	if len(s) < width:
+		return [s]
+	
+	while len(s) > width:
 		
+		if s[width-1] == " ":
+			lines.append( s[:width])
+			s = s[width:]
+		else:
+			for c in range(1, width):
+				if s[width-1-c] == " ":
+					lines.append( s[:width-c])
+					s = s[width-c:]
+					break
+				elif c == width-1:
+					lines.append( s[:width])
+					s = s[width:]
+					break
+
+		
+
+	# add leftover
+	lines.append(s)
+	
+	return lines
+			
+		
+	
+	
 
 if __name__ == "__main__":
 	
@@ -82,4 +117,12 @@ if __name__ == "__main__":
 		print "opposite of %s is %s" %(testdirs[mydir], testdirs[getOppositeDirection(mydir)])
 		
 	createNewFile("./mytest/test1/john.txt")
+		
+	teststr = "this is a test.  testing that strings can be written out formatted to a specifically set width, mainly by 80 characters by default"
+	p = fitStringToWidth(teststr)
+	print teststr
+	print "\n\n"
+	for l in p:
+		print l
+	
 	

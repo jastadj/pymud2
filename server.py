@@ -3,6 +3,7 @@
 import socket, select
 import credential
 import client
+import item
 import zone
 import room
 import command
@@ -52,6 +53,7 @@ class Server(object):
 		# callbacks
 		game.server = self
 		game.clients = self.clients
+		game.ITEM = item.Item
 		game.ROOM = room.Room
 		game.ZONE = zone.Zone
 		game.COMMAND = command.Command
@@ -64,8 +66,11 @@ class Server(object):
 		print "%d accounts loaded." % self.accounts.getCount()
 		login.credentials = self.accounts
 		
+		# load common items
+		item.loadItems()
+		print "%d items loaded." % len(game.items)
+		
 		# load zones
-		game.zones = []
 		zone.loadZones()
 		print "%d zones loaded." % len(game.zones)
 		
@@ -178,9 +183,9 @@ class Server(object):
 		self.accounts.save()
 		print "Credentials saved."
 		
-		if room.save(game.rooms, "./data/rooms.dat"):
-			print "Rooms saved."
-		else: print "Error saving rooms!"
+		# save zones
+		zone.saveZones()
+		print "Zones and rooms saved."
 		
 		# shutdown and close server socket
 		self.socket.shutdown(0)

@@ -9,6 +9,10 @@ class TestUser(client.Client):
 	def __init__(self):
 		self.last_input = ""
 		self.mode = "maingame"
+		self.current_room = 0
+		self.current_zone = 0
+		
+		self.inventory = []
 		
 	def send(self, astr):
 		print(astr, end="")
