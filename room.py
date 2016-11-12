@@ -10,6 +10,7 @@ class Room(object):
         self.desc = "no description"
         self.descriptors = {}
         self.exits = []
+        self.zoneexits = {}
         self.inventory = []
         for a in range(0, len(defs.DIRECTIONS) ):
             self.exits.append(None)
@@ -48,23 +49,23 @@ class Room(object):
         return ulist    
     
     def hasItem(self, titem):
-		if titem in self.inventory:
-			return True
-		else:
-			return False
+        if titem in self.inventory:
+            return True
+        else:
+            return False
     
     def getItems(self):
         return self.inventory
     
     def addItem(self, titem):
-		if titem == None:
-			print "Error adding item to room, item is null!"
-			return
-			
-		try:
-			self.inventory.append(titem)
-		except:
-			print "Error adding item to room!"
+        if titem == None:
+            print "Error adding item to room, item is null!"
+            return
+            
+        try:
+            self.inventory.append(titem)
+        except:
+            print "Error adding item to room!"
     
     def addNewItem(self, istring):
         newitem = command.getNewItem(istring)
@@ -73,13 +74,13 @@ class Room(object):
             self.inventory.append(newitem)
     
     def removeItem(self, titem):
-		if titem == None:
-			print "Error removing item from room, item is null!"
-			return
-		try:
-			self.inventory.remove(titem)
-		except:
-			print "Error removing item from inventory"
+        if titem == None:
+            print "Error removing item from room, item is null!"
+            return
+        try:
+            self.inventory.remove(titem)
+        except:
+            print "Error removing item from inventory"
     
     def show(self):
         print "Name:" + self.name
@@ -97,7 +98,10 @@ class Room(object):
             if self.exits[a] == None:
                 print "%s:%s" % (defs.DIRECTIONS[a], "None")
             else:
-                print "%s:%d" % (defs.DIRECTIONS[a], self.exits[a])
+                if a in self.zoneexits.keys():
+                    print "%s:%d (ZONE EXIT)" % (defs.DIRECTIONS[a], self.exits[a])
+                else:
+                    print "%s:%d" % (defs.DIRECTIONS[a], self.exits[a])
     
         
         

@@ -1,4 +1,5 @@
 import os
+import random
 
 def unsplit(words):
     sentence = ""
@@ -101,9 +102,30 @@ def fitStringToWidth(s, width = 80):
 	
 	return lines
 			
+class Dice(object):
+	def __init__(self, rnum=1, rsides=6, rmod=0):
+		self.num = rnum
+		self.sides = rsides
+		self.mod = rmod
+	
+	def roll(self):
+		tot = 0
 		
+		for s in range(0, self.num):
+			tot += random.randint(1, self.sides)
+		
+		tot += self.mod
+		return tot
 	
+def rollDice(num=1, sides = 6, mod = 0):
+	tot = 0
 	
+	for s in range(0, num):
+		tot += random.randint(1, sides)
+	
+	tot += mod
+	
+	return tot
 
 if __name__ == "__main__":
 	
@@ -125,4 +147,4 @@ if __name__ == "__main__":
 	for l in p:
 		print l
 	
-	
+	print "dice roll = %d" %rollDice()

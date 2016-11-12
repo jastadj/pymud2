@@ -126,7 +126,12 @@ class Zone(object):
                                 dval = val[dfind+1:]
                                 rooms[-1].descriptors.update({dkey, dval})
                             elif key == "additem":
-								rooms[-1].addNewItem(val)
+                                rooms[-1].addNewItem(val)
+                            elif key.startswith("zoneexits"):
+                                zefind = key.find(':')
+                                zexit = int(key[:zefind])
+                                znum = int(key[zefind+1:])
+                                rooms[-1].zoneexits.update({zexit:znum})
                                     
 
                 else:
@@ -178,9 +183,14 @@ class Zone(object):
                 else:
                     ofile.write("%d%s" %(room.exits[e], delim) )
             ofile.write("\n")
+            
+            #save zone exits
+            for ze in room.zoneexits.keys():
+                ofile.write("zoneexit:%d:%d\n" %(ze, room.zoneexits[ze]) )
+            
             #save items
             for i in room.inventory:
-				ofile.write("additem:%s\n" %i.getDescName())
+                ofile.write("additem:%s\n" %i.getDescName())
             
             ofile.write("\n")
         

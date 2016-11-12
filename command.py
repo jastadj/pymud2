@@ -173,28 +173,43 @@ def doLookRoom(tuser, troom):
         tuser.send("%s\n" %l)
 
     # get room exits
-    estrp = "Exits: "
-    ewords = []
-    # collect all room exit words
-    for e in troom.exits:
-        if e != None:
-            ewords.append( defs.DIRECTIONS[ troom.exits.index(e)])
-    # build exits string
-    for e in ewords:
-        if e == ewords[-1]:
-            estrp += e
-        else:
-            estrp += e + ", "
-
-    if len(ewords) == 0:
-        tuser.send("You see no obvious exits.\n")
+    estrings = []
+    for e in range(0, len(defs.DIRECTIONS) ):
+        if troom.exits[e] != None:
+            estrings.append(defs.DIRECTIONS[e])
+    # if room exits were found, build exit string from list
+    if len(estrings) != 0:
+        eprint = "Exits: "
+        for es in estrings:
+            if es == estrings[-1]:
+                eprint += es
+            else:
+                eprint += es + ", "
+        tuser.send("%s\n" %eprint)
+    # or if no exits were found
     else:
-        tuser.send ("%s\n" %estrp)
+        tuser.send("There are no obvious exits.\n")
         
     # list items here
     ilist = troom.getItems()
     for i in ilist:
-        tuser.send("    %s %s\n" %(i.getArticle(), i.getName()) )
+        tuser.send("    %s %s\n" %(i.getArticle(), i.getDescName()) )
+        
+    # list players here
+    ulist = troom.getAllClients()
+    ustr = ""
+    ucount = len(ulist)
+    for u in ulist:
+        if u != tuser:
+            if ucount == 2:
+                ustr += "%s is here." %u.getName()
+            else:
+                if u == ulist[-1]:
+                    ustr += " and %s is here." %u.getName()
+                else:
+                    ustr += "%s," %u.getname()
+    if ucount > 1:
+        tuser.send("%s\n" %ustr)
 
 def doLookCurrentRoom(tuser):
     croom = getCurrentRoom(tuser)
@@ -226,16 +241,38 @@ def doMove(tuser, cdict):
         tuser.send("No exit in that direction!\n")
         return
 
-    # check if destination room number is within range
-    if drnum < 0 or drnum >= len(getCurrentZone(tuser).rooms):
-        tuser.send("Error moving, target room id#%dout of bounds!\n" %tdir)
+
+    # get destination zone number
+    dzonenum = tuser.current_zone
+    if tdir in oroom.zoneexits:
+        dzonenum = oroom.zoneexits[tdir]
+    
+    # check if destination zone exists
+    if dzonenum < 0 or dzonenum >= len(game.zones):
+        tuser.send("Error moving, destination zone #%d does not exist!\n" %dzonenum)
         return
 
-    # get destination room
-    droom = ozone.getRoom(drnum)
+    # check if destination room number is within range
+    if drnum < 0 or drnum >= len(game.zones[dzonenum].rooms):
+        tuser.send("Error moving, target room id#%dout of bounds!\n" %drnum)
+        return
 
-    # move player to destination room
+
+    # get destination zone
+    dzone = game.zones[dzonenum]
+
+    # get destination room
+    droom = dzone.getRoom(drnum)
+
+    # inform players in room of departure
+    broadcastToRoomEx(tuser, "%s leaves to the %s.\n" %(tuser.getName(), defs.DIRECTIONS[tdir]) )
+
+    # move player to destination room / zone
+    tuser.current_zone = dzonenum
     tuser.current_room = drnum
+
+    # inform players in room of arrival
+    broadcastToRoomEx(tuser, "%s enters from the %s.\n" %(tuser.getName(), defs.DIRECTIONS[getOppositeDirection(tdir)]) )
 
     # automatically do a room look
     doLookCurrentRoom(tuser)
@@ -262,14 +299,24 @@ def doSay(tuser, cdict, *argv):
         # all arguments = say string
         saystr = " ".join(args)
 
-        for u in ulist:
-            if u == tuser:
-                tuser.send("You say \"%s\"\n" %saystr)
-            else:
-                u.send("%s says \"%s\"\n" %(u.name, saystr) )
+        tuser.send("You say \"%s\"\n" %saystr)
+
+        broadcastToRoomEx(tuser, "%s says \"%s\"\n" %(tuser.getName(), saystr) )
 
     else:
         tuser.send("Say what?\n")
+
+def broadcastToRoomEx(tuser, tmsg):
+    
+    troom = getCurrentRoom(tuser)
+    
+    ulist = troom.getAllClients()
+    
+    ulist.remove(tuser)
+    
+    for u in ulist:
+        u.send("%s" %tmsg)
+
 
 def getCurrentRoom(tuser):
 
@@ -319,7 +366,7 @@ def findItemInList(idesc, ilist):
             foundlist.append(i)
     
     if len(foundlist) == 0:
-        print "Could not find item with \"%s\"" %idesc
+        #print "Could not find item with \"%s\"" %idesc
         return None
     
     elif len(foundlist) > 1:
@@ -342,7 +389,7 @@ def doShowInventory(tuser, cdict):
         tuser.send("    Nothing!\n")
     else:
         for i in titems:
-            tuser.send("    %s %s\n" %(i.getArticle(),i.getName()) )
+            tuser.send("    %s %s\n" %(i.getArticle(),i.getDescName()) )
 
 def doGet(tuser, cdict, *argv):
     args = []
@@ -375,7 +422,9 @@ def doGet(tuser, cdict, *argv):
     else:
         troom.removeItem(titem)
         tuser.addItem(titem)
-        tuser.send("You take the %s.\n" %titem.getName() )
+        tuser.send("You take the %s.\n" %titem.getDescName() )
+        
+        broadcastToRoomEx(tuser, "%s takes a %s.\n" %(tuser.getName(), titem.getDescName()) )
         
 
 def doDrop(tuser, cdict, *argv):
@@ -411,6 +460,7 @@ def doDrop(tuser, cdict, *argv):
         troom.addItem(titem)
         tuser.send("You drop the %s.\n" %titem.getName() )
 
+        broadcastToRoomEx(tuser, "%s drops a a %s.\n" %(tuser.getName(), titem.getDescName()) )
 
 #####################################################################
 if __name__ == "__main__":
@@ -438,6 +488,7 @@ if __name__ == "__main__":
     newroom.descriptors.update( {"sink":"The sink is layed with years of soap scum."})
     newroom.exits[0] = 1
     newroom.addNewItem("sword")
+    newroom.inventory[-1].properties.update( {"desc":"A plain long sword."})
     
     newzone.addRoom(newroom)
     newroom = room.Room()
@@ -445,9 +496,24 @@ if __name__ == "__main__":
     newroom.desc = "This bedroom makes you uncomfortable."
     newzone.addRoom(newroom)
     newroom.exits[1] = 0
+    newroom.exits[2] = 0
+    newroom.zoneexits.update({2:1})
     game.zones.append(newzone)
     
+    
+    newzone2 = zone.Zone()
+    newroom = room.Room()
+    newroom.name = "Outside"
+    newroom.desc = "It's beautiful out here!"
+    newroom.exits[3] = 1
+    newroom.zoneexits.update({3:0})
+    newzone2.addRoom(newroom)
+    game.zones.append(newzone2)
+    
     zone.saveZones()
+    
+    for z in game.zones:
+        z.show()
 
 
     """
@@ -480,6 +546,25 @@ if __name__ == "__main__":
     """
 
     cset = initMainCommands()
+
+
+    def showSelf(tuser, cdict):
+        tuser.show()
+        
+    def showRoom(tuser, cdict):
+        getCurrentRoom(tuser).show()
+    
+    def showZone(tuser, cdict):
+        getCurrentZone(tuser).show()
+
+
+    cset.add("showself", "Client debug", showSelf)
+    cset.add("showroom", "Room debug", showRoom)
+    cset.add("showzone", "Zone debug", showZone)
+
+    # test
+    tuser.current_zone = 1
+
 
 
     cset.getAndExecute(tuser, "look")

@@ -25,6 +25,9 @@ class Client(object):
 		self.temp_var2 = ""
 		self.last_input = ""
 	
+	def getName(self):
+		return self.account_name
+	
 	def getItems(self):
 		return self.inventory
 	
