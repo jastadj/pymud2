@@ -3,64 +3,61 @@ import socket
 class Client(object):
 	REC_BUFFER = 4096
 	
-	def __init__(self, tsock):
-		self.socket = tsock
-		self.ip = tsock.getpeername()[0]
-		self.port = int(tsock.getpeername()[1])
-		self.account_name = None
+	def __init__(self):
+		self.socket = None
+		self.credential = None
 		
-		self.inventory = []
-		
-		self.current_room = 0
-		self.current_zone = 0
+		self.char = None
 		
 		# starting user mode
-		self.mode = "login1"
+		self.mode = None
 
 		# skip next user input how many times?
 		self.skip_input = 0
 
 		# used to store temporary variables or input hist
-		self.temp_var1 = ""
-		self.temp_var2 = ""
+		self.tempvars = {}
 		self.last_input = ""
 	
-	def getName(self):
-		return self.account_name
+	def setSocket(self, tsocket):
+		self.socket = tsocket
 	
-	def getItems(self):
-		return self.inventory
+	def getMode(self):
+		return self.mode
 	
-	def hasItem(self, titem):
+	def setMode(self, tmode):
+		self.mode = tmode
+	
+	def clearVars(self):
+		self.tempvars = {}
+	
+	def getLastInput(self):
+		return self.last_input
+	
+	def getVars(self):
+		return self.tempvars;
 		
-		if titem in self.inventory:
-			return True
-		else:
-			return False
+	def setVar(self, nvar):
+		self.tempvars.update(nvar)
 	
-	def addItem(self, titem):
-		
+	def getVar(self, key):
 		try:
-			self.inventory.append(titem)
+			return self.tempvars[key]
 		except:
-			print "Error adding item to player inventory!"
-	
-	def removeItem(self, titem):
-		
-		if not titem in self.inventory:
-			return
-		
-		try:
-			self.inventory.remove(titem)
-		except:
-			print "Error removing item from player inventory!"
+			return None
 	
 	def send(self, msg):
-		
-		self.socket.send(msg);
+		if self.socket == None:
+			print msg
+		else:
+			self.socket.send(msg);
 	
 	def receive(self):
-
+		
+		if self.socket == None:
+			cdata = raw_input()
+			return cdata
+		
 		# try to receivee data
 		try:
 			# get input from client
@@ -86,7 +83,12 @@ class Client(object):
 		return None
 	
 	def disconnect(self):
+		if self.socket == None:
+			return
 		#close socket
 		self.socket.close()
 		
-
+if __name__ == "__main__":
+	
+	myclient = Client()
+	

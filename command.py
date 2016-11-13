@@ -155,9 +155,9 @@ def doLook(tuser, cdict, *argv):
             return
     
     # check items in inventory
-    for i in tuser.getItems():
+    for i in tuser.char.getItems():
         if i.descMatches(monoarg):
-            tuser.send("%s\n" %i.getDesc())
+            tuser.csend("%s\n" %i.getDesc())
             return    
     tuser.send("You do not see that here.\n")
 
@@ -243,7 +243,7 @@ def doMove(tuser, cdict):
 
 
     # get destination zone number
-    dzonenum = tuser.current_zone
+    dzonenum = tuser.char.getCurrentZone()
     if tdir in oroom.zoneexits:
         dzonenum = oroom.zoneexits[tdir]
     
@@ -265,14 +265,14 @@ def doMove(tuser, cdict):
     droom = dzone.getRoom(drnum)
 
     # inform players in room of departure
-    broadcastToRoomEx(tuser, "%s leaves to the %s.\n" %(tuser.getName(), defs.DIRECTIONS[tdir]) )
+    broadcastToRoomEx(tuser, "%s leaves to the %s.\n" %(tuser.char.getName(), defs.DIRECTIONS[tdir]) )
 
     # move player to destination room / zone
-    tuser.current_zone = dzonenum
-    tuser.current_room = drnum
+    tuser.char.setCurrentZone(dzonenum)
+    tuser.char.setCurrentRoom(drnum)
 
     # inform players in room of arrival
-    broadcastToRoomEx(tuser, "%s enters from the %s.\n" %(tuser.getName(), defs.DIRECTIONS[getOppositeDirection(tdir)]) )
+    broadcastToRoomEx(tuser, "%s enters from the %s.\n" %(tuser.char.getName(), defs.DIRECTIONS[getOppositeDirection(tdir)]) )
 
     # automatically do a room look
     doLookCurrentRoom(tuser)
@@ -301,7 +301,7 @@ def doSay(tuser, cdict, *argv):
 
         tuser.send("You say \"%s\"\n" %saystr)
 
-        broadcastToRoomEx(tuser, "%s says \"%s\"\n" %(tuser.getName(), saystr) )
+        broadcastToRoomEx(tuser, "%s says \"%s\"\n" %(tuser.char.getName(), saystr) )
 
     else:
         tuser.send("Say what?\n")
@@ -320,14 +320,14 @@ def broadcastToRoomEx(tuser, tmsg):
 
 def getCurrentRoom(tuser):
 
-    cr = tuser.current_room
+    crnum = tuser.char.getCurrentRoom()
     tz = getCurrentZone(tuser)
     tr = None
 
     try:
-        tr = tz.rooms[cr]
+        tr = tz.rooms[crnum]
     except:
-        print "Error getting current player room @ room #%d!!" %cr
+        print "Error getting current player room @ room #%d!!" %crnum
         return None
 
     return tr
@@ -335,7 +335,7 @@ def getCurrentRoom(tuser):
 def getCurrentZone(tuser):
 
     tz = None
-    pzi = tuser.current_zone
+    pzi = tuser.char.getCurrentZone()
 
     try:
         tz = game.zones[pzi]
@@ -384,7 +384,7 @@ def doShowInventory(tuser, cdict):
     tuser.send("You are carring:\n")
     tuser.send("----------------\n")
     
-    titems = tuser.inventory
+    titems = tuser.char.getInventory()
     if len(titems) == 0:
         tuser.send("    Nothing!\n")
     else:
@@ -421,10 +421,10 @@ def doGet(tuser, cdict, *argv):
     # item found, get it and add to player inventory, remove from list
     else:
         troom.removeItem(titem)
-        tuser.addItem(titem)
+        tuser.char.addItem(titem)
         tuser.send("You take the %s.\n" %titem.getDescName() )
         
-        broadcastToRoomEx(tuser, "%s takes a %s.\n" %(tuser.getName(), titem.getDescName()) )
+        broadcastToRoomEx(tuser, "%s takes a %s.\n" %(tuser.char.getName(), titem.getDescName()) )
         
 
 def doDrop(tuser, cdict, *argv):
@@ -432,7 +432,7 @@ def doDrop(tuser, cdict, *argv):
     # no arguments, do a room look
     if argv[0] == None:
         tuser.send("Drop what?\n")
-        return
+        return False
     # arguments
     else:
         for a in argv[0]:
@@ -445,9 +445,9 @@ def doDrop(tuser, cdict, *argv):
     troom = getCurrentRoom(tuser)
     if troom == None:
         print "ERROR do look, current room NULL!"
-        return
+        return False
 
-    pitems = tuser.getItems()
+    pitems = tuser.char.getInventory()
 
     #look for item
     titem = findItemInList(monoarg, pitems)
@@ -456,11 +456,14 @@ def doDrop(tuser, cdict, *argv):
         tuser.send("You are not carrying that!\n")
     # item found, get it and add to player inventory, remove from list
     else:
-        tuser.removeItem(titem)
+        if not tuser.char.removeItem(titem):
+			return False
         troom.addItem(titem)
         tuser.send("You drop the %s.\n" %titem.getName() )
 
-        broadcastToRoomEx(tuser, "%s drops a a %s.\n" %(tuser.getName(), titem.getDescName()) )
+        broadcastToRoomEx(tuser, "%s drops a a %s.\n" %(tuser.char.getName(), titem.getDescName()) )
+        
+        return True
 
 #####################################################################
 if __name__ == "__main__":
@@ -563,7 +566,7 @@ if __name__ == "__main__":
     cset.add("showzone", "Zone debug", showZone)
 
     # test
-    tuser.current_zone = 1
+    tuser.current_zone = 0
 
 
 

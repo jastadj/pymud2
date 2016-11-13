@@ -6,9 +6,11 @@ ZONE = None
 ITEM = None
 COMMAND = None
 COMMAND_SET = None
+CHARACTER = None
 
 # objects
 server = None
+credentials = None
 zones = None
 cmds_main = None
 clients = None

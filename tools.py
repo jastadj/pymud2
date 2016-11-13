@@ -40,7 +40,10 @@ def setColor(tcolor, tbold = False):
 	else:
 		return "%c[%d;%dm" %(TERM_ESCAPE, 30+tcolor, 1)
 
-def createNewFile(fp, create_dirs = False):
+def fileExists(fp):
+	return os.path.isfile(fp)
+
+def createNewFile(fp):
 	
 	if os.path.isfile(fp):
 		#print "Error creating new file, already exists:%s" %fp

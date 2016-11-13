@@ -61,10 +61,8 @@ class Server(object):
 
 		
 		# load credentials
-		self.accounts = credential.Credentials()
-		self.accounts.load()
-		print "%d accounts loaded." % self.accounts.getCount()
-		login.credentials = self.accounts
+		credential.loadCredentials()
+		print "%d accounts loaded." %len(game.credentials)
 		
 		# load common items
 		item.loadItems()
@@ -136,6 +134,9 @@ class Server(object):
 					#print WELCOME screen
 					newclient.send("\n%sWelcome!%s\n\n" %(setColor(COLOR_GREEN, True),
 														resetColor()) )
+					
+					# configure client starting mode
+					newclient.setMode("login1")
 					newclient.send("login:")
 				
 				# else a client has something to do
@@ -180,7 +181,7 @@ class Server(object):
 		
 		
 		# save stuff
-		self.accounts.save()
+		credential.saveCredentials()
 		print "Credentials saved."
 		
 		# save zones

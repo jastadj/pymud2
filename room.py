@@ -40,7 +40,7 @@ class Room(object):
         
         # check each user that matches zone and room num
         for u in game.clients:
-            if u.current_zone == znum and u.current_room == rnum:
+            if u.char.getCurrentZone() == znum and u.char.getCurrentRoom() == rnum:
                 ulist.append(u)
         
         if len(ulist) == 0:

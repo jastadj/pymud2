@@ -1,127 +1,139 @@
-import os.path
 from tools import *
-
 import defs
+import game
 
-class Credentials(object):
-    
-    credentials = {}
-    
-    credentials_loaded = False
-    
-    def __init__(self):
-		pass
-    def getCount(self):
-        return len(Credentials.credentials.keys())
-    
-    def load(self):
-        if Credentials.credentials_loaded:
-            print "Credentials have already been loaded!"
-            return False
-        
-        cf = defs.CREDENTIAL_FILE
-        
-        # if file already exists
-        if createNewFile(cf) == None:
-            
-            # open file for reading
-            f = open(cf, 'r')
-            
-            done = False
-            
-            # read line
-            while not done:
-                fcred = f.readline().split()
-                
-                if len(fcred) == 2:
-                    Credentials.credentials.update( {fcred[0] : fcred[1] })
-                
-                if not fcred:
-                    done = True
-            
-            f.close()
-        
-        # else file was created
-        else:
-            
-            print "Created new credentials file."
-    
-    def save(self):
-        
-        cf = defs.CREDENTIAL_FILE
-        
-        # if file doesnt exist, create it
-        createNewFile(cf)
+class Credential(object):
+    def __init__(self, accountname, password, characterfile):
+        self.accountname = accountname
+        self.password = password
+        self.characterfile = characterfile
 
-        # open file for writing
-        f = open(cf, 'w')
+def accountNameAvailable(accountname):
+	
+	for c in game.credentials:
+		if c.accountname == accountname:
+			return False
+	
+	return True
+
+def addNewAccount(accountname, password):
+	if not accountNameAvailable(accountname):
+		print "Error adding new account %s, name not available!" %accountname
+		return None
+	
+	newaccount = Credential(accountname, password, None)
+	game.credentials.append(newaccount)
+	
+	print "New account created for:%s" %accountname
+	
+	return newaccount
+
+def doLogin(accountname, password):
+	
+	tcred = None
+	
+	# check credentials for account name
+	for c in game.credentials:
+		if accountname == c.accountname:
+			tcred = c
+	
+	# no account name found
+	if tcred == None:
+		return None
+		
+	# check password match, return credential
+	if tcred.password == password:
+		return tcred
+	
+	# no matching name/pass found
+	return None
+		
+
+def loadCredentials():
+    
+    fp = defs.CREDENTIAL_FILE
+    
+    game.credentials = []
+    
+    print "LOADING CREDENTIALS FROM %s" %fp
+    
+    # if file already exists
+    if createNewFile(fp) == None:
         
-        # write all credentials to file
-        for cred in Credentials.credentials:
-            try:
-                f.write("%s %s\n" % (cred, Credentials.credentials[cred]) )
-            except:
-                pass
-        
+        # check each line in credential file
+        with open(fp, "r") as f:
+            for line in f:
+                # trim off newline
+                line = line[:-1]
+                
+                #ignore blank lines
+                if line == "":
+                    continue
+                
+                # if account entry
+                if line.startswith("ACCOUNT:"):
+                    
+                    # find delmiter, trip off entry type
+                    dfind = line.find(':')
+                    line = line[dfind+1:]
+                    
+                    # get account name
+                    cfind = line.find(',')
+                    aname = line[:cfind]
+                    line = line[cfind+1:]
+                    
+                    # get account password
+                    cfind = line.find(',')
+                    apass = line[:cfind]
+                    line = line[cfind+1:]
+                    
+                    # get account character file
+                    acharfile = line
+                    if acharfile == "None":
+						acharfile = None
+                    
+                    # create credential
+                    game.credentials.append(Credential(aname, apass, acharfile))
         f.close()
+                    
+
+def saveCredentials():
     
-    def getAccount(self, ta):
-        
-        if len(ta) != 1:
-            return None
-        
-        # check that target account is valid
-        if type(ta) != dict:
-            return None
-        
-        for k in self.credentials.keys():
-            # if login name found
-            if ta.keys()[0] == k:
-                # if password matches
-                if ta.values()[0] == self.credentials[k]:
-                    # return account name
-                    return k
-        
-        # nothing found
-        return None
+    fp = defs.CREDENTIAL_FILE
     
-    def usernameExists(self, uname):
-        return uname in self.credentials
-        
-    def addAccount(self, newaccount):
-        if type(newaccount) == dict:
-            self.credentials.update( newaccount)
-            return True
-        else:
-            return False
+    createNewFile(fp)
+    
+    f = open(fp, "w")
+    
+    for c in game.credentials:
+        f.write("ACCOUNT:%s,%s,%s\n" %(c.accountname, c.password, c.characterfile) )
+    
+    f.close()
 
 if __name__ == "__main__":
-    import defs
     
-    #config for testing
     defs.configTestMode()
     
-    print "CREDENTIAL FILE:%s" %defs.CREDENTIAL_FILE
+    def showCredentials():
+        for c in game.credentials:
+            print ""
+            print "account name  :%s" %c.accountname
+            print "account pass  :%s" %c.password
+            print "character file:%s" %c.characterfile
     
-    # save credentials to test file
-    testcred = Credentials()
-    newcreds = {"john":"postal", "mel":"melly", "alyssa":"monkey"}
-    Credentials.credentials = newcreds
-    testcred.save()
-    print "Saved %d credentials:" % len(Credentials.credentials.keys())
-    for cred in Credentials.credentials:
-        print cred + ":" + Credentials.credentials[cred]
+    # create test credentials
+    game.credentials = []
+    game.credentials.append(Credential("john", "monkey", "billy.dat") )
+    game.credentials.append(Credential("j","j","j.dat") )
     
-    # erase and load credentials from testfile
-    Credentials.credentials = {}
-    testcred.load()
-    print "Loaded %d credentials" % len(Credentials.credentials.keys())
-    db = Credentials.credentials
-    for cred in db:
-        print cred + ":" + db[cred]
+    # save credentials
+    saveCredentials()
     
-    print "\n"
+    # clear game credentials
+    game.credentials = []
     
-
-        
+    # load game credentials
+    loadCredentials()
+    
+    showCredentials()  
     
