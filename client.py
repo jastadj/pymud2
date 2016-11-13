@@ -1,10 +1,13 @@
 import socket
+import character
 
 class Client(object):
 	REC_BUFFER = 4096
 	
 	def __init__(self):
 		self.socket = None
+		self.ip = None
+		self.port = None
 		self.credential = None
 		
 		self.char = None
@@ -18,6 +21,18 @@ class Client(object):
 		# used to store temporary variables or input hist
 		self.tempvars = {}
 		self.last_input = ""
+	
+	def getIP(self):
+		if self.ip != None:
+			return self.ip
+		else:
+			return "No IP"
+	
+	def getPort(self):
+		if self.port != None:
+			return self.port
+		else:
+			return 0
 	
 	def setSocket(self, tsocket):
 		self.socket = tsocket
@@ -87,6 +102,10 @@ class Client(object):
 			return
 		#close socket
 		self.socket.close()
+		
+		# save character
+		if self.credential.characterfile != None:
+			character.saveCharacter(self.char, self.credential.characterfile)
 		
 if __name__ == "__main__":
 	

@@ -9,6 +9,7 @@ import room
 import command
 import game
 import handler
+import character
 
 import login
 
@@ -58,7 +59,7 @@ class Server(object):
 		game.ZONE = zone.Zone
 		game.COMMAND = command.Command
 		game.COMMAND_SET = command.CommandSet
-
+		game.CHARACTER = character.Character
 		
 		# load credentials
 		credential.loadCredentials()
@@ -74,8 +75,8 @@ class Server(object):
 		
 		
 		# init commands
+		game.processnoncmd = command.processNonCommand
 		game.cmds_main = command.initMainCommands()
-		game.invalidcmd = command.CommandSet.invalidcmd
 		print "%d commands loaded." % game.cmds_main.count()
 		
 		return True
@@ -126,11 +127,14 @@ class Server(object):
 					newsock, addr = self.socket.accept()
 					
 					# create new client
-					newclient = client.Client(newsock)
+					newclient = client.Client()
+					newclient.setSocket(newsock)
+					newclient.ip = addr[0]
+					newclient.port = addr[1]
 					
 					# add new client to list
 					self.clients.append(newclient)
-					print "Client %s:%d connected." %(newclient.ip, newclient.port)
+					print "Client %s:%d connected." %(newclient.getIP(), newclient.getPort())
 					
 					#print WELCOME screen
 					newclient.send("\n%sWelcome!%s\n\n" %(setColor(COLOR_GREEN, True),

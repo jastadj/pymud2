@@ -127,7 +127,7 @@ def loginMenu(tuser):
             else:
                 tuser.skip_input = 1
                 tuser.setMode("charcreation1")
-            
+				
         
         
         #decrement passes

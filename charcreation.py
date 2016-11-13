@@ -1,4 +1,5 @@
 import game
+import character
 
 def charCreation(tuser):
     
@@ -13,6 +14,12 @@ def charCreation(tuser):
             
             # temp create char
             tuser.char = game.CHARACTER()
+            
+            # for now, just create character file as account name
+            tuser.credential.characterfile = tuser.credential.accountname
+            
+            # save character
+            character.saveCharacter(tuser.char, tuser.credential.characterfile)
             
             tuser.skip_input = 1
         
