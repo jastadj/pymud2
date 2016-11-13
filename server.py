@@ -75,6 +75,7 @@ class Server(object):
 		
 		# init commands
 		game.cmds_main = command.initMainCommands()
+		game.invalidcmd = command.CommandSet.invalidcmd
 		print "%d commands loaded." % game.cmds_main.count()
 		
 		return True

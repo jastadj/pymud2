@@ -55,7 +55,7 @@ def loadCredentials():
     
     game.credentials = []
     
-    print "LOADING CREDENTIALS FROM %s" %fp
+    #print "LOADING CREDENTIALS FROM %s" %fp
     
     # if file already exists
     if createNewFile(fp) == None:

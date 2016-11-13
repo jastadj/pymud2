@@ -72,13 +72,14 @@ if __name__ == "__main__":
 
     # load commands
     game.cmds_main = command.initMainCommands()
-
+    game.processnoncmd = command.processNonCommand
+    
     # load items
     item.loadItems()
 
     # load zones
     zone.loadZones()
-    
+        
     def showCredentials():
         for c in game.credentials:
             print ""

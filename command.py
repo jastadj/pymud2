@@ -35,8 +35,6 @@ class Command(object):
 
 class CommandSet(object):
 
-    invalidcmd = Command("invalidcmd", "invalidcmd", commandError)
-
     def __init__(self):
         self.commands = []
         self.aliases = {}
@@ -50,7 +48,7 @@ class CommandSet(object):
     def getAndExecute(self, tuser, cstr, *argv):
         tcmds = self.getCommand(cstr)
         tcmds[0].execute(tuser, argv)
-
+    
     def getCommand(self, cstr):
         foundcmds = []
 
@@ -66,7 +64,7 @@ class CommandSet(object):
             elif self.commands[i].cdict["name"].startswith(cstr):
                 foundcmds.append(self.commands[i])
         if len(foundcmds) == 0:
-            return [self.invalidcmd]
+            return None
         else:
             return foundcmds
 
@@ -75,16 +73,7 @@ def initMainCommands():
     cs = CommandSet()
     cs.add("help", "Show help menu", showHelpMenu)
     cs.commands[-1].cdict.update({"source":cs})
-
     cs.add("look", "Look at something", doLook, True)
-    cs.add("north", "Move north", doMove)
-    cs.commands[-1].cdict.update({"dir":0})
-    cs.add("south", "Move south", doMove)
-    cs.commands[-1].cdict.update({"dir":1})
-    cs.add("east", "Move east", doMove)
-    cs.commands[-1].cdict.update({"dir":2})
-    cs.add("west", "Move west", doMove)
-    cs.commands[-1].cdict.update({"dir":3})
     cs.add("say", "Say something", doSay, True)
     cs.add("inventory", "Show inventory", doShowInventory)
     cs.add("get","Get something", doGet, True)
@@ -99,6 +88,17 @@ def initMainCommands():
     cs.aliases.update( {"s":"south"} )
 
     return cs
+
+def processNonCommand(tuser, cstr):
+    
+    # check to see if noncmd is actually an exit
+    troom = getCurrentRoom(tuser)
+    
+    if troom.isExit(cstr):
+        doMove(tuser, troom.getExit(cstr) )
+        return True
+    
+    return False
 
 #####################################################################
 ##      COMMANDS
@@ -173,22 +173,18 @@ def doLookRoom(tuser, troom):
         tuser.send("%s\n" %l)
 
     # get room exits
-    estrings = []
-    for e in range(0, len(defs.DIRECTIONS) ):
-        if troom.exits[e] != None:
-            estrings.append(defs.DIRECTIONS[e])
-    # if room exits were found, build exit string from list
-    if len(estrings) != 0:
-        eprint = "Exits: "
-        for es in estrings:
-            if es == estrings[-1]:
-                eprint += es
-            else:
-                eprint += es + ", "
-        tuser.send("%s\n" %eprint)
-    # or if no exits were found
-    else:
-        tuser.send("There are no obvious exits.\n")
+    estring = "Exits: "
+    for e in troom.exits:
+        if e == troom.exits[-1]:
+            estring += e.getName()
+        else:
+            estring += e.getName() + ", "
+    # if there are no room exits
+    if len(troom.exits) == 0:
+        estring = "There are no obvious exits."
+    
+    tuser.send("%s\n" %estring)
+    
         
     # list items here
     ilist = troom.getItems()
@@ -215,69 +211,14 @@ def doLookCurrentRoom(tuser):
     croom = getCurrentRoom(tuser)
     doLookRoom(tuser, croom)
 
-def doMove(tuser, cdict):
-    # get direction value (0=north, 1=south, etc..)
-    tdir = cdict["dir"]
-
-    # get room of origin
-    oroom = getCurrentRoom(tuser)
-
-    # get zone of origin
-    ozone = getCurrentZone(tuser)
-
-    if oroom == None:
-        tuser.send("Error getting origin room, null!\n")
-        return
-
-    if ozone == None:
-        tuser.send("Error getting origin zone, null!\n")
-        return
-
-    # get destination room number
-    drnum = oroom.exits[tdir]
-
-    # if destination direction has no exit
-    if oroom.exits[tdir] == None:
-        tuser.send("No exit in that direction!\n")
-        return
-
-
-    # get destination zone number
-    dzonenum = tuser.char.getCurrentZone()
-    if tdir in oroom.zoneexits:
-        dzonenum = oroom.zoneexits[tdir]
+def doMove(tuser, rexit):
     
-    # check if destination zone exists
-    if dzonenum < 0 or dzonenum >= len(game.zones):
-        tuser.send("Error moving, destination zone #%d does not exist!\n" %dzonenum)
-        return
-
-    # check if destination room number is within range
-    if drnum < 0 or drnum >= len(game.zones[dzonenum].rooms):
-        tuser.send("Error moving, target room id#%dout of bounds!\n" %drnum)
-        return
-
-
-    # get destination zone
-    dzone = game.zones[dzonenum]
-
-    # get destination room
-    droom = dzone.getRoom(drnum)
-
-    # inform players in room of departure
-    broadcastToRoomEx(tuser, "%s leaves to the %s.\n" %(tuser.char.getName(), defs.DIRECTIONS[tdir]) )
-
-    # move player to destination room / zone
-    tuser.char.setCurrentZone(dzonenum)
-    tuser.char.setCurrentRoom(drnum)
-
-    # inform players in room of arrival
-    broadcastToRoomEx(tuser, "%s enters from the %s.\n" %(tuser.char.getName(), defs.DIRECTIONS[getOppositeDirection(tdir)]) )
-
-    # automatically do a room look
+    tuser.char.setCurrentRoom( rexit.getRoomNum() )
+    
+    if rexit.getZoneNum() != None:
+        tuser.char.setCurrentZone( rexit.getZoneNum() )
+    
     doLookCurrentRoom(tuser)
-
-
 
 def doSay(tuser, cdict, *argv):
     args = []
@@ -457,7 +398,7 @@ def doDrop(tuser, cdict, *argv):
     # item found, get it and add to player inventory, remove from list
     else:
         if not tuser.char.removeItem(titem):
-			return False
+            return False
         troom.addItem(titem)
         tuser.send("You drop the %s.\n" %titem.getName() )
 
@@ -467,21 +408,32 @@ def doDrop(tuser, cdict, *argv):
 
 #####################################################################
 if __name__ == "__main__":
-    import testuser
+    import testclient
     import zone
     import room
     import item
+    import character
 
-    tuser = testuser.TestUser()
-    game.clients = [tuser]
-    doquit = False
+    # init test mode
     defs.configTestMode()
 
+    # init user
+    tuser = testclient.TestClient()
+    tuser.char = character.Character()
+    game.clients = [tuser]
+    
+    doquit = False
+    
+    
+    # init items
+    item.loadItems()
+    
+    # init zones
     game.zones = []
     newzone = zone.Zone()
 
-    item.loadItems()
-
+    
+    # build test rooms
     newroom = room.Room()
     newroom.name = "Bathroom"
     newroom.desc = ["You are standing in a cramped dingy bathroom that smells of ",
@@ -489,27 +441,24 @@ if __name__ == "__main__":
                     "damage. A sink hangs precariously from the wall."]
     newroom.desc = "".join(newroom.desc)
     newroom.descriptors.update( {"sink":"The sink is layed with years of soap scum."})
-    newroom.exits[0] = 1
     newroom.addNewItem("sword")
     newroom.inventory[-1].properties.update( {"desc":"A plain long sword."})
+    newroom.addExit("north", 1)
     
     newzone.addRoom(newroom)
     newroom = room.Room()
     newroom.name = "Bedroom"
     newroom.desc = "This bedroom makes you uncomfortable."
+    newroom.addExit("south",0)
     newzone.addRoom(newroom)
-    newroom.exits[1] = 0
-    newroom.exits[2] = 0
-    newroom.zoneexits.update({2:1})
     game.zones.append(newzone)
+    
     
     
     newzone2 = zone.Zone()
     newroom = room.Room()
     newroom.name = "Outside"
     newroom.desc = "It's beautiful out here!"
-    newroom.exits[3] = 1
-    newroom.zoneexits.update({3:0})
     newzone2.addRoom(newroom)
     game.zones.append(newzone2)
     
@@ -592,7 +541,7 @@ if __name__ == "__main__":
 
         # if no valid command was found
         if tcmd == None:
-            tuser.send("Invalid command!\n")
+            tuser.send("ERROR\n")
         # if only one command was found, execute
         elif len(tcmd) == 1:
             tcmd[0].execute(tuser,cmds[1:])

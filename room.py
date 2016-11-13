@@ -3,6 +3,7 @@ from tools import *
 import defs
 import game
 import command
+import roomexit
 
 class Room(object):
     def __init__(self):
@@ -10,14 +11,7 @@ class Room(object):
         self.desc = "no description"
         self.descriptors = {}
         self.exits = []
-        self.zoneexits = {}
         self.inventory = []
-        for a in range(0, len(defs.DIRECTIONS) ):
-            self.exits.append(None)
-        
-    
-    def test(self):
-        print "test"
     
     def getAllClients(self):
         
@@ -82,6 +76,72 @@ class Room(object):
         except:
             print "Error removing item from inventory"
     
+    def addExit(self, exitname, roomnum, zonenum = None):
+        
+        # if zone num provided, check zone num is valid
+        if zonenum != None:
+            if zonenum < 0 or zonenum >= len(game.zones):
+                print "Error adding exit to room, zone num %d out of range!" %zonenum
+                return False
+        
+        newexit = roomexit.RoomExit(exitname, roomnum, zonenum)
+        
+        # check if room already has an exit by this name
+        for e in self.exits:
+            if e.getName() == exitname:
+                print "Error adding exit to room, exit with name %s already exists!" %exitname
+                return False
+        
+        # add new exit to room
+        self.exits.append(newexit)
+        
+        return True
+        
+    def removeExit(self, exitname):
+        
+        # check if room exit by name exists
+        for e in self.exits:
+            if e.getName() == name:
+                self.exits.remove(e)
+                return True
+        
+        return False
+    
+    def isExit(self, exitname):
+        
+        # hardcode directional aliases for common dirs
+        if exitname == "n":
+            exitname = "north"
+        elif exitname == "s":
+            exitname = "south"
+        elif exitname == "e":
+            exitname = "east"
+        elif exitname == "w":
+            exitname = "west"
+        
+        # check if string is an exit string
+        for e in self.exits:
+            if e.getName() == exitname:
+                return True
+        return False
+        
+    def getExit(self, exitname):
+
+        # hardcode directional aliases for common dirs
+        if exitname == "n":
+            exitname = "north"
+        elif exitname == "s":
+            exitname = "south"
+        elif exitname == "e":
+            exitname = "east"
+        elif exitname == "w":
+            exitname = "west"		
+		
+        for e in self.exits:
+            if e.getName() == exitname:
+                return e
+        return None
+    
     def show(self):
         print "Name:" + self.name
         print "Desc:" + self.desc
@@ -94,14 +154,14 @@ class Room(object):
                 print "%s:%s" %(d, self.descriptors[d])
         
         print "Exits:"
-        for a in range(0, len(defs.DIRECTIONS) ):
-            if self.exits[a] == None:
-                print "%s:%s" % (defs.DIRECTIONS[a], "None")
-            else:
-                if a in self.zoneexits.keys():
-                    print "%s:%d (ZONE EXIT)" % (defs.DIRECTIONS[a], self.exits[a])
+        if len(self.exits) != 0:
+            for e in self.exits:
+                if e.getZoneNum() != None:
+                    print "%s = %d (ZONE %d)" %(e.getName(), e.getRoom(), e.getZoneNum())
                 else:
-                    print "%s:%d" % (defs.DIRECTIONS[a], self.exits[a])
+                    print "%s = %d" %(e.getName(), e.getRoomNum())
+        else:
+            print "No exits!"
     
         
         
@@ -119,13 +179,14 @@ if __name__ == "__main__":
     room1 = Room()
     room1.name = "Bathroom"
     room1.desc = "This is a bathroom that has a sink."
-    room1.exits[1] = 1
     room1.descriptors.update({"sink":"It's just a plain old sink."})
+    room1.addExit("north", 1)
+    room1.show()
     
     room2 = Room()
     room2.name = "Living Room"
     room2.desc = "Spacious living room."
-    room2.exits[0] = 0
+    room2.addExit("south", 0)
     
     myzone.addRoom(room1)
     myzone.addRoom(room2)

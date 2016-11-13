@@ -3,6 +3,7 @@ import room
 import defs
 import game
 import command
+import roomexit
 from tools import *
 
 class Zone(object):
@@ -113,26 +114,36 @@ class Zone(object):
                                 setattr(rooms[-1], key, val)
                             elif key in dint:
                                 setattr(rooms[-1], key, int(val))   
-                            elif key == "exits":
-                                elist = val.split(",")
-                                for e in range(0, len(elist)):
-                                    if elist[e] == "-1":
-                                        rooms[-1].exits[e] = None
-                                    else:
-                                        rooms[-1].exits[e] = int(elist[e])
+                            elif key == "exit":
+                                
+                                # find exit name
+                                edlim = val.find(',')
+                                ename = val[:edlim]
+                                
+                                # find room num
+                                val = val[edlim+1:]
+                                edlim = val.find(',')
+                                eroomnum = val[:edlim]
+                                
+                                # find zone num
+                                val = val[edlim+1:]
+                                ezonenum = val
+                                if val == "None":
+                                    ezonenum = None
+                                else:
+                                    ezonenum = int(val)
+                                
+                                newexit = roomexit.RoomExit(ename, eroomnum, ezonenum)
+                                
+                                rooms[-1].exits.append(newexit)
+                                
                             elif key == "descriptors":
                                 dfind = val.find(':')
                                 dkey = val[0:dfind]
                                 dval = val[dfind+1:]
                                 rooms[-1].descriptors.update({dkey, dval})
                             elif key == "additem":
-                                rooms[-1].addNewItem(val)
-                            elif key.startswith("zoneexits"):
-                                zefind = key.find(':')
-                                zexit = int(key[:zefind])
-                                znum = int(key[zefind+1:])
-                                rooms[-1].zoneexits.update({zexit:znum})
-                                    
+                                rooms[-1].addNewItem(val)                                    
 
                 else:
                     f.close()   
@@ -173,20 +184,13 @@ class Zone(object):
                 ofile.write("descriptor:%s:%s\n" %(d, room.descriptors[d]))
             
             #save exits
-            ofile.write("exits:")
-            for e in range(0, len(room.exits) ):
-                delim = ","
-                if e is len(room.exits)-1:
-                    delim = ""
-                if room.exits[e] == None:
-                    ofile.write("-1" + delim)
+            for e in room.exits:
+                # save room exit with zone number
+                if e.getZoneNum() != None:
+                    ofile.write("exit:%s,%d,%d\n" %(e.getName(), e.getRoomNum(), e.getZoneNum()) )
+                # save room exit without zone number
                 else:
-                    ofile.write("%d%s" %(room.exits[e], delim) )
-            ofile.write("\n")
-            
-            #save zone exits
-            for ze in room.zoneexits.keys():
-                ofile.write("zoneexit:%d:%d\n" %(ze, room.zoneexits[ze]) )
+                    ofile.write("exit:%s,%d,None\n" %(e.getName(), e.getRoomNum()) )
             
             #save items
             for i in room.inventory:
@@ -202,6 +206,9 @@ def loadZones():
      
     zf = defs.ZONES_INDEX_FILE
     
+    #debug
+    #print "loading zone index file : %s" %zf
+    
     game.zones = []
     
     zonefiles = []
@@ -212,11 +219,17 @@ def loadZones():
         
         #read in index files
         with open(zf, "r") as f:
-            line = f.readline()
             
-            if line != "":
-                line = line[:-1]
-                zonefiles.append(line)
+            for line in f:
+				
+				# trim new line
+				if line[-1] == '\n':
+					line = line[:-1]
+				
+				# if line isn't blank, add it to zonefile list
+				if line != "":
+					#print line
+					zonefiles.append(line)
             
         f.close()
                 
