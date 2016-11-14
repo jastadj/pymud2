@@ -84,6 +84,10 @@ if __name__ == "__main__":
     game.ITEM = item.Item
     item.loadItems()
 
+    # load mobs
+    mob.loadMobs()
+    print "LOADED %d MOBS" %len(game.mobs)
+    
     # load zones
     zone.loadZones()
         

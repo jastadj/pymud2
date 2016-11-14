@@ -12,7 +12,8 @@ class Room(object):
         self.descriptors = {}
         self.exits = []
         self.inventory = []
-    
+        self.mobs = []
+        
     def getAllClients(self):
         
         znum = None
@@ -41,6 +42,46 @@ class Room(object):
             print "No users found in room"
         
         return ulist    
+    
+    
+    def hasMob(self, tmob):
+        if tmob in self.mobs:
+            return True
+        else:
+            return False
+    
+    def getMobs(self):
+        return self.mobs
+        
+    def addMob(self, tmob):
+        if tmob == None:
+            print "Error adding mob to room, mob is null!"
+            return False
+        
+        try:
+            self.mobs.append(tmob)
+        except:
+            print "Error adding mob to room!"
+            return False
+    
+    def addNewMob(self, mstring):
+        newmob = command.getNewMob(mstring)
+        
+        if newmob != None:
+            self.mobs.append(newmob)
+        else:
+			print "ERROR ADDING NEW MOB"
+            
+    def removeMob(self, tmob):
+        
+        if tmob != None:
+            print "Error removing mob from room, mob is null!"
+            return False
+        
+        try:
+            self.mobs.remove(tmob)
+        except:
+            print "Error removing mob from room!"
     
     def hasItem(self, titem):
         if titem in self.inventory:
@@ -135,8 +176,8 @@ class Room(object):
         elif exitname == "e":
             exitname = "east"
         elif exitname == "w":
-            exitname = "west"		
-		
+            exitname = "west"       
+        
         for e in self.exits:
             if e.getName() == exitname:
                 return e
@@ -146,7 +187,8 @@ class Room(object):
         print "Name:" + self.name
         print "Desc:" + self.desc
         print "%d items" %len(self.inventory)
-        print "Descriptors:"
+        print "%d mobs" %len(self.mobs)
+        print "Descriptors:%d" %len(self.descriptors.keys())
         if len(self.descriptors.keys()) == 0:
             print "None"
         else:
@@ -157,7 +199,7 @@ class Room(object):
         if len(self.exits) != 0:
             for e in self.exits:
                 if e.getZoneNum() != None:
-                    print "%s = %d (ZONE %d)" %(e.getName(), e.getRoom(), e.getZoneNum())
+                    print "%s = %d (ZONE %d)" %(e.getName(), e.getRoomNum(), e.getZoneNum())
                 else:
                     print "%s = %d" %(e.getName(), e.getRoomNum())
         else:

@@ -193,8 +193,15 @@ def doLookRoom(tuser, troom):
     for i in ilist:
         tuser.send("    %s %s\n" %(i.getArticle(), i.getDescName()) )
         
-    # list players here
-    ulist = troom.getAllClients()
+    # list players and mobs here
+    # get player chars
+    ulistprime = troom.getAllClients()
+    ulist = []
+    for uprime in ulistprime:
+        ulist.append(uprime.char)
+    # get mob names
+    ulist += troom.getMobs()
+    # calc string
     ustr = ""
     ucount = len(ulist)
     for u in ulist:
@@ -210,18 +217,35 @@ def doLookRoom(tuser, troom):
         tuser.send("%s\n" %ustr)
 
 def doLookCurrentRoom(tuser):
+    
     croom = getCurrentRoom(tuser)
+
+    # debug
+    print "DEBUG:"
+    croom.show()    
+    
     doLookRoom(tuser, croom)
+
+def actorMove(tactor, rexit):
+    
+    # set actors current room to exit's room number
+    tactor.setCurrentRoom( rexit.getRoomNum() )
+    
+    # if exit's zone number is specified, set actors zone number
+    if rexit.getZoneNum() != None:
+        tactor.setCurrentZone( rexit.getZoneNum() )
 
 def doMove(tuser, rexit):
     
-    tuser.char.setCurrentRoom( rexit.getRoomNum() )
+    # move user's character
+    actorMove(tuser.char, rexit)
     
-    if rexit.getZoneNum() != None:
-        tuser.char.setCurrentZone( rexit.getZoneNum() )
-    
+    # by default, do a look room command for player
     doLookCurrentRoom(tuser)
 
+def actorSay(tactor, saystr):
+    pass
+    
 def doSay(tuser, cdict, *argv):
     args = []
     if argv[0] == None:
@@ -320,7 +344,6 @@ def findItemInList(idesc, ilist):
         return None
     else:
         #print "found item:%s" %foundlist[0].getName()
-        # make copy of item and return
         return foundlist[0]
 
 def findItemsInList(idesc, ilist):
@@ -351,6 +374,9 @@ def doShowInventory(tuser, cdict):
     else:
         for i in titems:
             tuser.send("    %s %s\n" %(i.getArticle(),i.getDescName()) )
+
+def actorGet(tactor, getstr):
+    pass
 
 def doGet(tuser, cdict, *argv):
     args = []
@@ -387,6 +413,8 @@ def doGet(tuser, cdict, *argv):
         
         broadcastToRoomEx(tuser, "%s takes a %s.\n" %(tuser.char.getName(), titems[0].getDescName()) )
         
+def actorDrop(tactor, dropstr):
+    pass
 
 def doDrop(tuser, cdict, *argv):
     args = []
@@ -427,6 +455,41 @@ def doDrop(tuser, cdict, *argv):
         broadcastToRoomEx(tuser, "%s drops a a %s.\n" %(tuser.char.getName(), titems[0].getDescName()) )
         
         return True
+
+def getNewMob(mdesc):
+    
+    tmob = findMobInList(mdesc, game.mobs)
+    
+    if tmob != None:
+        return copy.copy(tmob)
+    else:
+        return None
+
+def findMobInList(mdesc, mlist):
+    
+    ids = mdesc.split()
+    
+    mname = ids[-1]
+    
+    foundlist = []
+    
+    for m in mlist:
+        if m.getName() == mname:
+            foundlist.append(m)
+    
+    if len(foundlist) == 0:
+        #print "Could not find mob with \"%s\"" %mdesc
+        return None
+    
+    elif len(foundlist) > 1:
+        print "Multiple mobs of this name found:"
+        for m in foundlist:
+            print m.getName()
+        #NOT IMPLEMENTED YET, NEED TO CHECK OTHER IDS
+        return None
+    else:
+        #print "found mob:%s" %foundlist[0].getName()
+        return foundlist[0]
 
 #####################################################################
 if __name__ == "__main__":

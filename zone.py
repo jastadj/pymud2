@@ -187,13 +187,15 @@ class Zone(object):
                                 
                                 rooms[-1].exits.append(newexit)
                                 
-                            elif key == "descriptors":
+                            elif key == "descriptor":
                                 dfind = val.find(':')
                                 dkey = val[0:dfind]
                                 dval = val[dfind+1:]
-                                rooms[-1].descriptors.update({dkey, dval})
+                                rooms[-1].descriptors.update({dkey:dval})
                             elif key == "additem":
                                 rooms[-1].addNewItem(val)
+                            elif key == "addmob":
+								rooms[-1].addNewMob(val)
                     
                     # read in item lines
                     elif readmode == 1:
