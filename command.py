@@ -147,18 +147,20 @@ def doLook(tuser, cdict, *argv):
         tuser.send("%s\n" %troom.descriptors[monoarg])
         return
 
+    titems = None
     
     # check items in room
-    for i in troom.getItems():
-        if i.descMatches(monoarg):
-            tuser.send("%s\n" %i.getDesc())
-            return
-    
+    titems = findItemsInList(monoarg, troom.getItems())
+    if titems != None:
+        tuser.send("%s\n" %titems[0].getDesc() )
+        return
+
     # check items in inventory
-    for i in tuser.char.getItems():
-        if i.descMatches(monoarg):
-            tuser.csend("%s\n" %i.getDesc())
-            return    
+    titems = findItemsInList(monoarg, tuser.char.getInventory())
+    if titems != None:
+        tuser.send("%s\n" %titems[0].getDesc())
+        return
+  
     tuser.send("You do not see that here.\n")
 
 
@@ -321,6 +323,24 @@ def findItemInList(idesc, ilist):
         # make copy of item and return
         return foundlist[0]
 
+def findItemsInList(idesc, ilist):
+    ids = idesc.split()
+    
+    iname = ids[-1]
+    
+    foundlist = []
+    
+    for i in ilist:
+        if i.getName() == iname:
+            foundlist.append(i)
+    
+    if len(foundlist) == 0:
+        #print "Could not find item with \"%s\"" %idesc
+        return None
+    
+    else:
+        return foundlist
+
 def doShowInventory(tuser, cdict):
     tuser.send("You are carring:\n")
     tuser.send("----------------\n")
@@ -355,17 +375,17 @@ def doGet(tuser, cdict, *argv):
     ritems = troom.getItems()
 
     # look for item
-    titem = findItemInList(monoarg, ritems)
+    titems = findItemsInList(monoarg, ritems)
     
-    if titem == None:
+    if titems == None:
         tuser.send("You do not see that here.\n")
     # item found, get it and add to player inventory, remove from list
     else:
-        troom.removeItem(titem)
-        tuser.char.addItem(titem)
-        tuser.send("You take the %s.\n" %titem.getDescName() )
+        troom.removeItem(titems[0])
+        tuser.char.addItem(titems[0])
+        tuser.send("You take the %s.\n" %titems[0].getDescName() )
         
-        broadcastToRoomEx(tuser, "%s takes a %s.\n" %(tuser.char.getName(), titem.getDescName()) )
+        broadcastToRoomEx(tuser, "%s takes a %s.\n" %(tuser.char.getName(), titems[0].getDescName()) )
         
 
 def doDrop(tuser, cdict, *argv):
@@ -391,20 +411,20 @@ def doDrop(tuser, cdict, *argv):
     pitems = tuser.char.getInventory()
 
     #look for item
-    titem = findItemInList(monoarg, pitems)
+    titems = findItemsInList(monoarg, pitems)
     
     
-    
-    if titem == None:
+    if titems == None:
         tuser.send("You are not carrying that!\n")
     # item found, get it and add to player inventory, remove from list
     else:
-        if not tuser.char.removeItem(titem):
+        if not tuser.char.removeItem(titems[0]):
+            print "Error removing item, not on character!"
             return False
-        troom.addItem(titem)
-        tuser.send("You drop the %s.\n" %titem.getName() )
+        troom.addItem(titems[0])
+        tuser.send("You drop the %s.\n" %titems[0].getName() )
 
-        broadcastToRoomEx(tuser, "%s drops a a %s.\n" %(tuser.char.getName(), titem.getDescName()) )
+        broadcastToRoomEx(tuser, "%s drops a a %s.\n" %(tuser.char.getName(), titems[0].getDescName()) )
         
         return True
 

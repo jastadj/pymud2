@@ -10,6 +10,8 @@ import command
 import game
 import handler
 import character
+import weapon
+import armor
 
 import login
 
@@ -66,6 +68,8 @@ class Server(object):
 		print "%d accounts loaded." %len(game.credentials)
 		
 		# load common items
+		game.WEAPON = weapon.Weapon
+		game.ARMOR = armor.Armor
 		item.loadItems()
 		print "%d items loaded." % len(game.items)
 		

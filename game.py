@@ -4,6 +4,8 @@ import defs
 ROOM = None
 ZONE = None
 ITEM = None
+WEAPON = None
+ARMOR = None
 COMMAND = None
 COMMAND_SET = None
 CHARACTER = None

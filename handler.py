@@ -54,6 +54,8 @@ if __name__ == "__main__":
     import zone
     import command
     import character
+    import weapon
+    import armor
     
     # load test configuration
     defs.configTestMode()
@@ -75,6 +77,9 @@ if __name__ == "__main__":
     game.processnoncmd = command.processNonCommand
     
     # load items
+    game.WEAPON = weapon.Weapon
+    game.ARMOR = armor.Armor
+    game.ITEM = item.Item
     item.loadItems()
 
     # load zones
