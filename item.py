@@ -47,7 +47,13 @@ class Item(object):
         self.adjectives.append(astr)
     
     def getDescName(self):
-        dstr = " ".join(self.adjectives) + " " + self.getName()
+        dstr = ""
+        
+        if len(self.adjectives) != 0:
+            dstr = " ".join(self.adjectives) + " " + self.getName()
+        else: 
+            dstr = self.getName()
+            
         return dstr
     
     def getName(self):

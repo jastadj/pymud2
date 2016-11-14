@@ -12,6 +12,7 @@ import handler
 import character
 import weapon
 import armor
+import mob
 
 import login
 
@@ -62,6 +63,7 @@ class Server(object):
 		game.COMMAND = command.Command
 		game.COMMAND_SET = command.CommandSet
 		game.CHARACTER = character.Character
+		game.MOB = mob.Mob
 		
 		# load credentials
 		credential.loadCredentials()

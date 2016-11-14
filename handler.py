@@ -56,6 +56,7 @@ if __name__ == "__main__":
     import character
     import weapon
     import armor
+    import mob
     
     # load test configuration
     defs.configTestMode()
@@ -68,6 +69,7 @@ if __name__ == "__main__":
     game.COMMAND = command.Command
     game.COMMAND_SET = command.CommandSet
     game.CHARACTER = character.Character
+    game.MOB = mob.Mob
 
     # load credentials
     credential.loadCredentials()
@@ -115,6 +117,9 @@ if __name__ == "__main__":
 
     print "Disconnecting and saving character..."
     tuser.disconnect()
+    
+    #print "Saving zones..."
+    #zone.saveZones()
     
     print "saving credentials..."
     credential.saveCredentials()

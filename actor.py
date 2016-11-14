@@ -4,6 +4,7 @@ class Actor(object):
 	def __init__(self):
 		self.sproperties = {"name":"unnamed", "desc":"nodesc"}
 		self.iproperties = {}
+		self.bproperties = {}
 		self.inventory = []
 
 	def getName(self):

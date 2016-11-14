@@ -4,6 +4,7 @@ import defs
 import game
 import command
 import roomexit
+import item
 from tools import *
 
 class Zone(object):
@@ -13,7 +14,7 @@ class Zone(object):
     def __init__(self):
         self.rooms = []
         self.zonefile = None
-        
+        self.items = []
         
     def addRoom(self, troom):
         if troom == None:
@@ -90,7 +91,10 @@ class Zone(object):
             # open file for reading
             ifile = open(fp, 'r')
             
+            # read mode, 0 = room lines, 1 = itemlines
+            readmode = 0
             
+            itemlines = []
             
             with open(fp, 'r') as f:
                 for line in f:
@@ -101,10 +105,56 @@ class Zone(object):
 
                     # object entry found, create new
                     if ln == "ROOM:":
+                        
+                        # if was previously reading in item lines
+                        # note: this really shouldn't happen, all items
+                        #       should be read in first
+                        if readmode == 1:
+                            
+                            # if there are item lines to process
+                            if len(itemlines) != 0:
+                                
+                                # create new item from item lines
+                                newitem = item.loadItemFromStrings(itemlines)
+                                
+                                # if new item was created, add to zone items
+                                if newitem != None:
+                                    self.items.append(newitem)
+                                    # add new zone items to master items list
+                                    game.items += self.items                                    
+                                else:
+                                    print "Error loading new item from zone"
+                                # reset item lines
+                                itemlines = []
+                            # set readmode to read in room lines
+                            readmode = 0
+                        
+                        # create new room
                         rooms.append(room.Room())
                     
-                    # look for obj attributes
-                    else:
+                    elif ln == "ITEM:":
+                        # change read mode to items
+                        readmode = 1
+                        
+                        # if there are item lines to process
+                        if len(itemlines) != 0:
+                            
+                            # create new item from item lines
+                            newitem = item.loadItemFromStrings(itemlines)
+                            
+                            # if new item was created, add to zone items
+                            if newitem != None:
+                                self.items.append(newitem)
+                                # add new zone items to master items list
+                                game.items += self.items                                
+                            else:
+                                print "Error loading new item from zone"
+                            
+                            # reset item lines
+                            itemlines = []
+                        
+                    # read in room lines
+                    elif readmode == 0:
                         sfind = ln.find(':')
                         if sfind >= 0:
                             key = ln[0:sfind]
@@ -143,12 +193,30 @@ class Zone(object):
                                 dval = val[dfind+1:]
                                 rooms[-1].descriptors.update({dkey, dval})
                             elif key == "additem":
-                                rooms[-1].addNewItem(val)                                    
-
-                else:
-                    f.close()   
+                                rooms[-1].addNewItem(val)
                     
-                    self.rooms = rooms
+                    # read in item lines
+                    elif readmode == 1:
+                        itemlines.append(ln)
+
+                # done reading in file
+                f.close()   
+                
+                self.rooms = rooms
+                
+                # if there are item lines to process
+                if len(itemlines) != 0:
+                    # create new item from item lines
+                    newitem = item.loadItemFromStrings(itemlines)
+                    
+                    # if new item was created, add to zone items
+                    if newitem != None:
+                        self.items.append(newitem)
+                    else:
+                        print "Error loading new item from zone"
+                        
+                    # reset item lines
+                    itemlines = []                  
                 
         else:
             print "%s zone file does not exist!" % fp
@@ -170,9 +238,16 @@ class Zone(object):
         # open file for writing
         ofile = open(fp, 'w')
         
-        # write to file
+        # write zone items first
+        for titem in self.items:
+            itemlines = item.saveItemToStrings(titem)
+            
+            for iline in itemlines:
+                ofile.write(iline)
+                
+        # write room data to file
         for room in self.rooms:
-            ofile.write("\n")
+            #ofile.write("\n")
             ofile.write("ROOM:\n")
             
             # save basic info
@@ -221,15 +296,15 @@ def loadZones():
         with open(zf, "r") as f:
             
             for line in f:
-				
-				# trim new line
-				if line[-1] == '\n':
-					line = line[:-1]
-				
-				# if line isn't blank, add it to zonefile list
-				if line != "":
-					#print line
-					zonefiles.append(line)
+                
+                # trim new line
+                if line[-1] == '\n':
+                    line = line[:-1]
+                
+                # if line isn't blank, add it to zonefile list
+                if line != "":
+                    #print line
+                    zonefiles.append(line)
             
         f.close()
                 
