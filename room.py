@@ -65,6 +65,7 @@ class Room(object):
             return False
     
     def addNewMob(self, mstring):
+		
         newmob = command.getNewMob(mstring)
         
         if newmob != None:

@@ -161,6 +161,12 @@ def doLook(tuser, cdict, *argv):
         tuser.send("%s\n" %titems[0].getDesc())
         return
   
+	# check mobs in room
+	tmobs = findMobsInList(monoarg, troom.getMobs())
+	if tmobs != None:
+		tuser.send("%s\n" %tmobs[0].getDesc())
+		return
+		
     tuser.send("You do not see that here.\n")
 
 
@@ -194,27 +200,10 @@ def doLookRoom(tuser, troom):
         tuser.send("    %s %s\n" %(i.getArticle(), i.getDescName()) )
         
     # list players and mobs here
-    # get player chars
-    ulistprime = troom.getAllClients()
-    ulist = []
-    for uprime in ulistprime:
-        ulist.append(uprime.char)
-    # get mob names
-    ulist += troom.getMobs()
-    # calc string
-    ustr = ""
-    ucount = len(ulist)
-    for u in ulist:
-        if u != tuser:
-            if ucount == 2:
-                ustr += "%s is here." %u.getName()
-            else:
-                if u == ulist[-1]:
-                    ustr += " and %s is here." %u.getName()
-                else:
-                    ustr += "%s," %u.getname()
-    if ucount > 1:
-        tuser.send("%s\n" %ustr)
+    charlist = []
+    charlist += troom.getMobs()
+    for m in charlist:
+		tuser.send("%s is here.\n" %m.getName())
 
 def doLookCurrentRoom(tuser):
     
@@ -464,6 +453,25 @@ def getNewMob(mdesc):
         return copy.copy(tmob)
     else:
         return None
+
+def findMobsInList(mdesc, mlist):
+    
+    ids = mdesc.split()
+    
+    mname = ids[-1]
+    
+    foundlist = []
+    
+    for m in mlist:
+        if m.getName() == mname:
+            foundlist.append(m)
+    
+    if len(foundlist) == 0:
+        #print "Could not find mob with \"%s\"" %mdesc
+        return None
+    
+    else:
+		return foundlist
 
 def findMobInList(mdesc, mlist):
     

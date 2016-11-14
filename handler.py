@@ -108,7 +108,6 @@ if __name__ == "__main__":
     game.clients.append(tuser)
 
     doquit = False
-
     
     while not doquit:
         
