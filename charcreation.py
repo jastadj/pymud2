@@ -19,7 +19,7 @@ def charCreation(tuser):
             tuser.credential.characterfile = tuser.credential.accountname
             
             # for now just set character name to account name
-            tuser.char.setName(tuser.credentials.accountname)
+            tuser.char.setName(tuser.credential.accountname)
             
             # save character
             character.saveCharacter(tuser.char, tuser.credential.characterfile)
