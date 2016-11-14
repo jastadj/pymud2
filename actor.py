@@ -1,3 +1,4 @@
+import command
 
 class Actor(object):
 	def __init__(self):
@@ -27,7 +28,14 @@ class Actor(object):
 		try:
 			self.inventory.append(titem)
 		except:
-			print "Error adding item to %s inventory!" %self.getName()
+			print "Error adding item to %s inventory!" %self.getName()	
+	
+	def addNewItem(self, idesc):
+		newitem = command.getNewItem(idesc)
+		if newitem != None:
+			self.addItem(newitem)
+		else:
+			print "Error adding new item to character, item not found"
 
 	def removeItem(self, titem):
 		

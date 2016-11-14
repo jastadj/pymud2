@@ -108,6 +108,7 @@ if __name__ == "__main__":
         if tuser.getLastInput() == "quit":
             doquit = True
 
+    print "Disconnecting and saving character..."
     tuser.disconnect()
     
     print "saving credentials..."

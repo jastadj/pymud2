@@ -53,6 +53,9 @@ def saveCharacter(tchar, tfile):
 	
 	for i in tchar.iproperties:
 		f.write("%s:%d\n" %(i, tchar.iproperties[i]) )
+		
+	for i in tchar.getInventory():
+		f.write("additem:%s\n" %i.getDescName())
 	
 	f.close()
 	
@@ -85,6 +88,8 @@ def loadCharacter(tfile):
 			
 			elif key in newcharacter.iproperties:
 				newcharacter.iproperties[key] = int(val)
+			elif key == "additem":
+				newcharacter.addNewItem(val)
 	f.close()
 	
 	return newcharacter

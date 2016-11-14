@@ -22,6 +22,12 @@ class Client(object):
 		self.tempvars = {}
 		self.last_input = ""
 	
+	def getAccountName(self):
+		if self.credential != None:
+			return self.credential.accountname
+		else:
+			return None
+	
 	def getIP(self):
 		if self.ip != None:
 			return self.ip
@@ -98,14 +104,17 @@ class Client(object):
 		return None
 	
 	def disconnect(self):
-		if self.socket == None:
-			return
-		#close socket
-		self.socket.close()
+		
+		# close socket
+		if self.socket != None:
+			self.socket.close()
 		
 		# save character
 		if self.credential.characterfile != None:
+			print "Saving character %s to %s" %(self.char.getName() , self.credential.characterfile)
 			character.saveCharacter(self.char, self.credential.characterfile)
+		else:
+			print "%s's character %s : character file is null" %(self.credential.accountname, self.char.getName())
 		
 if __name__ == "__main__":
 	

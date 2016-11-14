@@ -393,6 +393,8 @@ def doDrop(tuser, cdict, *argv):
     #look for item
     titem = findItemInList(monoarg, pitems)
     
+    
+    
     if titem == None:
         tuser.send("You are not carrying that!\n")
     # item found, get it and add to player inventory, remove from list
