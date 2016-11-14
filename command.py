@@ -3,9 +3,6 @@ from tools import *
 import copy
 import defs
 
-def commandError(tuser, cdict):
-    tuser.send("Unrecognized command!\n")
-
 class Command(object):
     def __init__(self, name, helpstr, fptr, hasargs = False):
         self.cdict = {"name":name,
@@ -38,10 +35,14 @@ class CommandSet(object):
     def __init__(self):
         self.commands = []
         self.aliases = {}
-
+		self.invalidFunction = None
+		
     def add(self, name, helpstr, fptr, hasargs = False):
         self.commands.append( Command(name, helpstr, fptr, hasargs) )
 
+	def setInvalidFunction(self, func):
+		self.invalidFunction = func
+		
     def count(self):
         return len(self.commands)
 
@@ -49,6 +50,9 @@ class CommandSet(object):
         tcmds = self.getCommand(cstr)
         tcmds[0].execute(tuser, argv)
     
+	def getInvalidFunction(self):
+		return self.invalidFunction
+	
     def getCommand(self, cstr):
         foundcmds = []
 
@@ -89,8 +93,10 @@ def initMainCommands():
 
     return cs
 
-def processNonCommand(tuser, cstr):
+def mainGameInvalid(tuser):
     
+	cstr = tuser.getLastInput()
+	
     # check to see if noncmd is actually an exit
     troom = getCurrentRoom(tuser)
     
@@ -99,7 +105,7 @@ def processNonCommand(tuser, cstr):
         return True
     
     return False
-
+	
 #####################################################################
 ##      COMMANDS
 

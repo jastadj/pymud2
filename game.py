@@ -19,9 +19,6 @@ clients = None
 items = None
 items_common = None
 
-# function refs
-processnoncmd = None
-
 # main
 def mainGame(tuser):
     
@@ -40,8 +37,7 @@ def mainGame(tuser):
                 
                 # no valid command found
                 if tcmd == None:
-					if not processnoncmd(tuser, tuser.getLastInput()):
-						tuser.send("Invalid command!\n")
+					cmds_main.getInvalidFunction()(tuser)
                 # exactly one command found, execute
                 elif len(tcmd) == 1:
                     tcmd[0].execute(tuser, cmds[1:])

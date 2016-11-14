@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
     # load commands
     game.cmds_main = command.initMainCommands()
-    game.processnoncmd = command.processNonCommand
+    game.cmds_main.setInvalidFunction( command.mainGameInvalid )
     
     # load items
     game.WEAPON = weapon.Weapon
