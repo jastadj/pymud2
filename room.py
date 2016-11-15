@@ -72,7 +72,7 @@ class Room(object):
     
     def addNewMob(self, mstring):
 		
-        newmob = command.getNewMob(mstring)
+        newmob = command.newMob(mstring)
         
         if newmob != None:
             self.mobs.append(newmob)

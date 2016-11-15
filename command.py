@@ -141,6 +141,9 @@ def doLook(tuser, cdict, *argv):
         for a in argv[0]:
             args.append(a)
 
+    # remove the word "at"
+    if "at" in args: args.remove("at")
+            
     # get a string from args
     monoarg = " ".join(args)
 
@@ -160,19 +163,19 @@ def doLook(tuser, cdict, *argv):
     # check items in room
     titems = findItemsInList(monoarg, troom.getItems())
     if titems != None:
-        tuser.send("%s\n" %titems[0].getDesc() )
+        tuser.send("%s\n" %titems[0].getDescription() )
         return
 
     # check items in inventory
     titems = findItemsInList(monoarg, tuser.char.getInventory())
     if titems != None:
-        tuser.send("%s\n" %titems[0].getDesc())
+        tuser.send("%s\n" %titems[0].getDescription())
         return
   
     # check mobs in room
     tmobs = findMobsInList(monoarg, troom.getMobs())
     if tmobs != None:
-        tuser.send("%s\n" %tmobs[0].getDesc())
+        tuser.send("%s\n" %tmobs[0].getDescription())
         return
         
     tuser.send("You do not see that here.\n")
@@ -211,7 +214,7 @@ def doLookRoom(tuser, troom):
     charlist = []
     charlist += troom.getMobs()
     for m in charlist:
-        tuser.send("%s is here.\n" %m.getName())
+        tuser.send("    %s is here.\n" %m.getExName())
 
 def doLookCurrentRoom(tuser):
     
@@ -319,14 +322,11 @@ def newItem(idesc):
         return None
 
 def findItemInList(idesc, ilist = game.items):
-    ids = idesc.split()
-    
-    iname = ids[-1]
     
     foundlist = []
     
     for i in ilist:
-        if i.getName() == iname:
+        if i.noun.hasMatch(idesc):
             foundlist.append(i)
     
     if len(foundlist) == 0:
@@ -344,14 +344,11 @@ def findItemInList(idesc, ilist = game.items):
         return foundlist[0]
 
 def findItemsInList(idesc, ilist = game.items):
-    ids = idesc.split()
-    
-    iname = ids[-1]
     
     foundlist = []
     
     for i in ilist:
-        if i.getName() == iname:
+        if i.noun.hasMatch(idesc):
             foundlist.append(i)
     
     if len(foundlist) == 0:
@@ -486,7 +483,7 @@ def doDrop(tuser, cdict, *argv):
         
         return True
 
-def getNewMob(mdesc):
+def newMob(mdesc):
     
     tmob = findMobInList(mdesc, game.mobs)
     
@@ -495,16 +492,12 @@ def getNewMob(mdesc):
     else:
         return None
 
-def findMobsInList(mdesc, mlist):
-    
-    ids = mdesc.split()
-    
-    mname = ids[-1]
+def findMobsInList(mdesc, mlist = game.mobs):
     
     foundlist = []
     
     for m in mlist:
-        if m.getName() == mname:
+        if m.noun.hasMatch(mdesc):
             foundlist.append(m)
     
     if len(foundlist) == 0:
@@ -514,16 +507,12 @@ def findMobsInList(mdesc, mlist):
     else:
         return foundlist
 
-def findMobInList(mdesc, mlist):
-    
-    ids = mdesc.split()
-    
-    mname = ids[-1]
+def findMobInList(mdesc, mlist = game.mobs):
     
     foundlist = []
     
     for m in mlist:
-        if m.getName() == mname:
+        if m.noun.hasMatch(mdesc):
             foundlist.append(m)
     
     if len(foundlist) == 0:

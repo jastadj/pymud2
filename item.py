@@ -25,10 +25,17 @@ class Item(object):
     def getArticle(self):
         return self.noun.getArticle()
     
+    def getDescription(self):
+        return self.noun.getDescription()
+        
+    def setDescription(self, desc):
+        self.noun.setDescription(desc)
+    
     def show(self):
         print "Item Type    :%s" %self.getType()
         print "Name         :%s" %self.getName()
         print "Extended Name:%s" %self.getExName()
+        print "Description  :%s" %self.getDescription()
 
 def loadItemFromStrings(istrings):
     
@@ -168,11 +175,13 @@ if __name__ == "__main__":
         #####
         newitemweapon = game.WEAPON("sword")
         newitemweapon.noun.addAdjective("long")
+        newitemweapon.setDescription("A pretty sharp looking sword.")
         game.items_common.append(newitemweapon)
         
         #####
         newitemarmor = game.ARMOR("cap")
         newitemarmor.noun.addAdjective("leather")
+        newitemarmor.setDescription("A cap made out of boiled leather.")
         game.items_common.append(newitemarmor)
     
         print "Saving items to file..."

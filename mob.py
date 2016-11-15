@@ -4,59 +4,63 @@ import game
 from tools import *
 
 class Mob(actor.Actor):
-    def __init__(self):
-        actor.Actor.__init__(self)
-
-
+    def __init__(self, name = "unnamed"):
+        actor.Actor.__init__(self, name)
 
 
 def saveMobToStrings(tmob):
     
     mstrings = []
     
-    # save string properties
-    for s in tmob.sproperties.keys():
-        mystrings.append("%s:%s\n" %(s, tmob.sproperties[s]) )
-    
-    # save int properties
-    for i in tmob.iproperties.keys():
-        mystrings.append("%s:%d\n" %(i, tmob.iproperties[i] ) )
-    
-    # save bool properties
-    for b in tmob.bproperties.keys():
-        mystrings.append("%s:%s\n" %(b, tmob.bproperties[b]) )
-    
-    # save inventory
-    for titem in tmob.inventory():
-        mystrings.append("additem:%s\n" %titem.getDescName() )
+    mstrings += actor.saveActorToStrings(tmob)
     
     return mstrings
 
-def loadMobFromStrings(mstrings):
+def loadMobFromStrings(mstrings, tmob = None):
     
-    newmob = Mob()
+    newmob = None
     
-
+    if newmob == None:
+        newmob = Mob()
+    
+    alines = []
+    
     for line in mstrings:
         
         lfind = line.find(':')
         key = line[:lfind]
         val = line[lfind+1:]
         
-        # string properties
-        if key in newmob.sproperties:
-            newmob.sproperties.update( {key:val})
-        
-        # int properties
-        elif key in newmob.iproperties:
-            newmob.iproperties.update( {key:val})
-        
-        # bool properties
-        elif key in newmob.bproperties:
-            newmob.bproperties.update( {key:val})
-        
-    return newmob
+        if line.startswith("actor"):
+            alines.append(line)
+        elif line.startswith("noun"):
+            alines.append(line)
+            
+    actor.loadActorFromStrings(alines, newmob)
+    
+    if tmob == None:
+        return newmob
 
+def saveMobs():
+    
+    fp = defs.MOBS_FILE
+    
+    createNewFile(fp)
+    
+    f = open(fp, "w")
+    
+    #write each mob's savestrings to file
+    for m in game.mobs:
+        
+        mlines = saveMobToStrings(m)
+        
+        for line in mlines:
+            f.write("%s\n" %line)
+        
+        f.write("\n")
+    
+    f.close()
+        
 def loadMobs():
     
     fp = defs.MOBS_FILE
@@ -82,7 +86,7 @@ def loadMobs():
                 if line != "":
                 
                     # mob entry start
-                    if line == "MOB:":
+                    if line.startswith("mob_new"):
                         
                         # if mlines need to be processed
                         if len(mlines) != 0:
@@ -109,13 +113,47 @@ def loadMobs():
             mlist.append(newmob)
             mlines = []
     
-        #debug
-        for m in mlist:
-            print "ADDED MOB:%s" %m.getName()
-    
         # append loaded modes to game mobs
         game.mobs += mlist
     
     # else file doesnt exist
     else:
         pass
+
+if __name__ == "__main__":
+    import gameinit
+    
+    # test save and load from mob file
+    if True:
+        gameinit.gameInitTest()
+        
+        if len(game.mobs) == 0:
+            #create mob
+            mob1 = Mob("Billy")
+            print "New mob:"
+            mob1.show()
+            
+            # add mob to main mob list
+            game.mobs.append(mob1)
+            
+            # save mob file
+            saveMobs()
+        
+        # print first mob
+        print "Showing first loaded mob in list:"
+        game.mobs[0].show()
+    
+    # test save and load strings
+    if False:
+        #create mob
+        print "New mob:"
+        mob1 = Mob("Billy")
+        mob1.show()
+        
+        # saving mob to strings
+        mstrings = saveMobToStrings(mob1)
+        
+        # create new mob and load from strings
+        print "\nLoading new mob from strings"
+        mob2 = loadMobFromStrings(mstrings)
+        mob2.show()

@@ -36,11 +36,9 @@ class Character(actor.Actor):
             return False
         
     def show(self):
-        print "Name  : %s" %self.getName()
-        print "Desc  : %s" %self.getDesc()
-        print "Zone  : %d" %self.getCurrentZone()
-        print "Room  : %d" %self.getCurrentRoom()
-        print "Items : %d" %len(self.getInventory())
+        actor.Actor.show(self)
+        print "Zone..........: %d" %self.getCurrentZone()
+        print "Room..........: %d" %self.getCurrentRoom()        
 
 
 def validCharacterName(tname):

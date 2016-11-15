@@ -2,10 +2,12 @@
 class Noun(object):
     def __init__(self, name):
         self.name = name
+        self.description = "No description."
         self.article = "a"
         self.adjectives = []
         self.verb = None        
         self.proper = True
+        
         
         # calc article
         self.calculateArticle()
@@ -14,6 +16,9 @@ class Noun(object):
     def setName(self, name):
         self.name = name
         self.calculateArticle()
+    
+    def setDescription(self, desc):
+        self.description = desc
     
     def setArticle(self, article):
         self.article = article
@@ -54,7 +59,9 @@ class Noun(object):
         
         # return resultant extended name
         return dstr
-            
+    
+    def getDescription(self):
+        return self.description
     
     def getArticle(self):
         return self.article
@@ -130,6 +137,9 @@ def loadNounFromStrings(nstrings):
         if key == "noun_name":
             newnoun.setName(val)
         
+        elif key == "noun_description":
+            newnoun.setDescription(val)
+        
         elif key == "noun_proper":
             if val == "False":
                 val = False
@@ -155,6 +165,7 @@ def saveNounToStrings(tnoun):
     nstrings = []
     
     nstrings.append("noun_name:%s" %tnoun.getName())
+    nstrings.append("noun_description:%s" %tnoun.getDescription())
     nstrings.append("noun_proper:%s" %tnoun.isProper())
     nstrings.append("noun_verb:%s" %tnoun.getVerb())
     

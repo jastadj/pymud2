@@ -5,7 +5,6 @@ class Actor(object):
     def __init__(self, name = "unnamed"):
         self.noun = noun.Noun(name)
         self.noun.setProper(True)
-        self.desc = "no desc"
         self.inventory = []
 
     def getName(self):
@@ -14,8 +13,8 @@ class Actor(object):
     def getExName(self):
         return self.noun.getExName()
     
-    def getDesc(self):
-        return self.desc
+    def getDescription(self):
+        return self.noun.getDescription()
 
     def hasItem(self, titem):       
         return titem in self.inventory
@@ -26,8 +25,8 @@ class Actor(object):
     def setName(self, name):
         self.noun.setName(name)
     
-    def setDesc(self, desc):
-        self.desc = desc
+    def setDescription(self, desc):
+        self.noun.setDescription(desc)
     
     def addItem(self, titem):
         try:
@@ -53,6 +52,13 @@ class Actor(object):
         except:
             print "Error removing item from %s inventory!" %self.getname()
             return False
+            
+    def show(self):
+        print "Name..........: %s" %self.getName()
+        print "ExName........: %s" %self.getExName()
+        print "ExName w/ Verb: %s" %self.noun.getExName(True)
+        print "Desc..........: %s" %self.getDesc()
+        print "Items : %d" %len(self.getInventory())            
 
 def saveActorToStrings(tactor):
     
@@ -71,9 +77,10 @@ def saveActorToStrings(tactor):
     
 def loadActorFromStrings(alines, tactor = None):
     
+    newactor = None
+    
     if tactor == None:
         newactor = Actor()
-    
     else: newactor = tactor
     
     nounlines = []
@@ -85,7 +92,7 @@ def loadActorFromStrings(alines, tactor = None):
         val = line[dfind+1:]
         
         if key.startswith("noun"):
-            nounlines.ppend(line)
+            nounlines.append(line)
         elif key == "actor_desc":
             newactor.desc = val
         elif key == "actor_additem":
@@ -96,5 +103,17 @@ def loadActorFromStrings(alines, tactor = None):
             else:
                 print "Error adding item to actor, couldn't find item"
     
+    newactor.noun = noun.loadNounFromStrings(nounlines)
+    
     if tactor == None:
         return newactor
+if __name__ == "__main__":
+    
+    print "New Actor:"
+    newactor = Actor("billy")
+    astrings = saveActorToStrings(newactor)
+    newactor.show()
+    
+    print "\nNew Actor copied from Actor 1 strings:"
+    newactor2 = loadActorFromStrings(astrings)
+    newactor2.show()
