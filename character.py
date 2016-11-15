@@ -6,26 +6,39 @@ class Character(actor.Actor):
     def __init__(self):
         actor.Actor.__init__(self)
         
-        self.iproperties.update({"currentroom":0})
-        self.iproperties.update({"currentzone":0})      
+        # position variables
+        self.currentRoom = 0
+        self.currentZone = 0
         
 
     def getCurrentRoom(self):
-        return self.iproperties["currentroom"]
+        return self.currentRoom
         
     def getCurrentZone(self):
-        return self.iproperties["currentzone"]
+        return self.currentZone
     
     def setCurrentRoom(self, cr):
-        self.iproperties["currentroom"] = cr
+        try:
+            newroom = int(cr)
+            self.currentRoom = newroom
+            return True
+        except:
+            print "Error setting character current room, val not int"
+            return False
         
     def setCurrentZone(self, cz):
-        self.iproperties["currentzone"] = cz
+        try:
+            newzone = int(cz)
+            self.currentZone = newzone
+            return True
+        except:
+            print "Error setting character current zone, val not int"
+            return False
         
     def show(self):
         print "Name  : %s" %self.getName()
         print "Desc  : %s" %self.getDesc()
-        print "Zone  : %s" %self.getCurrentZone()
+        print "Zone  : %d" %self.getCurrentZone()
         print "Room  : %d" %self.getCurrentRoom()
         print "Items : %d" %len(self.getInventory())
 
@@ -50,14 +63,18 @@ def saveCharacter(tchar, tfile):
     
     f = open(fp, "w")
     
-    for s in tchar.sproperties:
-        f.write("%s:%s\n" %(s, tchar.sproperties[s]) )
+    clines = []
     
-    for i in tchar.iproperties:
-        f.write("%s:%d\n" %(i, tchar.iproperties[i]) )
-        
-    for i in tchar.getInventory():
-        f.write("additem:%s\n" %i.getDescName())
+    # actor data
+    clines += actor.saveActorToStrings(tchar)
+    
+    # save position data
+    clines.append("character_room:%d" %tchar.getCurrentRoom())
+    clines.append("character_zone:%d" %tchar.getCurrentZone())
+    
+    #write lines to file
+    for line in clines:
+        f.write("%s\n" %line)
     
     f.close()
     
@@ -73,6 +90,8 @@ def loadCharacter(tfile):
     
     newcharacter = Character()
     
+    alines = []
+    
     # read each line in character file
     with open(fp, "r") as f:
         for line in f:
@@ -85,14 +104,15 @@ def loadCharacter(tfile):
             key = line[:delim]
             val = line[delim+1:]
             
-            if key in newcharacter.sproperties:
-                newcharacter.sproperties[key] = val
-            
-            elif key in newcharacter.iproperties:
-                newcharacter.iproperties[key] = int(val)
-            elif key == "additem":
-                newcharacter.addNewItem(val)
+            if line == "character_room":
+                newcharacter.currentRoom = int(val)
+            elif line == "character_zon":
+                newcharacter.currentZone = int(val)
+            elif line.startswith("actor"):
+                alines.append(line)
     f.close()
+    
+    actor.loadActorFromStrings(alines, newcharacter)
     
     return newcharacter
                 

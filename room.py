@@ -110,7 +110,7 @@ class Room(object):
             print "Error adding item to room!"
     
     def addNewItem(self, istring):
-        newitem = command.getNewItem(istring)
+        newitem = command.newItem(istring)
         
         if newitem != None:
             self.inventory.append(newitem)

@@ -309,7 +309,7 @@ def getCurrentZone(tuser):
 
     return tz
 
-def getNewItem(idesc):
+def newItem(idesc):
     
     titem = findItemInList(idesc, game.items)
     
@@ -318,7 +318,7 @@ def getNewItem(idesc):
     else:
         return None
 
-def findItemInList(idesc, ilist):
+def findItemInList(idesc, ilist = game.items):
     ids = idesc.split()
     
     iname = ids[-1]
@@ -343,7 +343,7 @@ def findItemInList(idesc, ilist):
         #print "found item:%s" %foundlist[0].getName()
         return foundlist[0]
 
-def findItemsInList(idesc, ilist):
+def findItemsInList(idesc, ilist = game.items):
     ids = idesc.split()
     
     iname = ids[-1]
@@ -372,8 +372,41 @@ def doShowInventory(tuser, cdict):
         for i in titems:
             tuser.send("    %s\n" %i.getExName() )
 
-def actorGet(tactor, getstr):
-    pass
+def actorGet(tuser, tactor, istring):
+
+    # current room
+    troom = getCurrentRoom(tuser)
+    if troom == None:
+        print "ERROR do look, current room NULL!"
+        return False
+
+    ritems = troom.getItems()
+
+    # look for item
+    titems = findItemsInList(istring, ritems)
+    
+    # no items by that string were found in current room
+    if titems == None:
+        if tuser == tactor:
+            tuser.send("You do not see that here.\n")
+        
+        return False
+    # item found, get it and add to player inventory, remove from list
+    # for now, just use the first item in list
+    else:
+        
+        # remove item from room
+        troom.removeItem(titems[0])
+        
+        # add item to target actor
+        tactor.addItem(titems[0])
+        
+        if tuser == tactor:
+            tuser.send("You take the %s.\n" %titems[0].getExName() )
+        
+        broadcastToRoomEx(tuser, "%s takes a %s.\n" %(tactor.getName(), titems[0].getExName()) )
+        
+        return True
 
 def doGet(tuser, cdict, *argv):
     args = []
