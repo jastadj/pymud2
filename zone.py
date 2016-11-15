@@ -155,7 +155,7 @@ class Zone(object):
                         # create new room
                         rooms.append(room.Room())
                     
-                    elif ln == "ITEM:":
+                    elif ln.startswith("item_new"):
                         # change read mode to items
                         readmode = 1
                         
@@ -175,6 +175,9 @@ class Zone(object):
                             
                             # reset item lines
                             itemlines = []
+                            
+                            # add this line to item lines
+                            itemlines.append(ln)
                         
                     # read in room lines
                     elif readmode == 0:

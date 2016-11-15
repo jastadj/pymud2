@@ -22,6 +22,9 @@ class Item(object):
     def getExName(self):
         return self.noun.getExName()
     
+    def getArticle(self):
+        return self.noun.getArticle()
+    
     def show(self):
         print "Item Type    :%s" %self.getType()
         print "Name         :%s" %self.getName()

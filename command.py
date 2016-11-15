@@ -104,6 +104,8 @@ def mainGameInvalid(tuser):
         doMove(tuser, troom.getExit(cstr) )
         return True
     
+    tuser.send("Invalid command!\n")
+    
     return False
     
 #####################################################################
@@ -203,7 +205,7 @@ def doLookRoom(tuser, troom):
     # list items here
     ilist = troom.getItems()
     for i in ilist:
-        tuser.send("    %s %s\n" %(i.getArticle(), i.getDescName()) )
+        tuser.send("    %s\n" %i.getExName() )
         
     # list players and mobs here
     charlist = []
@@ -368,7 +370,7 @@ def doShowInventory(tuser, cdict):
         tuser.send("    Nothing!\n")
     else:
         for i in titems:
-            tuser.send("    %s %s\n" %(i.getArticle(),i.getDescName()) )
+            tuser.send("    %s\n" %i.getExName() )
 
 def actorGet(tactor, getstr):
     pass
@@ -404,9 +406,9 @@ def doGet(tuser, cdict, *argv):
     else:
         troom.removeItem(titems[0])
         tuser.char.addItem(titems[0])
-        tuser.send("You take the %s.\n" %titems[0].getDescName() )
+        tuser.send("You take the %s.\n" %titems[0].getExName() )
         
-        broadcastToRoomEx(tuser, "%s takes a %s.\n" %(tuser.char.getName(), titems[0].getDescName()) )
+        broadcastToRoomEx(tuser, "%s takes a %s.\n" %(tuser.char.getName(), titems[0].getExName()) )
         
 def actorDrop(tactor, dropstr):
     pass
@@ -447,7 +449,7 @@ def doDrop(tuser, cdict, *argv):
         troom.addItem(titems[0])
         tuser.send("You drop the %s.\n" %titems[0].getName() )
 
-        broadcastToRoomEx(tuser, "%s drops a a %s.\n" %(tuser.char.getName(), titems[0].getDescName()) )
+        broadcastToRoomEx(tuser, "%s drops %s %s.\n" %(tuser.char.getName(), titems[0].getArticle(), titems[0].getName()) )
         
         return True
 
