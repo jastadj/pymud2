@@ -1,4 +1,3 @@
-
 import item
 
 class Weapon(item.Item):

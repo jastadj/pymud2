@@ -45,51 +45,9 @@ def handleClient(tclient):
     tclient.skip_input = 0
 
 if __name__ == "__main__":
-    import defs
+    import gameinit
     import credential
-    import testclient
-    import game
-    import item
-    import room
-    import zone
-    import command
-    import character
-    import weapon
-    import armor
-    import mob
-    
-    # load test configuration
-    defs.configTestMode()
-
-
-    # callbacks
-    game.ITEM = item.Item
-    game.ROOM = room.Room
-    game.ZONE = zone.Zone
-    game.COMMAND = command.Command
-    game.COMMAND_SET = command.CommandSet
-    game.CHARACTER = character.Character
-    game.MOB = mob.Mob
-
-    # load credentials
-    credential.loadCredentials()
-
-    # load commands
-    game.cmds_main = command.initMainCommands()
-    game.cmds_main.setInvalidFunction( command.mainGameInvalid )
-    
-    # load items
-    game.WEAPON = weapon.Weapon
-    game.ARMOR = armor.Armor
-    game.ITEM = item.Item
-    item.loadItems()
-
-    # load mobs
-    mob.loadMobs()
-    print "LOADED %d MOBS" %len(game.mobs)
-    
-    # load zones
-    zone.loadZones()
+    gameinit.gameInitTest()
         
     def showCredentials():
         for c in game.credentials:
@@ -101,12 +59,8 @@ if __name__ == "__main__":
     # debug show credentials
     showCredentials()
     
-    # create test user
-    tuser = testclient.TestClient()
-    tuser.setMode("login0")
-    game.clients = []
-    game.clients.append(tuser)
-
+    tuser = game.clients[0]
+    
     doquit = False
     
     while not doquit:

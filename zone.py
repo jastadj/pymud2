@@ -11,11 +11,19 @@ class Zone(object):
     
     zoneiterator = 0
     
-    def __init__(self):
+    def __init__(self, name = "unnamed"):
+        self.name = name
+        self.desc = "nodesc"
         self.rooms = []
         self.zonefile = None
         self.items = []
+    
+    def setName(self, name):
+        self.name = name
         
+    def setDesc(self, desc):
+        self.desc = desc
+    
     def addRoom(self, troom):
         if troom == None:
             print "Error adding room, room is null!"
@@ -24,6 +32,12 @@ class Zone(object):
         self.rooms.append(troom)
         return True
         
+    
+    def getName(self):
+        return self.name
+        
+    def getDesc(self):
+        return self.desc
     
     def getRoomNum(self, troom):
         if troom in self.rooms:
@@ -38,6 +52,10 @@ class Zone(object):
         return self.rooms[rnum]
     
     def show(self):
+        
+        print "Zone Info:"
+        print "Name:%s" %self.getName()
+        print "Desc:%s" %self.getDesc()
         for r in self.rooms:
             print "%d - %s" %(self.getRoomNum(r), r.name)
     
@@ -103,8 +121,13 @@ class Zone(object):
                     if ln == "":
                         continue
 
+                    if ln == "zone_name":
+                        self.setName(val)
+                    elif ln == "zone_desc":
+                        self.setDesc(val)
+                        
                     # object entry found, create new
-                    if ln == "ROOM:":
+                    elif ln == "ROOM:":
                         
                         # if was previously reading in item lines
                         # note: this really shouldn't happen, all items
@@ -240,6 +263,10 @@ class Zone(object):
         # open file for writing
         ofile = open(fp, 'w')
         
+        # write zone data
+        ofile.write("zone_name:%s\n" %self.getName())
+        ofile.write("zone_desc:%s\n" %self.getDesc())
+        
         # write zone items first
         for titem in self.items:
             itemlines = item.saveItemToStrings(titem)
@@ -353,35 +380,30 @@ def saveZones():
     
         
 if __name__ == "__main__":
-    import item
     
     defs.configTestMode()
     
+    # create test zone
+    newzone = Zone("Billy's Apartment")
+    newzone.setDesc("A pretty plain apartment.")
+    newzone.zonefile = "apartment.zn"
+    
+    # create test zones
+    bathroom = room.Room("Bathroom")
+    bathroom.setDesc("You are standing in a bathroom that doesn't look like it has been maintained for some time.  The smells of stale urine fills your nose.  A grungry sink hangs precariously from the tiled wall.")
+    bathroom.addExit("north", 1)
+    newzone.addRoom(bathroom)
+    
+    livingroom = room.Room("Living Room")
+    livingroom.setDesc("A pretty boring living room vacant of furniture.  Old posters are pinned lazily to the wall.")
+    livingroom.addExit("south", 0)
+    newzone.addRoom(livingroom)
+    
     game.zones = []
-    item.loadItems()
+    game.zones.append(newzone)
     
-    mode = 2
-    
-    if mode == 1:
-        # create empty zone
-        newzone = Zone()
-        newzone.zonefile = "meadows.zn"
-        newzone.addRoom(room.Room())
-        newzone.rooms[-1].name = "room 1"
-        newzone.addRoom(room.Room())
-        newzone.rooms[-1].name = "room 2"    
-        #add to zoneslist
-        game.zones.append(newzone)
-        #save zone list
-        saveZones()
-        newzone.show()
-    
-    if mode == 2:
-        loadZones()
-        game.zones[0].show()
-    
-    
-
-    
-    
+    # save test zones
+    print "Saving test zone..."
+    #newzone.save()
+    saveZones()
     

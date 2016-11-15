@@ -18,6 +18,7 @@ cmds_main = None
 clients = None
 items = None
 items_common = None
+mobs = None
 
 # main
 def mainGame(tuser):

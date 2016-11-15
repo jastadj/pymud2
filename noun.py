@@ -137,6 +137,8 @@ def loadNounFromStrings(nstrings):
 			newnoun.setProper(val)
 		
 		elif key == "noun_verb":
+			if val == "None":
+				val = None
 			newnoun.setVerb(val)
 		
 		elif key == "noun_article":

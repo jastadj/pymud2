@@ -35,14 +35,14 @@ class CommandSet(object):
     def __init__(self):
         self.commands = []
         self.aliases = {}
-		self.invalidFunction = None
-		
+        self.invalidFunction = None
+        
     def add(self, name, helpstr, fptr, hasargs = False):
         self.commands.append( Command(name, helpstr, fptr, hasargs) )
 
-	def setInvalidFunction(self, func):
-		self.invalidFunction = func
-		
+    def setInvalidFunction(self, func):
+        self.invalidFunction = func
+        
     def count(self):
         return len(self.commands)
 
@@ -50,9 +50,9 @@ class CommandSet(object):
         tcmds = self.getCommand(cstr)
         tcmds[0].execute(tuser, argv)
     
-	def getInvalidFunction(self):
-		return self.invalidFunction
-	
+    def getInvalidFunction(self):
+        return self.invalidFunction
+    
     def getCommand(self, cstr):
         foundcmds = []
 
@@ -95,8 +95,8 @@ def initMainCommands():
 
 def mainGameInvalid(tuser):
     
-	cstr = tuser.getLastInput()
-	
+    cstr = tuser.getLastInput()
+    
     # check to see if noncmd is actually an exit
     troom = getCurrentRoom(tuser)
     
@@ -105,7 +105,7 @@ def mainGameInvalid(tuser):
         return True
     
     return False
-	
+    
 #####################################################################
 ##      COMMANDS
 
@@ -167,12 +167,12 @@ def doLook(tuser, cdict, *argv):
         tuser.send("%s\n" %titems[0].getDesc())
         return
   
-	# check mobs in room
-	tmobs = findMobsInList(monoarg, troom.getMobs())
-	if tmobs != None:
-		tuser.send("%s\n" %tmobs[0].getDesc())
-		return
-		
+    # check mobs in room
+    tmobs = findMobsInList(monoarg, troom.getMobs())
+    if tmobs != None:
+        tuser.send("%s\n" %tmobs[0].getDesc())
+        return
+        
     tuser.send("You do not see that here.\n")
 
 
@@ -209,7 +209,7 @@ def doLookRoom(tuser, troom):
     charlist = []
     charlist += troom.getMobs()
     for m in charlist:
-		tuser.send("%s is here.\n" %m.getName())
+        tuser.send("%s is here.\n" %m.getName())
 
 def doLookCurrentRoom(tuser):
     
@@ -477,7 +477,7 @@ def findMobsInList(mdesc, mlist):
         return None
     
     else:
-		return foundlist
+        return foundlist
 
 def findMobInList(mdesc, mlist):
     

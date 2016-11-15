@@ -1,4 +1,3 @@
-
 import item
 
 class Armor(item.Item):

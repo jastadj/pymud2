@@ -3,18 +3,8 @@
 import socket, select
 import credential
 import client
-import item
-import zone
-import room
-import command
-import game
 import handler
-import character
-import weapon
-import armor
-import mob
-
-import login
+import gameinit
 
 from tools import *
 
@@ -53,43 +43,8 @@ class Server(object):
         
         print "Socket is listening..."
         
-        
-        # callbacks
-        game.server = self
-        game.clients = self.clients
-        game.ITEM = item.Item
-        game.ROOM = room.Room
-        game.ZONE = zone.Zone
-        game.COMMAND = command.Command
-        game.COMMAND_SET = command.CommandSet
-        game.CHARACTER = character.Character
-        game.MOB = mob.Mob
-        
-        # load credentials
-        credential.loadCredentials()
-        
-        # load common items
-        game.WEAPON = weapon.Weapon
-        game.ARMOR = armor.Armor
-        item.loadItems()
-        
-        # load mobs
-        game.MOB = mob.Mob
-        mob.loadMobs()
-        
-        # load zones
-        zone.loadZones()
-        
-        print "%d accounts loaded." %len(game.credentials)
-        print "%d items loaded." % len(game.items)
-        print "%d mobs loaded." % len(game.mobs)
-        print "%d zones loaded." % len(game.zones)
-        
-        
-        # init commands
-        game.processnoncmd = command.processNonCommand
-        game.cmds_main = command.initMainCommands()
-        print "%d commands loaded." % game.cmds_main.count()
+        # init main game
+        gameinit.gameInit()
         
         return True
         

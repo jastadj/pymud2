@@ -6,14 +6,20 @@ import command
 import roomexit
 
 class Room(object):
-    def __init__(self):
-        self.name = "unnamed"
+    def __init__(self, name = "unnamed"):
+        self.name = name
         self.desc = "no description"
         self.descriptors = {}
         self.exits = []
         self.inventory = []
         self.mobs = []
+    
+    def setName(self, name):
+        self.name = name
         
+    def setDesc(self, desc):
+        self.desc = desc
+    
     def getAllClients(self):
         
         znum = None
