@@ -43,6 +43,9 @@ class Character(actor.Actor):
 
 def validCharacterName(tname):
     
+    # if blank line
+    if tname == "": return False
+    
     for a in tname:
         
         chval = ord(a)

@@ -15,6 +15,8 @@ client_modes.update( {"loginvalid":login.loginMenu}) # login valid, check charac
 
 # character creation
 client_modes.update( {"charcreation1":charcreation.charCreation}) # create char : name
+client_modes.update( {"charcreation2":charcreation.charCreation}) # verify char name valid
+client_modes.update( {"charcreation3":charcreation.charCreation}) # confirm name
 
 # main modes
 client_modes.update( {"maingamestart":game.mainGame}) # main game prompt
