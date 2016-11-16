@@ -82,7 +82,8 @@ def initMainCommands():
     cs.add("inventory", "Show inventory", doShowInventory)
     cs.add("get","Get something", doGet, True)
     cs.add("drop","Drop something", doDrop, True)
-    
+    cs.add("wield", "Wield a weapon", doWield, True)
+    cs.add("unwield", "Unwield a weapon", doUnwield, True)
     
     #cs.add("debug", "do something", doDebug)
 
@@ -359,8 +360,15 @@ def findItemsInList(idesc, ilist = game.items):
         return foundlist
 
 def doShowInventory(tuser, cdict):
+    tuser.send("\n")
+    
+    # if wielding something
+    if tuser.char.weaponSlots["right hand"] != None:
+        tuser.send("You are wielding %s in your right hand.\n" %tuser.char.weaponSlots["right hand"].getExName() )
+    if tuser.char.weaponSlots["left hand"] != None:
+        tuser.send("You are wielding %s in your left hand.\n" %tuser.char.weaponSlots["left hand"].getExName() )        
+        
     tuser.send("You are carring:\n")
-    tuser.send("----------------\n")
     
     titems = tuser.char.getInventory()
     if len(titems) == 0:
@@ -483,6 +491,86 @@ def doDrop(tuser, cdict, *argv):
         
         return True
 
+def doWield(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        tuser.send("Wield what?\n")
+        return False
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+    
+    monoarg = " ".join(args)
+    pitems = tuser.char.getInventory()
+    tweapon = findItemsInList(monoarg, pitems)
+    
+    # couldn't find target weapon
+    if tweapon == None:
+        tuser.send("You do not have that!\n")
+        return False
+    
+    tweapon = tweapon[0]
+    
+    result = tuser.char.wield(tweapon)
+    
+    # if wield returns with a string, wield didn't
+    # happen, string is feedback
+    if type(result) == str:
+        tuser.send("%s\n" %result)
+        return False
+    # if bool is returned true, wield was successful
+    elif type(result) == bool:
+        if result != True:
+            print "Error, returning a False bool on wield unexpected!"
+            return
+        # wielded successfuly, give feedback on which hands were used
+        if tweapon.getHands() == 2:
+            tuser.send("Wielded %s in both hands.\n" %tweapon.getExName())
+        else:
+            for s in tuser.char.weaponSlots.keys():
+                if tuser.char.weaponSlots[s] == tweapon:
+                    tuser.send("You wield %s in your %s.\n" %(tweapon.getExName(), s) )
+                    return True
+            
+            # weapon was not found in weapon slot??
+            print "Error, could not find wielded weapon in any weapon slot!"
+            return False
+    else:
+        print "Unexpected return type on actor wield = %s" %type(result)
+        return False
+            
+
+def doUnwield(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        tuser.send("Wield what?\n")
+        return False
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+    
+    monoarg = " ".join(args)
+    pitems = tuser.char.getWielded()
+    tweapon = findItemsInList(monoarg, pitems)
+    
+    # couldn't find target weapon
+    if tweapon == None:
+        tuser.send("You are not wielding that!\n")
+        return False
+    
+    tweapon = tweapon[0]
+    
+    # unwield weapon
+    tuser.char.addItem( tweapon)
+    tuser.char.weaponSlots["right hand"] = None
+    if tuser.char.weaponSlots["left hand"] == tweapon:
+        tuser.char.weaponSlots["left hand"] = None
+    tuser.send("You unwield the %s.\n" %tweapon.getName())
+    
 def newMob(mdesc):
     
     tmob = findMobInList(mdesc, game.mobs)

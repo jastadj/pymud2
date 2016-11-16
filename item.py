@@ -31,6 +31,9 @@ class Item(object):
     def setDescription(self, desc):
         self.noun.setDescription(desc)
     
+    def isWeapon(self):
+        return issubclass( type(self), game.WEAPON)
+    
     def show(self):
         print "Item Type    :%s" %self.getType()
         print "Name         :%s" %self.getName()
@@ -42,6 +45,7 @@ def loadItemFromStrings(istrings):
     nounstrings = []
     
     newitem = None
+    itemtype = None
     
     # determine item type    
     for line in istrings:
@@ -56,7 +60,14 @@ def loadItemFromStrings(istrings):
             if val == "Item": newitem = Item("unnamed")
             elif val == "Weapon": newitem = game.WEAPON("unnamed")
             elif val == "Armor": newitem = game.ARMOR("unnamed")
-    
+            
+            itemtype = newitem.getType()
+        
+        if itemtype == "Weapon":
+            if key == "weapon_damage":
+                newitem.setDamage(int(val))
+            elif key == "weapon_hands":
+                newitem.setHands(int(val))
     # load and set noun from strings
     newitem.noun = noun.loadNounFromStrings(nounstrings)
     
@@ -67,9 +78,14 @@ def saveItemToStrings(titem):
     
     istrings = []
     
-    istrings.append("item_new:%s" %titem.getType())
+    itemtype = titem.getType()
+    
+    istrings.append("item_new:%s" %itemtype)
     istrings += noun.saveNounToStrings(titem.noun)
     
+    if itemtype == "Weapon":
+        istrings.append("weapon_damage:%d" %titem.getDamage())
+        istrings.append("weapon_hands:%d" %titem.getHands())
     return istrings
     
 
@@ -176,7 +192,16 @@ if __name__ == "__main__":
         newitemweapon = game.WEAPON("sword")
         newitemweapon.noun.addAdjective("long")
         newitemweapon.setDescription("A pretty sharp looking sword.")
+        newitemweapon.setDamage(3)
         game.items_common.append(newitemweapon)
+        
+        #####
+        newitemweapon2 = game.WEAPON("axe")
+        newitemweapon2.noun.addAdjective("battle")
+        newitemweapon2.setDescription("A grisly looking battle axe")
+        newitemweapon2.setDamage(5)
+        newitemweapon2.setHands(2)
+        game.items_common.append(newitemweapon2)
         
         #####
         newitemarmor = game.ARMOR("cap")

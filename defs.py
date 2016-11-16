@@ -9,7 +9,10 @@ CREDENTIAL_FILE = "./data/credentials.dat"
 ITEMS_FILE = "./data/items_common.dat"
 MOBS_FILE = "./data/mobs_common.dat"
 
+TEST_MODE = False
+
 def configTestMode():
+
 	print "Configuring for test mode:"
 	
 	global ZONES_PATH

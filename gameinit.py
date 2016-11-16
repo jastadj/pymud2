@@ -59,6 +59,7 @@ def gameInit():
 
 def gameInitTest():
     # load test configuration
+    defs.TEST_MODE = True
     defs.configTestMode()
     
     gameInit()
