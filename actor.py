@@ -7,6 +7,8 @@ class Actor(object):
         self.noun.setProper(True)
         self.inventory = []
         
+        self.attributes = {"max hp":10, "current hp":10}
+        
         # weapon slots
         self.weaponSlots = {"right hand":None, "left hand":None}
         self.armorSlots = {"head":None, "neck":None, "torso":None, "left arm":None, "right arm":None}
@@ -53,6 +55,11 @@ class Actor(object):
         eitems += self.getWorn()
     
         return eitems
+    
+    def getAttribute(self, tattr):
+        if tattr in self.attributes.key():
+            return self.attributes[tattr]
+        else: return None
     
     def setName(self, name):
         self.noun.setName(name)
@@ -117,11 +124,21 @@ class Actor(object):
         
         return True
     
+    def setAttribute(self, tattr, val):
+        if tattr in self.attributes:
+            self.attributes[tattr] = val
+            return True
+        else: return False
+    
     def show(self):
         print "Name..........: %s" %self.getName()
         print "ExName........: %s" %self.getExName()
         print "ExName w/ Verb: %s" %self.noun.getExName(True)
         print "Desc..........: %s" %self.getDescription()
+        print "Attributes:"
+        for a in self.attributes.keys():
+            print "%s = %d" %(a, self.attributes[a])
+        print "Equipment:"
         for w in self.weaponSlots.keys():
             if self.weaponSlots[w] != None:
                 print "%s:%s" %(w, self.weaponSlots[w].getExName())
@@ -135,7 +152,10 @@ def saveActorToStrings(tactor):
     
     alines += noun.saveNounToStrings(tactor.noun)
     
-    alines.append("actor_desc:%s" %tactor.getDescription)
+    
+    # save attributes
+    for a in tactor.attributes.keys():
+        alines.append("actor_attribute:%s:%d" %(a, tactor.attributes[a]) )
     
     # save wielded items first
     for w in tactor.getWielded():    
@@ -167,10 +187,17 @@ def loadActorFromStrings(alines, tactor = None):
         key = line[:dfind]
         val = line[dfind+1:]
         
+        # noun
         if key.startswith("noun"):
             nounlines.append(line)
-        elif key == "actor_desc":
-            newactor.desc = val
+        # attributes
+        elif key == "actor_attribute":
+            afind = val.find(':')
+            akey = val[:afind]
+            aval = int( val[afind+1:] )
+            
+            newactor.attributes.update( {akey:aval})
+        # items    
         elif key == "actor_additem":
             newitem = command.newItem(val)
            
@@ -178,6 +205,8 @@ def loadActorFromStrings(alines, tactor = None):
                 newactor.inventory.append(newitem)
             else:
                 print "Error adding item to actor, couldn't find item"
+
+        # wielded
         elif key == "actor_wield":
             wfind = val.find(':')
             wslot = val[:wfind]
@@ -197,8 +226,9 @@ if __name__ == "__main__":
     import defs
     import game
     import weapon
+    import gameinit
     
-    defs.configTestMode()
+    gameinit.gameInit()
     game.items =[]
     
     newweapon = weapon.Weapon("dagger")

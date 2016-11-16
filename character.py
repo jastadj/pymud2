@@ -87,7 +87,6 @@ def loadCharacter(tfile):
     createNewFile(fp)
     
     newcharacter = Character()
-    
     alines = []
     
     # read each line in character file
@@ -102,11 +101,11 @@ def loadCharacter(tfile):
             key = line[:delim]
             val = line[delim+1:]
             
-            if line == "character_room":
+            if key == "character_room":
                 newcharacter.currentRoom = int(val)
-            elif line == "character_zon":
+            elif key == "character_zone":
                 newcharacter.currentZone = int(val)
-            elif line.startswith("actor"):
+            else:
                 alines.append(line)
     f.close()
     
