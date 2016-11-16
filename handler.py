@@ -1,6 +1,7 @@
 import login
 import game
 import charcreation
+import editmode
 
 client_modes = {}
 
@@ -17,6 +18,9 @@ client_modes.update( {"loginvalid":login.loginMenu}) # login valid, check charac
 client_modes.update( {"charcreation1":charcreation.charCreation}) # create char : name
 client_modes.update( {"charcreation2":charcreation.charCreation}) # verify char name valid
 client_modes.update( {"charcreation3":charcreation.charCreation}) # confirm name
+
+# editor mode
+client_modes.update( {"editmode1":editmode.editMenu}) # confirm name
 
 # main modes
 client_modes.update( {"maingamestart":game.mainGame}) # main game prompt
@@ -73,6 +77,8 @@ if __name__ == "__main__":
         
         if tuser.getLastInput() == "quit":
             doquit = True
+        elif tuser.getLastInput() == "edit":
+            tuser.setMode("editmode1")
 
     print "Disconnecting and saving character..."
     tuser.disconnect()
