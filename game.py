@@ -19,6 +19,7 @@ clients = None
 items = None
 items_common = None
 mobs = None
+mobs_common = None
 
 # main
 def mainGame(tuser):

@@ -49,7 +49,9 @@ if __name__ == "__main__":
     #####
     
     #####
-    mob1 = game.MOB("Billy")    
+    game.mobs = []
+    mob1 = game.MOB("Billy")
+    mob1.setDescription("A homeless looking dude.")
     game.mobs.append(mob1)
     
     # save mob file
@@ -76,7 +78,9 @@ if __name__ == "__main__":
     livingroom = game.ROOM("Living Room")
     livingroom.setDescription("A pretty boring living room vacant of furniture.  Old posters are pinned lazily to the wall.")
     livingroom.addExit("south", 0)
+    livingroom.addNewMob("billy")
     newzone.addRoom(livingroom)
+    
     
     game.zones = []
     game.zones.append(newzone)

@@ -30,6 +30,7 @@ def gameInit():
     
     #zero lists
     game.items = []
+    game.mobs = []
     
     # load credentials
     credential.loadCredentials()

@@ -50,7 +50,7 @@ def saveMobs():
     f = open(fp, "w")
     
     #write each mob's savestrings to file
-    for m in game.mobs:
+    for m in game.mobs_common:
         
         mlines = saveMobToStrings(m)
         
@@ -65,13 +65,12 @@ def loadMobs():
     
     fp = defs.MOBS_FILE
     
-    game.mobs = []
+    game.mobs_common = []
     
     # if file already exists
     if createNewFile(fp) == None:
         
         mlines = []
-        mlist = []
         
         # open file for reading
         with open(fp, "r") as f:
@@ -95,7 +94,7 @@ def loadMobs():
                             newmob = loadMobFromStrings(mlines)
                             
                             # add to working mob list
-                            mlist.append(newmob)
+                            game.mobs_common.append(newmob)
                             
                             # reset mob lines
                             mlines = []
@@ -110,11 +109,11 @@ def loadMobs():
         # process last mob entry
         if len(mlines) != 0:
             newmob = loadMobFromStrings(mlines)
-            mlist.append(newmob)
+            game.mobs_common.append(newmob)
             mlines = []
     
-        # append loaded modes to game mobs
-        game.mobs += mlist
+        # append common mobs to main mobs list
+        game.mobs += game.mobs_common
     
     # else file doesnt exist
     else:
