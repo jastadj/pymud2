@@ -20,7 +20,14 @@ client_modes.update( {"charcreation2":charcreation.charCreation}) # verify char 
 client_modes.update( {"charcreation3":charcreation.charCreation}) # confirm name
 
 # editor mode
-client_modes.update( {"editmode1":editmode.editMenu}) # confirm name
+client_modes.update( {"editmode1":editmode.editMenu}) # edit menu
+client_modes.update( {"editmode2":editmode.editMenu}) # get selected option
+client_modes.update( {"editroom1":editmode.editRoom}) # edit room menu
+client_modes.update( {"editroom2":editmode.editRoom}) # edit room selection
+client_modes.update( {"editroom3_1":editmode.editRoom}) # edit room name
+client_modes.update( {"editroom3_2":editmode.editRoom}) # edit room name confirmation
+client_modes.update( {"editroom4_1":editmode.editRoom}) # edit room desc
+client_modes.update( {"editroom4_2":editmode.editRoom}) # edit room desc confirmation
 
 # main modes
 client_modes.update( {"maingamestart":game.mainGame}) # main game prompt

@@ -124,7 +124,7 @@ class Zone(object):
                     if ln == "zone_name":
                         self.setName(val)
                     elif ln == "zone_desc":
-                        self.setDesc(val)
+                        self.setDescription(val)
                         
                     # object entry found, create new
                     elif ln == "ROOM:":

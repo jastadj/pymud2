@@ -17,7 +17,7 @@ class Room(object):
     def setName(self, name):
         self.name = name
         
-    def setDesc(self, desc):
+    def setDescription(self, desc):
         self.desc = desc
     
     def getAllClients(self):
