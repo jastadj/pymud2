@@ -1,5 +1,6 @@
 import noun
 import command
+import defs
 
 class Actor(object):
     def __init__(self, name = "unnamed"):
@@ -9,9 +10,15 @@ class Actor(object):
         
         self.attributes = {"max hp":10, "current hp":10}
         
-        # weapon slots
-        self.weaponSlots = {"right hand":None, "left hand":None}
-        self.armorSlots = {"head":None, "neck":None, "torso":None, "left arm":None, "right arm":None}
+        # init weapon slots
+        self.weaponSlots = {}
+        for wslot in defs.weaponSlots:
+            self.weaponSlots.update( {wslot:None} )
+        
+        # init armor slots
+        self.armorSlots = {}
+        for aslot in defs.armorSlots:
+            self.armorSlots.update( {aslot:None} )
         
     def getName(self):
         return self.noun.getName()

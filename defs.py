@@ -11,6 +11,11 @@ MOBS_FILE = "./data/mobs_common.dat"
 
 TEST_MODE = False
 
+
+weaponSlots = ["right hand","left hand"]
+armorSlots = ["head","neck","torso","left arm","right arm", "left hand", "right hand"]
+armorSlots += ["waist", "left leg", "right leg", "left foot", "right food"]
+
 def configTestMode():
 
 	print "Configuring for test mode:"

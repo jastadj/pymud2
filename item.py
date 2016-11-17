@@ -34,8 +34,13 @@ class Item(object):
     def isWeapon(self):
         return issubclass( type(self), game.WEAPON)
     
+    def isArmor(self):
+        return issubclass( type(self), game.ARMOR)
+    
     def show(self):
         print "Item Type    :%s" %self.getType()
+        print "isWeapon     :%s" %self.isWeapon()
+        print "isArmor      :%s" %self.isArmor()
         print "Name         :%s" %self.getName()
         print "Extended Name:%s" %self.getExName()
         print "Description  :%s" %self.getDescription()
@@ -63,11 +68,18 @@ def loadItemFromStrings(istrings):
             
             itemtype = newitem.getType()
         
-        if itemtype == "Weapon":
+        # weapon data
+        if newitem.isWeapon() == "Weapon":
             if key == "weapon_damage":
                 newitem.setDamage(int(val))
             elif key == "weapon_hands":
                 newitem.setHands(int(val))
+                
+        # armor data
+        if newitem.isArmor() == "Armor":
+            if key == "armor_slot":
+                newitem.setSlotUsed(val)
+
     # load and set noun from strings
     newitem.noun = noun.loadNounFromStrings(nounstrings)
     
@@ -83,9 +95,14 @@ def saveItemToStrings(titem):
     istrings.append("item_new:%s" %itemtype)
     istrings += noun.saveNounToStrings(titem.noun)
     
-    if itemtype == "Weapon":
+    if titem.isWeapon():
         istrings.append("weapon_damage:%d" %titem.getDamage())
         istrings.append("weapon_hands:%d" %titem.getHands())
+    
+    if titem.isArmor():
+        for s in titem.getSlotsUsed():
+			istrings.append("armor_slot:%s" %s)
+    
     return istrings
     
 
@@ -207,6 +224,7 @@ if __name__ == "__main__":
         newitemarmor = game.ARMOR("cap")
         newitemarmor.noun.addAdjective("leather")
         newitemarmor.setDescription("A cap made out of boiled leather.")
+        newitemarmor.setSlotUsed("head")
         game.items_common.append(newitemarmor)
     
         print "Saving items to file..."
