@@ -1,12 +1,12 @@
 
 class Noun(object):
-    def __init__(self, name):
+    def __init__(self, name = "no name"):
         self.name = name
         self.description = "No description."
         self.article = "a"
         self.adjectives = []
         self.verb = None        
-        self.proper = True
+        self.proper = False
         
         
         # calc article
@@ -123,62 +123,65 @@ class Noun(object):
         # matching passes
         return True
         
-def loadNounFromStrings(nstrings):
+    def saveToStrings(self):
     
-    newnoun = Noun("init")
-    
-    for line in nstrings:
+        tstrings = []
         
-        dfind = line.find(':')
+        ttype = self.__class__.__name__
         
-        key = line[:dfind]
-        val = line[dfind+1:]
-
-        if key == "noun_name":
-            newnoun.setName(val)
+        tstrings.append("%s_name:%s" %(ttype, self.getName() ) )
+        tstrings.append("%s_description:%s" %(ttype, self.getDescription() ) )
+        tstrings.append("%s_proper:%s" %(ttype, self.isProper() ) )
+        tstrings.append("%s_verb:%s" %(ttype, self.getVerb() ) )
         
-        elif key == "noun_description":
-            newnoun.setDescription(val)
-        
-        elif key == "noun_proper":
-            if val == "False":
-                val = False
-            else: val = True
+        # if noun is not proper
+        if not self.isProper():
             
-            newnoun.setProper(val)
-        
-        elif key == "noun_verb":
-            if val == "None":
-                val = None
-            newnoun.setVerb(val)
-        
-        elif key == "noun_article":
-            newnoun.setArticle(val)
+            tstrings.append("%s_article:%s" %(ttype, self.article) )
             
-        elif key == "noun_adjective":
-            newnoun.addAdjective(val)
-    
-    return newnoun
+            # get adjectives
+            for a in self.getAdjectives():
+                tstrings.append("%s_adjective:%s" %(ttype, a) )
+        
+        return tstrings
+        
+    def loadFromStrings(self, tstrings):
+        
+        ttype = self.__class__.__name__
+        
+        for line in tstrings:
+            
+            dfind = line.find(':')
+            
+            key = line[:dfind]
+            val = line[dfind+1:]
 
-def saveNounToStrings(tnoun):
-    
-    nstrings = []
-    
-    nstrings.append("noun_name:%s" %tnoun.getName())
-    nstrings.append("noun_description:%s" %tnoun.getDescription())
-    nstrings.append("noun_proper:%s" %tnoun.isProper())
-    nstrings.append("noun_verb:%s" %tnoun.getVerb())
-    
-    # if noun is not proper
-    if not tnoun.isProper():
-        
-        nstrings.append("noun_article:%s" %tnoun.getArticle())
-        
-        # get adjectives
-        for a in tnoun.getAdjectives():
-            nstrings.append("noun_adjective:%s" %a)
-    
-    return nstrings
+            if key == "%s_name" %ttype:
+                self.setName(val)
+            
+            elif key == "%s_description" %ttype:
+                self.setDescription(val)
+            
+            elif key == "%s_proper" %ttype:
+                if val == "False":
+                    val = False
+                else: val = True
+                
+                self.setProper(val)
+            
+            elif key == "%s_verb" %ttype:
+                if val == "None":
+                    val = None
+                self.setVerb(val)
+            
+            elif key == "%s_article" %ttype:
+                self.setArticle(val)
+                
+            elif key == "%s_adjective" %ttype:
+                self.addAdjective(val)
+
+
+
     
     
 if __name__ == "__main__":
@@ -194,13 +197,14 @@ if __name__ == "__main__":
     
     # save noun to strings
     print "\nSave to strings:"
-    n1strings = saveNounToStrings(noun1)
+    n1strings = noun1.saveToStrings()
     for line in n1strings:
         print line
     
     # load another noun with strings from first noun
     print "\nLoad Noun2 with Noun1 strings:"
-    noun2 = loadNounFromStrings(n1strings)
+    noun2 = Noun()
+    noun2.loadFromStrings(n1strings)
     print noun2.getExName()
     
     doquit = False
