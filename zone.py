@@ -21,7 +21,7 @@ class Zone(object):
     def setName(self, name):
         self.name = name
         
-    def setDesc(self, desc):
+    def setDescription(self, desc):
         self.desc = desc
     
     def addRoom(self, troom):
@@ -36,7 +36,7 @@ class Zone(object):
     def getName(self):
         return self.name
         
-    def getDesc(self):
+    def getDescription(self):
         return self.desc
     
     def getRoomNum(self, troom):
@@ -55,7 +55,7 @@ class Zone(object):
         
         print "Zone Info:"
         print "Name:%s" %self.getName()
-        print "Desc:%s" %self.getDesc()
+        print "Desc:%s" %self.getDescription()
         for r in self.rooms:
             print "%d - %s" %(self.getRoomNum(r), r.name)
     
@@ -268,7 +268,7 @@ class Zone(object):
         
         # write zone data
         ofile.write("zone_name:%s\n" %self.getName())
-        ofile.write("zone_desc:%s\n" %self.getDesc())
+        ofile.write("zone_desc:%s\n" %self.getDescription())
         
         # write zone items first
         for titem in self.items:
@@ -301,7 +301,12 @@ class Zone(object):
             
             #save items
             for i in room.inventory:
-                ofile.write("additem:%s\n" %i.getDescName())
+                ofile.write("additem:%s\n" %i.getExName())
+            
+            # save mobs
+            for m in room.mobs:
+                ofile.write("addmob:%s\n" %m.getExName())
+            
             
             ofile.write("\n")
         
@@ -400,6 +405,7 @@ if __name__ == "__main__":
     livingroom = room.Room("Living Room")
     livingroom.setDesc("A pretty boring living room vacant of furniture.  Old posters are pinned lazily to the wall.")
     livingroom.addExit("south", 0)
+    livingroom.addNewMob("billy")
     newzone.addRoom(livingroom)
     
     game.zones = []
