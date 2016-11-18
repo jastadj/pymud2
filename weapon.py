@@ -1,7 +1,7 @@
 import item
 
 class Weapon(item.Item):
-    def __init__(self, name):
+    def __init__(self, name = "unnamed"):
         item.Item.__init__(self, name)
         self.damage = 1
         self.hands = 1
@@ -17,8 +17,3 @@ class Weapon(item.Item):
         
     def setHands(self, hands):
         self.hands = hands
-    
-    def show(self):
-        item.Item.show(self)
-        print "Damage       :%d" %self.getDamage()
-        print "Hands        :%d" %self.getHands()

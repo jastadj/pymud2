@@ -3,8 +3,10 @@ import defs
 from tools import *
 
 class Character(actor.Actor):
-    def __init__(self):
-        actor.Actor.__init__(self)
+    def __init__(self, name = "unnamed"):
+        actor.Actor.__init__(self, name)
+        
+        self.setProper(True)
         
         # position variables
         self.currentRoom = 0
@@ -40,92 +42,111 @@ class Character(actor.Actor):
         print "Zone..........: %d" %self.getCurrentZone()
         print "Room..........: %d" %self.getCurrentRoom()        
 
-
-def validCharacterName(tname):
-    
-    # if blank line
-    if tname == "": return False
-    
-    for a in tname:
+    def isNameValid(self):
         
-        chval = ord(a)
+        # if blank line
+        if self.getName() == "": return False
         
-        if chval < ord('a') or chval > ord('z'):
-            if chval < ord('A') or chval > ord('Z'):
-                return False
-    
-    return True
-
-def saveCharacter(tchar, tfile):
-    
-    fp = defs.CHARACTERS_PATH + tfile
-    
-    createNewFile(fp)
-    
-    f = open(fp, "w")
-    
-    clines = []
-    
-    # actor data
-    clines += actor.saveActorToStrings(tchar)
-    
-    # save position data
-    clines.append("character_room:%d" %tchar.getCurrentRoom())
-    clines.append("character_zone:%d" %tchar.getCurrentZone())
-    
-    #write lines to file
-    for line in clines:
-        f.write("%s\n" %line)
-    
-    f.close()
-    
-def loadCharacter(tfile):
-    
-    fp = defs.CHARACTERS_PATH + tfile
-    
-    if not fileExists(fp):
-        print "Error, character file does not exist!"
-        return None
-    
-    createNewFile(fp)
-    
-    newcharacter = Character()
-    alines = []
-    
-    # read each line in character file
-    with open(fp, "r") as f:
-        for line in f:
+        for a in self.getName():
             
-            # remove newline from line
-            line = line[:-1]
+            chval = ord(a)
+            
+            if chval < ord('a') or chval > ord('z'):
+                if chval < ord('A') or chval > ord('Z'):
+                    return False
+                    
+        return True
+
+    def saveToFile(self, tfile):
+        
+        fp = defs.CHARACTERS_PATH + tfile
+        
+        createNewFile(fp)
+        
+        f = open(fp, "w")
+        
+        clines = []
+        
+        # actor data
+        clines += actor.Actor.saveToStrings(self)
+        
+        # save position data
+        clines.append("%s_room:%d" %( self.getType(), self.getCurrentRoom()) )
+        clines.append("%s_zone:%d" %( self.getType(), self.getCurrentZone()) )
+        
+        #write lines to file
+        for line in clines:
+            f.write("%s\n" %line)
+        
+        f.close()
+        
+    def loadFromFile(self, tfile):
+        
+        fp = defs.CHARACTERS_PATH + tfile
+        
+        if not fileExists(fp):
+            print "Error, character file does not exist!"
+            return False
+        
+        createNewFile(fp)
+        
+        # reset character to new
+        self = Character()
+        
+        # read in all file lines
+        tlines = []
+        
+        # read each line in character file
+        with open(fp, "r") as f:
+            for line in f:
+                
+                # remove newline from line
+                line = line[:-1]
+                
+                # collect line
+                tlines.append(line)
+        
+        f.close()
+        
+        # load base class data
+        actor.Actor.loadFromStrings(self, tlines)
+        
+        # load character data
+        for line in tlines:
             
             delim = line.find(':')
-            
             key = line[:delim]
             val = line[delim+1:]
             
-            if key == "character_room":
-                newcharacter.currentRoom = int(val)
-            elif key == "character_zone":
-                newcharacter.currentZone = int(val)
-            else:
-                alines.append(line)
-    f.close()
-    
-    actor.loadActorFromStrings(alines, newcharacter)
-    
-    return newcharacter
+            if key == "%s_room" %self.getType():
+                self.currentRoom = int(val)
+            elif key == "%s_zone" %self.getType():
+                self.currentZone = int(val)
+        
                 
     
     
 if __name__ == "__main__":
     
-    charname = "john"
+    newchar = Character("Roland")
     
-    if validCharacterName(charname):
-        print "Name is valid!"
+    # check valid name
+    print "Creating character %s." %newchar.getName()
+    if newchar.isNameValid():
+        print "%s is a valid character name." %newchar.getName()
     else:
-        print "ERROR!"
+        print "%s is NOT a valid character name!" %newchar.getName()
+        exit()
     
+    newchar.show()
+    
+    # save character to file
+    newchar.saveToFile("testchar.dat")
+
+    # reset actor
+    newchar = Character("corrupt")
+    newchar.loadFromFile("testchar.dat")
+    newchar.setName("Groland")
+    newchar.show()
 
 

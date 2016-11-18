@@ -3,7 +3,7 @@ import defs
 
 # look at actor armor slots for reference
 class Armor(item.Item):
-	def __init__(self, name):
+	def __init__(self, name = "unnamed"):
 		item.Item.__init__(self, name)
 		self.slotsUsed = []
 		
@@ -24,11 +24,4 @@ class Armor(item.Item):
 	def isSlotUsed(self, sstr):
 		
 		return sstr in self.slotsUsed
-	
-	def show(self):
-		item.Item.show(self)
-		
-		print "Slots used:"
-		for slot in self.slotsUsed:
-			print "    %s" %slot
 

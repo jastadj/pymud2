@@ -1,14 +1,12 @@
 import defs
 
 # class refs
-ROOM = None
 ZONE = None
-ITEM = None
-WEAPON = None
-ARMOR = None
 COMMAND = None
 COMMAND_SET = None
-CHARACTER = None
+
+# see gameinit - initializes object classes in dict
+OBJECT_CLASSES = {}
 
 # objects
 server = None

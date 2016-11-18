@@ -1,11 +1,10 @@
-import noun
-import command
 import defs
+import worldobject
+import command
 
-class Actor(object):
+class Actor(worldobject.WorldObject):
     def __init__(self, name = "unnamed"):
-        self.noun = noun.Noun(name)
-        self.noun.setProper(True)
+        worldobject.WorldObject.__init__(self, name)
         self.inventory = []
         
         self.attributes = {"max hp":10, "current hp":10}
@@ -19,15 +18,6 @@ class Actor(object):
         self.armorSlots = {}
         for aslot in defs.armorSlots:
             self.armorSlots.update( {aslot:None} )
-        
-    def getName(self):
-        return self.noun.getName()
-        
-    def getExName(self):
-        return self.noun.getExName()
-    
-    def getDescription(self):
-        return self.noun.getDescription()
 
     def hasItem(self, titem):       
         return titem in self.inventory
@@ -68,12 +58,6 @@ class Actor(object):
             return self.attributes[tattr]
         else: return None
     
-    def setName(self, name):
-        self.noun.setName(name)
-    
-    def setDescription(self, desc):
-        self.noun.setDescription(desc)
-    
     def addItem(self, titem):
         try:
             self.inventory.append(titem)
@@ -81,7 +65,7 @@ class Actor(object):
             print "Error adding item to %s inventory!" %self.getName()  
     
     def addNewItem(self, idesc):
-        newitem = command.getNewItem(idesc)
+        newitem = command.newItem(idesc)
         if newitem != None:
             self.addItem(newitem)
         else:
@@ -138,115 +122,106 @@ class Actor(object):
         else: return False
     
     def show(self):
-        print "Name..........: %s" %self.getName()
-        print "ExName........: %s" %self.getExName()
-        print "ExName w/ Verb: %s" %self.noun.getExName(True)
-        print "Desc..........: %s" %self.getDescription()
+        worldobject.WorldObject.show(self)
         print "Attributes:"
         for a in self.attributes.keys():
-            print "%s = %d" %(a, self.attributes[a])
-        print "Equipment:"
+            print "    %s = %d" %(a, self.attributes[a])
+        print "Equipped:"
         for w in self.weaponSlots.keys():
             if self.weaponSlots[w] != None:
-                print "%s:%s" %(w, self.weaponSlots[w].getExName())
-        print "Items : %d" %len(self.getInventory())            
+                print "    %s:%s" %(w, self.weaponSlots[w].getExName())
+        print "Items:"
+        for i in self.getInventory():
+            print "    %s" %i.getExName()
 
-def saveActorToStrings(tactor):
-    
-    alines = []
-    
-    alines.append("actor_new:actor_new")
-    
-    alines += noun.saveNounToStrings(tactor.noun)
-    
-    
-    # save attributes
-    for a in tactor.attributes.keys():
-        alines.append("actor_attribute:%s:%d" %(a, tactor.attributes[a]) )
-    
-    # save wielded items first
-    for w in tactor.getWielded():    
-        alines.append("actor_additem:%s" %w.getExName())
-    # save carried items
-    for i in tactor.inventory:
-        alines.append("actor_additem:%s" %i.getExName() )
-    
-    # wielded items
-    for w in tactor.weaponSlots.keys():
-        if tactor.weaponSlots[w] != None:
-            alines.append("actor_wield:%s:%s" %(w, tactor.weaponSlots[w].getExName() ) )
-    
-    return alines
-    
-def loadActorFromStrings(alines, tactor = None):
-    
-    newactor = None
-    
-    if tactor == None:
-        newactor = Actor()
-    else: newactor = tactor
-    
-    nounlines = []
-    
-    for line in alines:
+    def saveToStrings(self):
         
-        dfind = line.find(':')
-        key = line[:dfind]
-        val = line[dfind+1:]
+        tstrings = []
         
-        # noun
-        if key.startswith("noun"):
-            nounlines.append(line)
-        # attributes
-        elif key == "actor_attribute":
-            afind = val.find(':')
-            akey = val[:afind]
-            aval = int( val[afind+1:] )
+        # save actor entry type
+        tstrings.append("actor:%s" %self.getType() )
+        
+        # save base class data
+        tstrings += worldobject.WorldObject.saveToStrings(self)
+        
+        
+        # save attributes
+        for a in self.attributes.keys():
+            tstrings.append("%s_attribute:%s:%d" %(self.getType(), a, self.attributes[a]) )
+        
+        # save wielded items first
+        for w in self.getWielded():    
+            tstrings.append("%s_additem:%s" %( self.getType() ,w.getExName()) )
+        
+        # save carried items
+        for i in self.inventory:
+            tstrings.append("%s_additem:%s" %( self.getType(), i.getExName() ) )
+        
+        # wield items
+        for w in self.weaponSlots.keys():
+            if self.weaponSlots[w] != None:
+                tstrings.append("%s_wield:%s:%s" %( self.getType() , w, tactor.weaponSlots[w].getExName() ) )
+        
+        return tstrings
+    
+    def loadFromStrings(self, tstrings):
+        
+        # load base class data from strings
+        worldobject.WorldObject.loadFromStrings(self, tstrings)
+        
+        for line in tstrings:
             
-            newactor.attributes.update( {akey:aval})
-        # items    
-        elif key == "actor_additem":
-            newitem = command.newItem(val)
-           
-            if newitem != None:
-                newactor.inventory.append(newitem)
-            else:
-                print "Error adding item to actor, couldn't find item"
+            dfind = line.find(':')
+            key = line[:dfind]
+            val = line[dfind+1:]
+            
+            # attributes
+            if key == "%s_attribute" %self.getType():
+                afind = val.find(':')
+                akey = val[:afind]
+                aval = int( val[afind+1:] )
+                
+                self.attributes.update( {akey:aval})
+                
+            # items    
+            elif key == "%s_additem" %self.getType():
+                newitem = command.newItem(val)
+               
+                if newitem != None:
+                    self.inventory.append(newitem)
+                else:
+                    print "Error adding item to actor, couldn't find item"
 
-        # wielded
-        elif key == "actor_wield":
-            wfind = val.find(':')
-            wslot = val[:wfind]
-            witem = val[wfind+1:]
-            
-            # get inventory
-            aitems = newactor.getInventory()
-            founditems = command.findItemsInList(witem, aitems)
-            newactor.wield(founditems[0])
-            
-    
-    newactor.noun = noun.loadNounFromStrings(nounlines)
-    
-    if tactor == None:
-        return newactor
+            # wielded
+            elif key == "%s_wield" %self.getType():
+                wfind = val.find(':')
+                wslot = val[:wfind]
+                witem = val[wfind+1:]
+                
+                # get inventory
+                aitems = self.getInventory()
+                founditems = command.findItemsInList(witem, aitems)
+                self.wield(founditems[0])
+                
 if __name__ == "__main__":
-    import defs
-    import game
-    import weapon
     import gameinit
+    gameinit.gameInitTest()
     
-    gameinit.gameInit()
-    game.items =[]
-    
-    newweapon = weapon.Weapon("dagger")
-    game.items.append(newweapon)
-    
-    print "New Actor:"
-    newactor = Actor("billy")
-    newactor.weaponSlots["right hand"] = newweapon
-    astrings = saveActorToStrings(newactor)
+    # create new actor
+    newactor = Actor("orc")
+    newactor.addNewItem("sword")
     newactor.show()
+
+    # get new actor's strings
+    astrings = newactor.saveToStrings()
+
+    # print strings
+    for line in astrings:
+        print line
+
+    # copy actor
+    bactor = Actor()
+    bactor.loadFromStrings(astrings)
+    bactor.setName("orc general")
+    bactor.show()
     
-    print "\nNew Actor copied from Actor 1 strings:"
-    newactor2 = loadActorFromStrings(astrings)
-    newactor2.show()

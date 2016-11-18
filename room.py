@@ -1,54 +1,20 @@
-from tools import *
-
 import defs
-import game
+import worldobject
 import command
 import roomexit
 
-class Room(object):
+from tools import *
+
+class Room(worldobject.WorldObject):
     def __init__(self, name = "unnamed"):
-        self.name = name
-        self.desc = "no description"
+        worldobject.WorldObject.__init__(self, name)
+        
+        self.setProper(True)
+        
         self.descriptors = {}
         self.exits = []
         self.inventory = []
-        self.mobs = []
-    
-    def setName(self, name):
-        self.name = name
-        
-    def setDescription(self, desc):
-        self.desc = desc
-    
-    def getAllClients(self):
-        
-        znum = None
-        rnum = None
-        
-        ulist = []
-        
-        # check zones for this room
-        for z in game.zones:
-            rnum = z.getRoomNum(self)
-            if rnum != None:
-                znum = game.zones.index(z)
-                break
-        
-        # room was not found in any zones
-        if rnum == None:
-            print "Room : get all clients, none found!"
-            return []
-        
-        # check each user that matches zone and room num
-        for u in game.clients:
-            if u.char.getCurrentZone() == znum and u.char.getCurrentRoom() == rnum:
-                ulist.append(u)
-        
-        if len(ulist) == 0:
-            print "No users found in room"
-        
-        return ulist    
-    
+        self.mobs = []    
     
     def hasMob(self, tmob):
         if tmob in self.mobs:
@@ -71,13 +37,13 @@ class Room(object):
             return False
     
     def addNewMob(self, mstring):
-		
+        
         newmob = command.newMob(mstring)
         
         if newmob != None:
             self.mobs.append(newmob)
         else:
-			print "ERROR ADDING NEW MOB"
+            print "ERROR ADDING NEW MOB"
             
     def removeMob(self, tmob):
         
@@ -189,10 +155,19 @@ class Room(object):
             if e.getName() == exitname:
                 return e
         return None
+
+
+    def save(self):
+        pass
+
+    def loadFromStrings(self):
+        pass
+
     
     def show(self):
-        print "Name:" + self.name
-        print "Desc:" + self.desc
+        
+        worldobject.WorldObject.show(self)
+        
         print "%d items" %len(self.inventory)
         print "%d mobs" %len(self.mobs)
         print "Descriptors:%d" %len(self.descriptors.keys())
@@ -211,39 +186,16 @@ class Room(object):
                     print "%s = %d" %(e.getName(), e.getRoomNum())
         else:
             print "No exits!"
-    
+
+
         
         
 
 
 if __name__ == "__main__":
-    
-    import zone
-    
-    myzone = zone.Zone()
-    
-    
-    tests = {1:True, 2:True, 3:True, 4:True}
-    
-    room1 = Room()
-    room1.name = "Bathroom"
-    room1.desc = "This is a bathroom that has a sink."
-    room1.descriptors.update({"sink":"It's just a plain old sink."})
-    room1.addExit("north", 1)
-    room1.show()
-    
-    room2 = Room()
-    room2.name = "Living Room"
-    room2.desc = "Spacious living room."
-    room2.addExit("south", 0)
-    
-    myzone.addRoom(room1)
-    myzone.addRoom(room2)
-    
-    
-    def myRoomShow(troom):
-        print "Room #%d" % myzone.getRoomNum(troom)
-        troom.show()
-    
-    myzone.rooms[0].show()
+    import gameinit
+    gameinit.gameInitTest()
         
+    newroom = Room("Treasury")
+    newroom.setDescription("You are standing in a well fortified treasury.  A large iron gate with thick bars blocks your way to the south.")
+    newroom.show()

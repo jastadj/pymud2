@@ -8,6 +8,14 @@ class WorldObject(noun.Noun):
     def getType(self):
         return self.__class__.__name__
     
+    """
+    def saveToStrings(self):
+		return noun.Noun.saveToStrings(self)
+    
+    def loadFromStrings(self, tstrings):
+		noun.Noun.loadFromStrings(self, tstrings)
+    """
+    
     def show(self):
         print "Type:%s" %self.getType()
         print "Name:%s" %self.getName()

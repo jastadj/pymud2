@@ -327,7 +327,7 @@ def findItemInList(idesc, ilist = game.items):
     foundlist = []
     
     for i in ilist:
-        if i.noun.hasMatch(idesc):
+        if i.hasMatch(idesc):
             foundlist.append(i)
     
     if len(foundlist) == 0:
