@@ -12,11 +12,17 @@ class Zone(object):
     zoneiterator = 0
     
     def __init__(self, name = "unnamed"):
+        
+        Zone.zoneiterator += 1
+        
         self.name = name
         self.desc = "nodesc"
         self.rooms = []
         self.zonefile = None
         self.items = []
+    
+    def setFilename(self, fname):
+        self.zonefile = fname
     
     def setName(self, name):
         self.name = name
@@ -31,7 +37,9 @@ class Zone(object):
         
         self.rooms.append(troom)
         return True
-        
+    
+    def getFilename(self):
+        return self.zonefile
     
     def getName(self):
         return self.name
@@ -50,6 +58,28 @@ class Zone(object):
             print "Unable to get room, index out of range!"
             return
         return self.rooms[rnum]
+    
+    def saveToFile(self, filename = self.zonefile)
+        
+        # if no filename is set or provided, create
+        # a default file name using zone iterator
+        if filename == None:
+            filename = "zone%d" %Zone.zoneiterator
+            Zone.zoneiterator += 1
+        
+        # if a new file name is provided
+        if filename != self.zonefile:
+            self.zonefile = filename
+        
+        fp = defs.ZONES_PATH + filename
+        
+        f = open(fp, "w")
+        
+        # write each room into file
+        for r in self.rooms:
+            pass
+        
+        f.close()
     
     def show(self):
         

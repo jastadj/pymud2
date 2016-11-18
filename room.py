@@ -157,8 +157,34 @@ class Room(worldobject.WorldObject):
         return None
 
 
-    def save(self):
-        pass
+    def saveToStrings(self):
+        
+        tstrings = []
+        
+        tstrings.append("room:%s" %self.getType() )
+        
+        # save base class data
+        tstrings += worldobject.WorldObject.saveToStrings(self)
+        
+        # save room data
+        
+        # save descriptors
+        for d in self.descriptors.keys():
+            tstrings.append("%s_descriptor:%s:%s" %(self.getType(), d, self.descriptors[d]) )
+        
+        # save items
+        for i in self.inventory:
+            tstrings.append("%s_additem:%s" %(self.getType(), i.getExName() ) )
+        
+        # save mobs
+        for m in self.mobs:
+            tstrings.append("%s_addmob:%s" %(self.getType(), m.getExName() ) )
+            
+        # save exits
+        for e in self.exits:
+            tstrings.append("%s_addexit:
+        
+        
 
     def loadFromStrings(self):
         pass
