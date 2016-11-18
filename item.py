@@ -1,35 +1,8 @@
-import defs
-import game
-import noun
-from tools import *
+import worldobject
 
-ITEMTYPES = ["Item", "Weapon", "Armor"]
-
-class Item(object):
-    def __init__(self, name):
-        self.noun = noun.Noun(name)
-        self.noun.setProper(False)
-        
-    def getType(self):
-        return self.__class__.__name__
-    
-    def test(self):
-        print "this is a test"
-    
-    def getName(self):
-        return self.noun.getName()
-    
-    def getExName(self):
-        return self.noun.getExName()
-    
-    def getArticle(self):
-        return self.noun.getArticle()
-    
-    def getDescription(self):
-        return self.noun.getDescription()
-        
-    def setDescription(self, desc):
-        self.noun.setDescription(desc)
+class Item(worldobject.WorldObject):
+    def __init__(self, name = "unnamed"):
+        worldobject.WorldObject.__init__(name)
     
     def isWeapon(self):
         return issubclass( type(self), game.WEAPON)
@@ -38,72 +11,66 @@ class Item(object):
         return issubclass( type(self), game.ARMOR)
     
     def show(self):
-        print "Item Type    :%s" %self.getType()
-        print "isWeapon     :%s" %self.isWeapon()
-        print "isArmor      :%s" %self.isArmor()
-        print "Name         :%s" %self.getName()
-        print "Extended Name:%s" %self.getExName()
-        print "Description  :%s" %self.getDescription()
+		worldobject.WorldObject.show(self)
+        print "isWeapon:%s" %self.isWeapon()
+        print "isArmor:%s" %self.isArmor()
 
-def loadItemFromStrings(istrings):
-    
-    nounstrings = []
-    
-    newitem = None
-    itemtype = None
-    
-    # determine item type    
-    for line in istrings:
-        
-        dfind = line.find(':')
-        
-        key = line[:dfind]
-        val = line[dfind+1:]
-        
-        if line.startswith("noun"): nounstrings.append(line)
-        elif key == "item_new":
-            if val == "Item": newitem = Item("unnamed")
-            elif val == "Weapon": newitem = game.WEAPON("unnamed")
-            elif val == "Armor": newitem = game.ARMOR("unnamed")
-            
-            itemtype = newitem.getType()
-        
-        # weapon data
-        if newitem.isWeapon() == "Weapon":
-            if key == "weapon_damage":
-                newitem.setDamage(int(val))
-            elif key == "weapon_hands":
-                newitem.setHands(int(val))
-                
-        # armor data
-        if newitem.isArmor() == "Armor":
-            if key == "armor_slot":
-                newitem.setSlotUsed(val)
+	def saveToStrings(self):
+		
+		istrings = worldobject.WorldObject.saveToStrings()
+		
+		if self.isWeapon():
+			istrings.append("weapon_damage:%d" %self.getDamage())
+			istrings.append("weapon_hands:%d" %self.getHands())
+		
+		if self.isArmor():
+			for s in self.getSlotsUsed():
+				istrings.append("armor_slot:%s" %s)
+		
+		return istrings
 
-    # load and set noun from strings
-    newitem.noun = noun.loadNounFromStrings(nounstrings)
-    
-    return newitem
+
+	def loadFromStrings(istrings):
+		
+		nounstrings = []
+		
+		newitem = None
+		itemtype = None
+		
+		# determine item type    
+		for line in istrings:
+			
+			dfind = line.find(':')
+			
+			key = line[:dfind]
+			val = line[dfind+1:]
+			
+			if line.startswith("noun"): nounstrings.append(line)
+			elif key == "item_new":
+				if val == "Item": newitem = Item("unnamed")
+				elif val == "Weapon": newitem = game.WEAPON("unnamed")
+				elif val == "Armor": newitem = game.ARMOR("unnamed")
+				
+				itemtype = newitem.getType()
+			
+			# weapon data
+			if newitem.isWeapon() == "Weapon":
+				if key == "weapon_damage":
+					newitem.setDamage(int(val))
+				elif key == "weapon_hands":
+					newitem.setHands(int(val))
+					
+			# armor data
+			if newitem.isArmor() == "Armor":
+				if key == "armor_slot":
+					newitem.setSlotUsed(val)
+
+		# load and set noun from strings
+		newitem.noun = noun.loadNounFromStrings(nounstrings)
+		
+		return newitem
         
 
-def saveItemToStrings(titem):
-    
-    istrings = []
-    
-    itemtype = titem.getType()
-    
-    istrings.append("item_new:%s" %itemtype)
-    istrings += noun.saveNounToStrings(titem.noun)
-    
-    if titem.isWeapon():
-        istrings.append("weapon_damage:%d" %titem.getDamage())
-        istrings.append("weapon_hands:%d" %titem.getHands())
-    
-    if titem.isArmor():
-        for s in titem.getSlotsUsed():
-			istrings.append("armor_slot:%s" %s)
-    
-    return istrings
     
 
 
