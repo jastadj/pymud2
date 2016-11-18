@@ -8,7 +8,7 @@ COMMAND_SET = None
 # see gameinit - initializes object classes in dict
 OBJECT_CLASSES = {}
 
-# objects
+# objects(lists)
 server = None
 credentials = None
 zones = None
