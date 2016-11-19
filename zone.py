@@ -16,7 +16,7 @@ class Zone(object):
         Zone.zoneiterator += 1
         
         self.name = name
-        self.desc = "nodesc"
+        self.description = "nodesc"
         self.rooms = []
         self.zonefile = None
         self.items = []
@@ -28,7 +28,7 @@ class Zone(object):
         self.name = name
         
     def setDescription(self, desc):
-        self.desc = desc
+        self.description = desc
     
     def addRoom(self, troom):
         if troom == None:
@@ -45,7 +45,7 @@ class Zone(object):
         return self.name
         
     def getDescription(self):
-        return self.desc
+        return self.description
     
     def getRoomNum(self, troom):
         if troom in self.rooms:
@@ -59,7 +59,7 @@ class Zone(object):
             return
         return self.rooms[rnum]
     
-    def saveToFile(self, filename = self.zonefile)
+    def saveToFile(self, filename):
         
         # if no filename is set or provided, create
         # a default file name using zone iterator
@@ -73,11 +73,27 @@ class Zone(object):
         
         fp = defs.ZONES_PATH + filename
         
+        #create file
+        createNewFile(fp)
+        
         f = open(fp, "w")
         
-        # write each room into file
+        
+        # write zone header stuff
+        f.write("zone_name:%s\n" %self.getName() )
+        f.write("zone_description:%s\n"%self.getDescription() )
+        f.write("\n")
+        
+        # write strings for each room to file
         for r in self.rooms:
-            pass
+            rstrings = r.saveToStrings()
+            
+            # write each room string to file
+            for line in rstrings:
+                f.write("%s\n" %line)
+            
+            # add space between rooms
+            f.write("\n")
         
         f.close()
     
@@ -92,23 +108,24 @@ class Zone(object):
         
 if __name__ == "__main__":
     
+    import gameinit
+    
     defs.configTestMode()
     
     # create test zone
     newzone = Zone("Billy's Apartment")
-    newzone.setDesc("A pretty plain apartment.")
+    newzone.setDescription("A pretty plain apartment.")
     newzone.zonefile = "apartment.zn"
     
     # create test zones
     bathroom = room.Room("Bathroom")
-    bathroom.setDesc("You are standing in a bathroom that doesn't look like it has been maintained for some time.  The smells of stale urine fills your nose.  A grungry sink hangs precariously from the tiled wall.")
+    bathroom.setDescription("You are standing in a bathroom that doesn't look like it has been maintained for some time.  The smells of stale urine fills your nose.  A grungry sink hangs precariously from the tiled wall.")
     bathroom.addExit("north", 1)
     newzone.addRoom(bathroom)
     
     livingroom = room.Room("Living Room")
-    livingroom.setDesc("A pretty boring living room vacant of furniture.  Old posters are pinned lazily to the wall.")
+    livingroom.setDescription("A pretty boring living room vacant of furniture.  Old posters are pinned lazily to the wall.")
     livingroom.addExit("south", 0)
-    livingroom.addNewMob("billy")
     newzone.addRoom(livingroom)
     
     game.zones = []
@@ -117,5 +134,5 @@ if __name__ == "__main__":
     # save test zones
     print "Saving test zone..."
     #newzone.save()
-    saveZones()
+    gameinit.saveZones()
     

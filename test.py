@@ -7,6 +7,8 @@ if __name__ == "__main__":
     import zone
     import credential
     import character
+    
+    
     gameinit.gameInitTest()
     
     print "\nGenerating test data...\n"
@@ -15,34 +17,34 @@ if __name__ == "__main__":
     # ITEMS
     #####
     game.items_common = []
-    newitem = game.ITEM("rock")
+    newitem = game.OBJECT_CLASSES["Item"]("rock")
     game.items_common.append(newitem)
     
 
     #####
-    newitemweapon = game.WEAPON("sword")
-    newitemweapon.noun.addAdjective("long")
+    newitemweapon = game.OBJECT_CLASSES["Weapon"]("sword")
+    newitemweapon.addAdjective("long")
     newitemweapon.setDescription("A pretty sharp looking sword.")
     newitemweapon.setDamage(3)
     game.items_common.append(newitemweapon)
     
     #####
-    newitemweapon2 = game.WEAPON("axe")
-    newitemweapon2.noun.addAdjective("battle")
+    newitemweapon2 = game.OBJECT_CLASSES["Weapon"]("axe")
+    newitemweapon2.addAdjective("battle")
     newitemweapon2.setDescription("A grisly looking battle axe")
     newitemweapon2.setDamage(5)
     newitemweapon2.setHands(2)
     game.items_common.append(newitemweapon2)
     
     #####
-    newitemarmor = game.ARMOR("cap")
-    newitemarmor.noun.addAdjective("leather")
+    newitemarmor = game.OBJECT_CLASSES["Armor"]("cap")
+    newitemarmor.addAdjective("leather")
     newitemarmor.setDescription("A cap made out of boiled leather.")
     newitemarmor.setSlotUsed("head")
     game.items_common.append(newitemarmor)
     
     print "Saving items to file..."
-    item.saveItems()
+    gameinit.saveItems()
     
     #####
     # MOBS
@@ -50,13 +52,14 @@ if __name__ == "__main__":
     
     #####
     game.mobs = []
-    mob1 = game.MOB("Billy")
+    mob1 = game.OBJECT_CLASSES["Mob"]("Billy")
+    mob1.setProper(True)
     mob1.setDescription("A homeless looking dude.")
     game.mobs.append(mob1)
     
     # save mob file
     print "Saving mobs to file..."
-    mob.saveMobs()
+    gameinit.saveMobs()
         
     #####
     # ZONES
@@ -68,14 +71,14 @@ if __name__ == "__main__":
     newzone.zonefile = "apartment.zn"
     
     #####
-    bathroom = game.ROOM("Bathroom")
+    bathroom = game.OBJECT_CLASSES["Room"]("Bathroom")
     bathroom.setDescription("You are standing in a bathroom that doesn't look like it has been maintained for some time.  The smells of stale urine fills your nose.  A grungry sink hangs precariously from the tiled wall.")
     bathroom.addExit("north", 1)
     bathroom.addNewItem("sword")
     newzone.addRoom(bathroom)
     
     #####
-    livingroom = game.ROOM("Living Room")
+    livingroom = game.OBJECT_CLASSES["Room"]("Living Room")
     livingroom.setDescription("A pretty boring living room vacant of furniture.  Old posters are pinned lazily to the wall.")
     livingroom.addExit("south", 0)
     livingroom.addNewMob("billy")
@@ -87,7 +90,7 @@ if __name__ == "__main__":
     
     # save test zones
     print "Saving zones to file..."
-    zone.saveZones()    
+    gameinit.saveZones()    
     
     #####
     # ACCOUNT
@@ -99,7 +102,7 @@ if __name__ == "__main__":
     newchar.setName("Cholo")
     print "Saving credential and char..."
     credential.saveCredentials()
-    character.saveCharacter(newchar, "cholo.dat")
+    newchar.saveToFile("cholo.dat")
     
     #####
     print "\nTest data done."

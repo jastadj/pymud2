@@ -26,7 +26,7 @@ def gameInit():
     addObjectClass(armor.Armor)
     addObjectClass(character.Character)
     addObjectClass(mob.Mob)
-    #addObjectClass(room.Room)
+    addObjectClass(room.Room)
 
     game.ZONE = zone.Zone
 
@@ -51,7 +51,7 @@ def gameInit():
     loadItems()
 
     # load mobs
-    #mob.loadMobs()
+    loadMobs()
     
     # load zones
     #zone.loadZones()
@@ -78,6 +78,8 @@ def gameInitTest():
     game.clients = []
     game.clients.append(tuser)
     print "TestUser created..."
+
+
 
 #################################
 #
@@ -231,7 +233,7 @@ def saveZones():
     
     # save each zone
     for z in zones:
-        z.save()
+        z.saveToFile( z.getFilename())
         
     # write zone index file
     f = open(defs.ZONES_INDEX_FILE, "w")

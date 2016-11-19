@@ -600,7 +600,7 @@ def findMobInList(mdesc, mlist = game.mobs):
     foundlist = []
     
     for m in mlist:
-        if m.noun.hasMatch(mdesc):
+        if m.hasMatch(mdesc):
             foundlist.append(m)
     
     if len(foundlist) == 0:

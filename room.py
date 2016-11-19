@@ -42,8 +42,9 @@ class Room(worldobject.WorldObject):
         
         if newmob != None:
             self.mobs.append(newmob)
-        else:
-            print "ERROR ADDING NEW MOB"
+            return True
+        
+        else: return False    
             
     def removeMob(self, tmob):
         
@@ -80,6 +81,9 @@ class Room(worldobject.WorldObject):
         
         if newitem != None:
             self.inventory.append(newitem)
+            return True
+        
+        else: return False
     
     def removeItem(self, titem):
         if titem == None:
@@ -156,6 +160,8 @@ class Room(worldobject.WorldObject):
                 return e
         return None
 
+    def addDescriptor(self, descdict):
+        self.descriptors.update( descdict)
 
     def saveToStrings(self):
         
@@ -182,13 +188,59 @@ class Room(worldobject.WorldObject):
             
         # save exits
         for e in self.exits:
-            tstrings.append("%s_addexit:
+            rstrings = e.saveToStrings()
+            # save exit strings prefixed with self type
+            for s in rstrings:
+                tstrings.append("%s_%s" %(self.getType(), s) )
         
+        return tstrings
+
+    def loadFromStrings(self, tstrings):
         
+        # load base class data
+        worldobject.WorldObject.loadFromStrings(self, tstrings)
+        
+        for line in tstrings:
+            
+            # process room exit line to room exit class
+            if "%s_RoomExit"%self.getType() in line:
+                try:
+                    line = line.replace("%s_"%self.getType(), "", 1)
+                    self.exits[-1].loadFromStrings([line])
+                except:
+                    print "Error processing room exit string, no room exits!"     
+                 
+                continue       
+            
+            delim = line.find(':')
+            key = line[:delim]
+            val = line[delim+1:]
+            
+            # descriptor
+            if key == "%s_descriptor":
+                ddelim = val.find(':')
+                dkey = val[:delim]
+                dval = val[delim+1:]
+                
+                addDescriptor( {dkey:dval} )
+            
+            # items
+            elif key == "%s_additem":
+                if not self.addNewItem(val):
+                    print "ERROR ADDING NEW ITEM TO ROOM : %s" %val
+            
+            # mobs
+            elif key == "%s_addmob":
+                if not self.addNewMob(val):
+                    print "ERROR ADDING NEW MOB TO ROOM : %s" %val
+            
+            # room exit
+            elif key == "%s_roomexit"%self.getType():
+                self.exits.append(roomexit.RoomExit())
+            
 
-    def loadFromStrings(self):
-        pass
-
+                
+                
     
     def show(self):
         
@@ -219,9 +271,22 @@ class Room(worldobject.WorldObject):
 
 
 if __name__ == "__main__":
-    import gameinit
-    gameinit.gameInitTest()
+    #import gameinit
+    #gameinit.gameInitTest()
         
     newroom = Room("Treasury")
     newroom.setDescription("You are standing in a well fortified treasury.  A large iron gate with thick bars blocks your way to the south.")
+    newroom.addExit("north", 1)
+    newroom.exits[-1].setDescription("A doorway to the north.")
     newroom.show()
+    
+    rstrings = newroom.saveToStrings()
+    
+    print "\nRoom Strings:"
+    for line in rstrings:
+        print line
+        
+    print "\nLoading room from strings..."
+    newroom2 = Room()
+    newroom2.loadFromStrings(rstrings)
+    newroom2.show()
