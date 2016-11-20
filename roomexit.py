@@ -2,6 +2,7 @@ import worldobject
 
 class RoomExit(worldobject.WorldObject):
     def __init__(self, name = "unnamed exit", room = 0, zone = None):
+        
         worldobject.WorldObject.__init__(self, name)
         
         self.roomnum = int(room)
@@ -18,7 +19,7 @@ class RoomExit(worldobject.WorldObject):
         return self.zonenum
     
     def setRoomNum(self, roomnum):
-        self.roomnum
+        self.roomnum = roomnum
     
     def setZoneNum(self, zonenum):
         self.zonenum = zonenum
@@ -28,7 +29,7 @@ class RoomExit(worldobject.WorldObject):
         print "RoomNum=%d" %self.getRoomNum()
         if self.zonenum == None:
             print "ZoneNum=None"
-        else: print "ZoneNum=%d" %self.getZoneNum()
+        else: print "ZoneNum=%d" %self.getZoneNum()   
     
     def saveToStrings(self):
         
@@ -40,25 +41,31 @@ class RoomExit(worldobject.WorldObject):
         tstrings += worldobject.WorldObject.saveToStrings(self)
         
         tstrings.append("%s_roomnum:%d" %(self.getType(), self.getRoomNum() ) )
-        tstrings.append("%s_roomnum:%d" %(self.getType(), self.getRoomNum() ) )
+        if self.getZoneNum() == None:
+            tstrings.append("%s_zonenum:None" %(self.getType()) )
+        else:
+            tstrings.append("%s_zonenum:%d" %(self.getType(), self.getZoneNum() ) )
         
         return tstrings
+        
+    def loadFromStrings(self, tstrings):
+        
+        # load base class data
+        worldobject.WorldObject.loadFromStrings(self, tstrings)
+        
+        for line in tstrings:
+            delim = line.find(':')
+            key = line[:delim]
+            val = line[delim+1:]
+            
+            if key == "%s_roomnum" %self.getType():
+                self.setRoomNum( int(val) )
+            elif key == "%s_zonenum" %self.getType():
+                if val == "None":
+                    self.setZoneNum(None)
+                else: self.setZoneNum( int(val) )         
 
-	def loadFromStrings(self, tstrings):
-		
-		# load base class data
-		worldobject.WorldObject.loadFromStrings(tstrings)
-		
-		for line in tstrings:
-			
-			delim = line.find(':')
-			key = line[delim:]
-			val = line[delim+1:]
-			
-			if key == "%s_roomnum" %self.getType():
-				self.setRoomNum( int(val) )
-			elif key == "%s_zonenum" %self.getType():
-				self.setZone( int(val) )
+
 
 if __name__ == "__main__":
     myexit = RoomExit("north", 1, None)
@@ -70,7 +77,8 @@ if __name__ == "__main__":
         print line
     
     print "\nLoading from strings..."
-    myexit2 = RoomExit()
+    myexit2 = RoomExit("shit", 3, 3)
     myexit2.loadFromStrings(tstrings)
     myexit2.show()
+    myroomnum = myexit2.getRoomNum()
     

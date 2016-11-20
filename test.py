@@ -51,11 +51,11 @@ if __name__ == "__main__":
     #####
     
     #####
-    game.mobs = []
+    game.mobs_common = []
     mob1 = game.OBJECT_CLASSES["Mob"]("Billy")
     mob1.setProper(True)
     mob1.setDescription("A homeless looking dude.")
-    game.mobs.append(mob1)
+    game.mobs_common.append(mob1)
     
     # save mob file
     print "Saving mobs to file..."
@@ -73,6 +73,7 @@ if __name__ == "__main__":
     #####
     bathroom = game.OBJECT_CLASSES["Room"]("Bathroom")
     bathroom.setDescription("You are standing in a bathroom that doesn't look like it has been maintained for some time.  The smells of stale urine fills your nose.  A grungry sink hangs precariously from the tiled wall.")
+    bathroom.addDescriptor( {"sink":"The sink hasn't been cleaned in years.  It is layered in soap scum."} )
     bathroom.addExit("north", 1)
     bathroom.addNewItem("sword")
     newzone.addRoom(bathroom)
@@ -106,3 +107,5 @@ if __name__ == "__main__":
     
     #####
     print "\nTest data done."
+    
+    

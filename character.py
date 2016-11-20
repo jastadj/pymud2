@@ -29,6 +29,11 @@ class Character(actor.Actor):
             return False
         
     def setCurrentZone(self, cz):
+        
+        if cz == "None" or cz == None:
+            self.currentZone = None
+            return True
+        
         try:
             newzone = int(cz)
             self.currentZone = newzone
@@ -91,10 +96,7 @@ class Character(actor.Actor):
         createNewFile(fp)
         
         # reset character to new
-        self = Character()
-        
-        # read in all file lines
-        tlines = []
+        #self = Character()
         
         # read each line in character file
         with open(fp, "r") as f:
@@ -103,32 +105,36 @@ class Character(actor.Actor):
                 # remove newline from line
                 line = line[:-1]
                 
-                # collect line
-                tlines.append(line)
+                delim = line.find(':')
+                key = line[:delim]
+                val = line[delim+1:]
+                
+                # character specific data
+                if key == "%s_room" %self.getType():
+                    self.setCurrentRoom( int(val) )
+                elif key == "%s_zone" %self.getType():
+                    if val == "None":
+                        self.setCurrentZone(None)
+                    else:
+                        self.setCurrentZone( int(val) )
+                
+                # else pass to actor string loader
+                else:
+                    actor.Actor.loadFromStrings(self,  [line] )
+
+
         
         f.close()
-        
-        # load base class data
-        actor.Actor.loadFromStrings(self, tlines)
-        
-        # load character data
-        for line in tlines:
-            
-            delim = line.find(':')
-            key = line[:delim]
-            val = line[delim+1:]
-            
-            if key == "%s_room" %self.getType():
-                self.currentRoom = int(val)
-            elif key == "%s_zone" %self.getType():
-                self.currentZone = int(val)
-        
-                
-    
     
 if __name__ == "__main__":
     
+    import gameinit
+    gameinit.gameInitTest()
+    
     newchar = Character("Roland")
+    newchar.setCurrentRoom(2)
+    newchar.setCurrentZone(3)
+    newchar.addNewItem("sword")
     
     # check valid name
     print "Creating character %s." %newchar.getName()
@@ -144,9 +150,9 @@ if __name__ == "__main__":
     newchar.saveToFile("testchar.dat")
 
     # reset actor
-    newchar = Character("corrupt")
-    newchar.loadFromFile("testchar.dat")
-    newchar.setName("Groland")
-    newchar.show()
+    print "\nLoading character from file:"
+    newchar2 = Character()
+    newchar2.loadFromFile("testchar.dat")
+    newchar2.show()
 
 

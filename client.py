@@ -112,7 +112,7 @@ class Client(object):
 		# save character
 		if self.credential.characterfile != None:
 			print "Saving character %s to %s" %(self.char.getName() , self.credential.characterfile)
-			character.saveCharacter(self.char, self.credential.characterfile)
+			self.char.saveToFile(self.credential.characterfile)
 		else:
 			print "%s's character %s : character file is null" %(self.credential.accountname, self.char.getName())
 		

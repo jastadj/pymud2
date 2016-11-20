@@ -112,8 +112,6 @@ def mainGameInvalid(tuser):
 #####################################################################
 ##      COMMANDS
 
-
-
 def showHelpMenu(tuser, cdict):
 
     tset = None
@@ -187,8 +185,8 @@ def doLookRoom(tuser, troom):
         tuser.send("Invalid room look - room is null!\n")
         return
 
-    tuser.send("%s%s%s\n" %(setColor(COLOR_CYAN, True), troom.name, resetColor()) )
-    desclines = fitStringToWidth(troom.desc)
+    tuser.send("%s%s%s\n" %(setColor(COLOR_CYAN, True), troom.getName(), resetColor()) )
+    desclines = fitStringToWidth(troom.getDescription())
     for l in desclines:
         tuser.send("%s\n" %l)
 
@@ -258,11 +256,10 @@ def doSay(tuser, cdict, *argv):
     if args:
 
         # get current room
-        troom = getCurrentRoom(tuser)
+        #troom = getCurrentRoom(tuser)
 
         # get all players in room
-        ulist = troom.getAllClients()
-
+        #ulist = troom.getAllClientsInRoom(troom)
 
         # all arguments = say string
         saystr = " ".join(args)
@@ -274,13 +271,46 @@ def doSay(tuser, cdict, *argv):
     else:
         tuser.send("Say what?\n")
 
+def getZoneFromRoom(troom):
+    
+    for z in game.zones:
+        if z.hasRoom(troom):
+            return game.zones.index(z)
+    
+    return None
+
+def getAllClientsInRoom(troom):
+    
+    tzonenum = getZoneFromRoom(troom)
+    
+    clist = []
+    
+    if tzonenum == None:
+        return None
+    
+    troomnum = game.zones[tzonenum].getRoomNum(troom)
+    
+    if troomnum == None:
+        return None
+    
+    for u in game.clients:
+        if u.char.getCurrentRoom() == troomnum:
+            if u.char.getCurrentZone() == tzonenum:
+                clist.append(u)
+    
+    return clist
+    
+
 def broadcastToRoomEx(tuser, tmsg):
     
     troom = getCurrentRoom(tuser)
     
-    ulist = troom.getAllClients()
+    ulist = getAllClientsInRoom(troom)
     
-    ulist.remove(tuser)
+    try:
+        ulist.remove(tuser)
+    except:
+        pass
     
     for u in ulist:
         u.send("%s" %tmsg)
@@ -349,7 +379,7 @@ def findItemsInList(idesc, ilist = game.items):
     foundlist = []
     
     for i in ilist:
-        if i.noun.hasMatch(idesc):
+        if i.hasMatch(idesc):
             foundlist.append(i)
     
     if len(foundlist) == 0:
@@ -585,7 +615,7 @@ def findMobsInList(mdesc, mlist = game.mobs):
     foundlist = []
     
     for m in mlist:
-        if m.noun.hasMatch(mdesc):
+        if m.hasMatch(mdesc):
             foundlist.append(m)
     
     if len(foundlist) == 0:

@@ -14,6 +14,7 @@ def charCreation(tuser):
             tuser.send("Creating new character...\n")
             tuser.send("Enter character name: >")
             tuser.setMode("charcreation2")
+            tuser.char = character.Character()
             #tuser.setMode("maingamestart")
             
             # temp create char
@@ -33,7 +34,7 @@ def charCreation(tuser):
         # verify char name is valid
         elif tuser.getMode() == "charcreation2":
             tname = tuser.getLastInput()
-            tuser.setVar( {"charname":tuser.getLastInput() } )
+            tuser.char.setName(tname)
             
             # if char already exists
             if fileExists( defs.CHARACTERS_PATH + "%s.dat" %tname):
@@ -41,7 +42,7 @@ def charCreation(tuser):
                 tuser.setMode("charcreation1")
                 continue
             
-            if not character.validCharacterName(tname):
+            if not tuser.char.isNameValid():
                 tuser.send("That name is not valid!  Letters only, no spaces.\n")
                 tuser.setMode("charcreation1")
                 continue
@@ -55,13 +56,11 @@ def charCreation(tuser):
                 tuser.setMode("charcreation1")
                 continue
             
-            # create character
-            tuser.char = game.CHARACTER()
-            tuser.credential.characterfile = "%s.dat" %tuser.getVar("charname")
-            tuser.char.setName(tuser.getVar("charname"))
+            # set character file
+            tuser.credential.characterfile = "%s.dat" %tuser.char.getName()
             
             # save character
-            character.saveCharacter(tuser.char, tuser.credential.characterfile)
+            tuser.char.saveToFile(tuser.credential.characterfile)
             
             #done
             tuser.setMode("maingamestart")

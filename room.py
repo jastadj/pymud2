@@ -159,7 +159,10 @@ class Room(worldobject.WorldObject):
             if e.getName() == exitname:
                 return e
         return None
-
+    
+    def getExits(self):
+        return self.exits
+    
     def addDescriptor(self, descdict):
         self.descriptors.update( descdict)
 
@@ -201,7 +204,6 @@ class Room(worldobject.WorldObject):
         worldobject.WorldObject.loadFromStrings(self, tstrings)
         
         for line in tstrings:
-            
             # process room exit line to room exit class
             if "%s_RoomExit"%self.getType() in line:
                 try:
@@ -217,20 +219,20 @@ class Room(worldobject.WorldObject):
             val = line[delim+1:]
             
             # descriptor
-            if key == "%s_descriptor":
+            if key == "%s_descriptor" %self.getType():
                 ddelim = val.find(':')
-                dkey = val[:delim]
-                dval = val[delim+1:]
-                
-                addDescriptor( {dkey:dval} )
+                dkey = val[:ddelim]
+                dval = val[ddelim+1:]
+
+                self.addDescriptor( {dkey:dval} )
             
             # items
-            elif key == "%s_additem":
+            elif key == "%s_additem" %self.getType():
                 if not self.addNewItem(val):
                     print "ERROR ADDING NEW ITEM TO ROOM : %s" %val
             
             # mobs
-            elif key == "%s_addmob":
+            elif key == "%s_addmob" %self.getType():
                 if not self.addNewMob(val):
                     print "ERROR ADDING NEW MOB TO ROOM : %s" %val
             
@@ -248,10 +250,8 @@ class Room(worldobject.WorldObject):
         
         print "%d items" %len(self.inventory)
         print "%d mobs" %len(self.mobs)
-        print "Descriptors:%d" %len(self.descriptors.keys())
-        if len(self.descriptors.keys()) == 0:
-            print "None"
-        else:
+        print "Descriptors #:%d" %len(self.descriptors.keys())
+        if len(self.descriptors.keys()) != 0:
             for d in self.descriptors.keys():
                 print "%s:%s" %(d, self.descriptors[d])
         
@@ -271,12 +271,14 @@ class Room(worldobject.WorldObject):
 
 
 if __name__ == "__main__":
-    #import gameinit
-    #gameinit.gameInitTest()
+    import gameinit
+    gameinit.gameInitTest()
         
     newroom = Room("Treasury")
     newroom.setDescription("You are standing in a well fortified treasury.  A large iron gate with thick bars blocks your way to the south.")
     newroom.addExit("north", 1)
+    newroom.addDescriptor( {"gate":"The gate looks nearly indestructable."} )
+    newroom.addNewItem("sword")
     newroom.exits[-1].setDescription("A doorway to the north.")
     newroom.show()
     

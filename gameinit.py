@@ -54,7 +54,7 @@ def gameInit():
     loadMobs()
     
     # load zones
-    #zone.loadZones()
+    loadZones()
     
     # feedback
     print "%d accounts loaded." %len(game.credentials)
@@ -162,7 +162,7 @@ def saveMobs():
     #write each mob's savestrings to file
     for m in game.mobs_common:
         
-        mlines = saveToStrings(m)
+        mlines = m.saveToStrings()
         
         for line in mlines:
             f.write("%s\n" %line)
@@ -275,8 +275,8 @@ def loadZones():
                 
         # load in each zone from file
         for zt in zonefiles:
-            newzone = Zone()
-            newzone.load(zt)
+            newzone = game.ZONE()
+            newzone.loadFromFile(zt)
             game.zones.append(newzone)
     
     # else file is new, create defaults

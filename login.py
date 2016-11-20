@@ -17,12 +17,6 @@ def loginMenu(tuser):
         # check login / get password
         elif tuser.getMode() == "login1":
             
-            if not character.validCharacterName(tuser.getLastInput()):
-                tuser.send("That is not a valid user name!  (Letters only, no spaces!)\n")
-                tuser.setMode("login0")
-                dopasses = 0
-                continue
-            
             # store login name var
             tuser.setVar({"login":tuser.getLastInput()})
             
@@ -66,8 +60,8 @@ def loginMenu(tuser):
                     tuser.send("Enter new password:")
                     tuser.setMode("loginnewpass")
                 else:
-					tuser.setMode("login0")
-					continue
+                    tuser.setMode("login0")
+                    continue
             # ERROR
             except:
                 tuser.setMode("login0")
@@ -110,24 +104,18 @@ def loginMenu(tuser):
             if tuser.credential.characterfile != None:
                 
                 # attempt to load character file
-                tuser.char = character.loadCharacter(tuser.credential.characterfile)
-                
-                # if no character file, create new character
-                if tuser.char == None:
-                    print "Error loading character, creating new..."
-                    tuser.skip_input = 1
-                    tuser.setMode("charcreation1")
+                tuser.char = character.Character()
+                tuser.char.loadFromFile( tuser.credential.characterfile )
                 
                 # character loaded, enter game
-                else:
-                    tuser.setMode("maingamestart")
-                    tuser.skip_input = 1
+                tuser.setMode("maingamestart")
+                tuser.skip_input = 1
             
             # no characer file, create character
             else:
                 tuser.skip_input = 1
                 tuser.setMode("charcreation1")
-				
+                
         
         
         #decrement passes
@@ -135,4 +123,4 @@ def loginMenu(tuser):
         
 
 if __name__ == "__main__":
-	pass
+    pass
