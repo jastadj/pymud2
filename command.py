@@ -85,6 +85,7 @@ def initMainCommands():
     cs.add("wield", "Wield a weapon", doWield, True)
     cs.add("unwield", "Unwield a weapon", doUnwield, True)
     cs.add("color", "Color on or off", doColor, True)
+    cs.add("kill", "Kill target", doKill, True)
     
     #cs.add("debug", "do something", doDebug)
 
@@ -265,8 +266,15 @@ def doMove(tuser, rexit):
     # by default, do a look room command for player
     doLookCurrentRoom(tuser)
 
-def actorSay(tactor, saystr):
-    pass
+def mobSay(tmob, saystr):
+    
+    troom = tmob.getCurrentRoom()
+    
+    if troom == None:
+        print "Error in mobsay, mob has no current room!"
+        return
+        
+    broadcastToRoom(troom, "%s says \"%s\"\n" %(tmob.getExName(),saystr) )
     
 def doSay(tuser, cdict, *argv):
     args = []
@@ -285,11 +293,12 @@ def doSay(tuser, cdict, *argv):
         #ulist = troom.getAllClientsInRoom(troom)
 
         # all arguments = say string
+        troom = getCurrentRoom(tuser)
         saystr = " ".join(args)
-
-        tuser.send("You say \"%s\"\n" %saystr)
-
-        broadcastToRoomEx(tuser, "%s says \"%s\"\n" %(tuser.char.getName(), saystr) )
+        usaystr = "You say \"%s\"\n" %saystr
+        saystr = "%s says \"%s\"\n" %(tuser.char.getExName(), saystr)
+        
+        broadcastToRoom(troom, saystr, tuser, usaystr )
 
     else:
         tuser.send("Say what?\n")
@@ -317,6 +326,11 @@ def getAllClientsInRoom(troom):
         return None
     
     for u in game.clients:
+        
+        # make sure client has a character
+        if u.char == None:
+            continue
+        
         if u.char.getCurrentRoom() == troomnum:
             if u.char.getCurrentZone() == tzonenum:
                 clist.append(u)
@@ -324,34 +338,45 @@ def getAllClientsInRoom(troom):
     return clist
     
 
-def broadcastToRoomEx(tuser, tmsg):
-    
-    troom = getCurrentRoom(tuser)
-    
+def broadcastToRoom(troom, tmsg, tuser = None, umsg = None):
+
+    if troom == None:
+        print "Error broadcasting to room, room is null!"
+        return
+   
     ulist = getAllClientsInRoom(troom)
     
-    try:
-        ulist.remove(tuser)
-    except:
-        pass
-    
     for u in ulist:
-        u.send("%s" %tmsg)
-
+        if tuser != None:
+            if tuser == u:
+                if umsg != None:
+                    tuser.send("%s" %  umsg)
+                else:
+                    tuser.send("%s" % tmsg )
+                
+        else: u.send("%s" %tmsg)
 
 def getCurrentRoom(tuser):
+    
+    if issubclass(type(tuser), game.OBJECT_CLASSES["Mob"]):
+        return tuser.getCurrentRoom()
+    
+    if issubclass(type(tuser), game.OBJECT_CLASSES["Client"]):
+        
+        crnum = tuser.char.getCurrentRoom()
+        tz = getCurrentZone(tuser)
+        tr = None
 
-    crnum = tuser.char.getCurrentRoom()
-    tz = getCurrentZone(tuser)
-    tr = None
+        try:
+            tr = tz.rooms[crnum]
+        except:
+            print "Error getting current player room @ room #%d!!" %crnum
+            return None
 
-    try:
-        tr = tz.rooms[crnum]
-    except:
-        print "Error getting current player room @ room #%d!!" %crnum
-        return None
-
-    return tr
+        return tr
+    
+    if issubclass(type(tuser), game.OBJECT_CLASSES["Character"]):
+        return getCurrentRoom( tuser.getClient())
 
 def getCurrentZone(tuser):
 
@@ -459,10 +484,10 @@ def actorGet(tuser, tactor, istring):
         # add item to target actor
         tactor.addItem(titems[0])
         
-        if tuser == tactor:
-            tuser.send("You take the %s.\n" %titems[0].getExName() )
+        ustr = "You take the %s.\n" %titems[0].getExName()
+        tstr = "%s takes a %s.\n" %(tactor.getName(), titems[0].getExName())
         
-        broadcastToRoomEx(tuser, "%s takes a %s.\n" %(tactor.getName(), titems[0].getExName()) )
+        broadcastToRoomEx(tuser, tstr, tuser, ustr )
         
         return True
 
@@ -497,9 +522,11 @@ def doGet(tuser, cdict, *argv):
     else:
         troom.removeItem(titems[0])
         tuser.char.addItem(titems[0])
-        tuser.send("You take the %s.\n" %titems[0].getExName() )
         
-        broadcastToRoomEx(tuser, "%s takes a %s.\n" %(tuser.char.getName(), titems[0].getExName()) )
+        ustr = "You take the %s.\n" %titems[0].getExName()
+        tstr = "%s takes a %s.\n" %(tuser.char.getName(), titems[0].getExName())
+        
+        broadcastToRoom(troom, tstr, tuser, ustr )
         
 def actorDrop(tactor, dropstr):
     pass
@@ -538,9 +565,10 @@ def doDrop(tuser, cdict, *argv):
             print "Error removing item, not on character!"
             return False
         troom.addItem(titems[0])
-        tuser.send("You drop the %s.\n" %titems[0].getName() )
+        ustr = "You drop the %s.\n" %titems[0].getName()
+        tstr = "%s drops %s.\n" %(tuser.char.getName(), titems[0].getExName())
 
-        broadcastToRoomEx(tuser, "%s drops %s %s.\n" %(tuser.char.getName(), titems[0].getArticle(), titems[0].getName()) )
+        broadcastToRoom(troom, tstr, tuser, ustr )
         
         return True
 
@@ -669,6 +697,101 @@ def findMobInList(mdesc, mlist = game.mobs):
     else:
         #print "found mob:%s" %foundlist[0].getName()
         return foundlist[0]
+
+def doKill(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        tuser.send("Attack who?\n")
+        return
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+
+    monoarg = " ".join(args)
+    
+    # get current room of user
+    troom = getCurrentRoom(tuser)
+    
+    # get list of mobs in current room
+    mlist = troom.getMobs()
+    
+    tmob = findMobsInList(monoarg, mlist)
+    
+    if tmob == None:
+        tuser.send("You do not see that here!\n")
+        return
+    
+    else:
+        tmob = tmob[0]
+        
+        tuser.send("You start attacking %s!\n" %tmob.getExName())
+        tuser.char.setCombatTarget(tmob)
+        tmob.setCombatTarget(tuser.char)
+
+def doAttack(tactor):
+    
+    if not tactor.inCombat():
+        print "Error doAttack, tactor not in combat!"
+        return
+    
+    opponent = tactor.getCombatTarget()
+    troom = getCurrentRoom(tactor)
+    
+    # check that target is in room
+    if troom != getCurrentRoom(opponent):
+        
+        #is target dead?
+        if not opponent.isAlive():
+            opponent.setCombatTarget(None)
+            tactor.setCombatTarget(None)
+        
+        return
+    
+    dodmg = getAttackRoll(tactor)
+    
+    tmsg = "%s attacks %s for %d damage.\n" %(tactor.getExName(), opponent.getExName(), dodmg)
+    umsg = ""
+    
+    # if attacker is player
+    if tactor.isPlayer():
+        umsg = "You attack %s for %d damage.\n" %(opponent.getExName(), dodmg)
+        broadcastToRoom(troom, tmsg, tactor.getClient(), umsg)
+    
+    # if opponent is player
+    elif opponent.isPlayer():
+        umsg = "%s hits you for %d damage.\n" %(tactor.getExName(), dodmg)
+        broadcastToRoom(troom, tmsg, opponent.getClient(), umsg)
+    
+    # else player is witnessing
+    else:
+        broadcastToRoom(troom, tmsg)
+    
+    # apply damage
+    addHealth(opponent, -dodmg)
+    
+
+def getAttackRoll(tactor):
+    
+    weps = tactor.getWielded()
+    
+    if len(weps) == 0:
+        return 1
+    
+    dmgtot = 0
+    
+    for w in weps:
+        dmgtot += w.getDamage()
+    
+    return dmgtot
+
+def addHealth(tactor, amount):
+    
+    currenthp = tactor.getAttribute("current hp")
+    
+    tactor.setAttribute("current hp", currenthp + amount)
+    
 
 #####################################################################
 if __name__ == "__main__":

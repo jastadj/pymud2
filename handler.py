@@ -122,8 +122,7 @@ if __name__ == "__main__":
             elif tuser.getLastInput() == "edit":
                 tuser.setMode("editmode1")
             elif tuser.getLastInput() == "debug1":
-                for o in game.worldobjects:
-                    print o
+                pass
         elif tuser.getLastInput() == "quitquit":
             doquit = True
 

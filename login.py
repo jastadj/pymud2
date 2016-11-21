@@ -106,6 +106,7 @@ def loginMenu(tuser):
                 # attempt to load character file
                 tuser.char = character.Character()
                 tuser.char.loadFromFile( tuser.credential.characterfile )
+                tuser.char.client = tuser
                 
                 # character loaded, enter game
                 tuser.setMode("maingamestart")

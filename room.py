@@ -32,6 +32,7 @@ class Room(worldobject.WorldObject):
         
         try:
             self.mobs.append(tmob)
+            tmob.setCurrentRoom(self)
         except:
             print "Error adding mob to room!"
             return False
@@ -42,18 +43,20 @@ class Room(worldobject.WorldObject):
         
         if newmob != None:
             self.mobs.append(newmob)
+            newmob.setCurrentRoom(self)
             return True
         
         else: return False    
             
     def removeMob(self, tmob):
         
-        if tmob != None:
+        if tmob == None:
             print "Error removing mob from room, mob is null!"
             return False
         
         try:
             self.mobs.remove(tmob)
+            tmob.setCurrentRoom(None)
         except:
             print "Error removing mob from room!"
     
@@ -252,13 +255,6 @@ class Room(worldobject.WorldObject):
         children += self.exits
         
         return children
-    
-    def onTick(self):
-        
-        children = self.getChildren()
-        
-        for c in children:
-            c.onTick()
     
     def show(self):
         

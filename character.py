@@ -11,7 +11,11 @@ class Character(actor.Actor):
         # position variables
         self.currentRoom = 0
         self.currentZone = 0
+        self.client = None
         
+
+    def getClient(self):
+        return self.client
 
     def getCurrentRoom(self):
         return self.currentRoom

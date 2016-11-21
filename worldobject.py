@@ -22,7 +22,7 @@ class WorldObject(noun.Noun):
         self.onTick()
         
         for c in self.getChildren():
-            c.onTick()
+            c.doTick()
     
     def onTick(self):
         pass

@@ -9,6 +9,8 @@ class Actor(worldobject.WorldObject):
         
         self.attributes = {"max hp":10, "current hp":10}
         
+        self.combatTarget = None
+        
         # init weapon slots
         self.weaponSlots = {}
         for wslot in defs.weaponSlots:
@@ -18,6 +20,11 @@ class Actor(worldobject.WorldObject):
         self.armorSlots = {}
         for aslot in defs.armorSlots:
             self.armorSlots.update( {aslot:None} )
+
+    def isPlayer(self):
+        if self.getType() == "Character":
+            return True
+        else: return False
 
     def hasItem(self, titem):       
         return titem in self.inventory
@@ -54,7 +61,7 @@ class Actor(worldobject.WorldObject):
         return eitems
     
     def getAttribute(self, tattr):
-        if tattr in self.attributes.key():
+        if tattr in self.attributes.keys():
             return self.attributes[tattr]
         else: return None
     
@@ -120,6 +127,29 @@ class Actor(worldobject.WorldObject):
             self.attributes[tattr] = val
             return True
         else: return False
+            
+    def getCombatTarget(self):
+        return self.combatTarget
+    
+    def setCombatTarget(self, tactor):
+        self.combatTarget = tactor
+    
+    def inCombat(self):
+        if self.combatTarget != None: return True
+        else: return False
+
+    def isAlive(self):
+        if self.getAttribute("current hp") > 0:
+            return True
+        else: return False
+
+    def onTick(self):
+        
+        if not self.isAlive():
+            self.doDeath()
+        
+        elif self.inCombat():
+            command.doAttack(self)    
     
     def show(self):
         worldobject.WorldObject.show(self)
@@ -160,7 +190,7 @@ class Actor(worldobject.WorldObject):
         # wield items
         for w in self.weaponSlots.keys():
             if self.weaponSlots[w] != None:
-                tstrings.append("%s_wield:%s:%s" %( self.getType() , w, tactor.weaponSlots[w].getExName() ) )
+                tstrings.append("%s_wield:%s:%s" %( self.getType() , w, self.weaponSlots[w].getExName() ) )
         
         return tstrings
     

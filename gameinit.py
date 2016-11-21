@@ -1,6 +1,7 @@
 import defs
 import timer
 import credential
+import client
 import testclient
 import game
 import worldobject
@@ -28,6 +29,7 @@ def gameInit():
     addObjectClass(character.Character)
     addObjectClass(mob.Mob)
     addObjectClass(room.Room)
+    addObjectClass(client.Client)
 
     game.ZONE = zone.Zone
 

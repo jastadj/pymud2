@@ -62,6 +62,8 @@ def charCreation(tuser):
             # save character
             tuser.char.saveToFile(tuser.credential.characterfile)
             
+            tuser.char.client = tuser
+            
             #done
             tuser.setMode("maingamestart")
             tuser.skip_input = 1
