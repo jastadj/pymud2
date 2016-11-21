@@ -186,6 +186,7 @@ class Actor(worldobject.WorldObject):
         # save carried items
         for i in self.inventory:
             tstrings.append("%s_additem:%s" %( self.getType(), i.getExName() ) )
+            
         
         # wield items
         for w in self.weaponSlots.keys():

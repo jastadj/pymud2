@@ -681,7 +681,7 @@ def doPutItem(tuser, cdict, *argv):
     args = []
     # no arguments, do a room look
     if argv[0] == None:
-        tuser.send("Drop what?\n")
+        tuser.send("Put what?\n")
         return False
     # arguments
     else:
@@ -699,9 +699,10 @@ def doPutItem(tuser, cdict, *argv):
     
     
     fitems = findItemsInString(monoarg)
-    
+        
     if len(fitems) != 2:
         tuser.send("Put what into what?\n")
+        return
     
     tgtitemname = fitems[0].getExName()
     tgtitem = None
@@ -718,6 +719,7 @@ def doPutItem(tuser, cdict, *argv):
     tgtitem = findItemsInList(tgtitemname, invlist)
     if tgtitem == None:
         tuser.send("You do not have that!\n")
+        return
     else:
         tgtitem = tgtitem[0]
     
@@ -725,10 +727,10 @@ def doPutItem(tuser, cdict, *argv):
     conitem = findItemsInList(conitemname, invlist)
     if conitem == None:
         
-        conitem = findItemInList(conitemname, rlist)
+        conitem = findItemsInList(conitemname, rlist)
         
         if conitem == None:
-            tuser.send("You do no have that!")
+            tuser.send("You do no have that!\n")
             return
     
     conitem = conitem[0]
