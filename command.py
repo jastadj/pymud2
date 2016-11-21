@@ -82,6 +82,7 @@ def initMainCommands():
     cs.add("inventory", "Show inventory", doShowInventory)
     cs.add("get","Get something", doGet, True)
     cs.add("drop","Drop something", doDrop, True)
+    cs.add("put", "Put something into something", doPutItem, True)
     cs.add("wield", "Wield a weapon", doWield, True)
     cs.add("unwield", "Unwield a weapon", doUnwield, True)
     cs.add("color", "Color on or off", doColor, True)
@@ -162,6 +163,8 @@ def doLook(tuser, cdict, *argv):
         for a in argv[0]:
             args.append(a)
 
+    dolookin = False
+
     # remove the word "at"
     if "at" in args: args.remove("at")
             
@@ -179,27 +182,50 @@ def doLook(tuser, cdict, *argv):
         tuser.send("%s\n" %troom.descriptors[monoarg])
         return
 
-    titems = None
-    
-    # check items in room
-    titems = findItemsInList(monoarg, troom.getItems())
-    if titems != None:
-        tuser.send("%s\n" %titems[0].getDescription() )
-        return
+    tobj = None
 
-    # check items in inventory
-    titems = findItemsInList(monoarg, tuser.char.getInventory())
-    if titems != None:
-        tuser.send("%s\n" %titems[0].getDescription())
-        return
-  
     # check mobs in room
     tmobs = findMobsInList(monoarg, troom.getMobs())
     if tmobs != None:
-        tuser.send("%s\n" %tmobs[0].getDescription())
-        return
+        tobj = tmobs[0]
+    
+    
+    # items
+    if tobj == None:
+        titems = None
         
-    tuser.send("You do not see that here.\n")
+        # check items in room
+        titems = findItemsInList(monoarg, troom.getItems())
+        if titems != None:
+            tobj = titems[0]
+
+        # check items in inventory
+        titems = findItemsInList(monoarg, tuser.char.getInventory())
+        if titems != None:
+            tobj = titems[0]
+  
+    if tobj != None:
+        tuser.send("%s\n" %tobj.getDescription())
+        
+        # if container, show items it's holding
+        if( issubclass( type(tobj), game.OBJECT_CLASSES["Item"]) ):
+            if tobj.isContainer():
+                
+                # get item count of container
+                icnt = len(tobj.getItems())
+                
+                # if container is empty
+                if icnt == 0:
+                    tuser.send("It is currently empty.\n")
+                
+                # else print its contents
+                else:
+                    tuser.send("It contains:\n")
+                    for i in tobj.getItems():
+                        tuser.send("    %s\n" %i.getExName() )
+        
+    else:
+        tuser.send("You do not see that here.\n")
 
 
 def doLookRoom(tuser, troom):
@@ -396,7 +422,7 @@ def newItem(idesc):
     titem = findItemInList(idesc, game.items)
     
     if titem != None:
-        return copy.copy(titem)
+        return copy.deepcopy(titem)
     else:
         return None
 
@@ -437,6 +463,23 @@ def findItemsInList(idesc, ilist = game.items):
     else:
         return foundlist
 
+def findItemsInString(tstring):
+    ilist = []
+    
+    words = tstring.split()
+    
+    wpos = 0
+    
+    for w in range(1, len(words) + 1 ):
+        ifind = findItemsInList(" ".join(words[wpos:w]), game.items)
+        
+        if ifind != None:
+            ilist.append(ifind[0])
+            wpos = w
+    
+    return ilist
+    
+
 def doShowInventory(tuser, cdict):
     tuser.send("\n")
     
@@ -455,6 +498,7 @@ def doShowInventory(tuser, cdict):
         for i in titems:
             tuser.send("    %s\n" %i.getExName() )
 
+"""
 def actorGet(tuser, tactor, istring):
 
     # current room
@@ -490,6 +534,7 @@ def actorGet(tuser, tactor, istring):
         broadcastToRoomEx(tuser, tstr, tuser, ustr )
         
         return True
+"""
 
 def doGet(tuser, cdict, *argv):
     args = []
@@ -502,8 +547,25 @@ def doGet(tuser, cdict, *argv):
         for a in argv[0]:
             args.append(a)
 
+    
+    getfromcontainer = False
+    
+    # check if getting an item from something
+    if "from" in args:
+        args.remove("from")
+        getfromcontainer = True
+    
+
     # get a string from args
     monoarg = " ".join(args)
+    
+    # multiple items in arguments
+    multitems = None
+    
+    multitems = findItemsInString(monoarg)
+    if len(multitems) == 2:
+        getfromcontainer = True
+        
 
     # current room
     troom = getCurrentRoom(tuser)
@@ -512,6 +574,49 @@ def doGet(tuser, cdict, *argv):
         return
 
     ritems = troom.getItems()
+
+    # if getting item from container
+    if getfromcontainer:
+        
+        if len(multitems) != 2:
+            tuser.send("Get what from what?\n")
+            return
+        
+        # get user inventory
+        invitems = tuser.char.getInventory()
+        
+        # get item names
+        citemname = multitems[1].getExName()
+        tgtitemname = multitems[0].getExName()
+        
+        # check that container is in inventory
+        citem = findItemsInList(citemname, invitems)
+        if citem == None:
+            tuser.send("You do not have that!\n")
+            return
+        else:
+            citem = citem[0]
+        
+        # check that target item is in container
+        citemlist = citem.getItems()
+        
+        tgtitem = findItemsInList(tgtitemname, citemlist)
+        if tgtitem == None:
+            tuser.send("You do not see that!\n")
+            return
+        else:
+            tgtitem = tgtitem[0]
+        
+        #remove target item from container
+        citem.removeItem(tgtitem)
+        
+        # add target item to user inventory
+        tuser.char.addItem(tgtitem)
+        
+        # give feedback
+        tuser.send("You take %s from %s.\n" %(tgtitem.getExName(), citem.getExName()) )
+        return
+
 
     # look for item
     titems = findItemsInList(monoarg, ritems)
@@ -571,6 +676,77 @@ def doDrop(tuser, cdict, *argv):
         broadcastToRoom(troom, tstr, tuser, ustr )
         
         return True
+
+def doPutItem(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        tuser.send("Drop what?\n")
+        return False
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+
+    # remove into or in words
+    if "in" in args:
+        args.remove("in")
+    if "into" in args:
+        args.remove("into")
+
+    # get a string from args
+    monoarg = " ".join(args)
+    
+    
+    fitems = findItemsInString(monoarg)
+    
+    if len(fitems) != 2:
+        tuser.send("Put what into what?\n")
+    
+    tgtitemname = fitems[0].getExName()
+    tgtitem = None
+    conitemname = fitems[1].getExName()
+    conitem = None
+    
+    # get room and inventory item lists
+    troom = getCurrentRoom(tuser)
+    invlist = tuser.char.getInventory()
+    rlist = troom.getItems()
+    
+    
+    # check if target item is in inventory
+    tgtitem = findItemsInList(tgtitemname, invlist)
+    if tgtitem == None:
+        tuser.send("You do not have that!\n")
+    else:
+        tgtitem = tgtitem[0]
+    
+    # check if container is in inventory or room
+    conitem = findItemsInList(conitemname, invlist)
+    if conitem == None:
+        
+        conitem = findItemInList(conitemname, rlist)
+        
+        if conitem == None:
+            tuser.send("You do no have that!")
+            return
+    
+    conitem = conitem[0]
+    
+    # check that second item is a container
+    if not conitem.isContainer():
+        tuser.send("That is not a container!\n")
+        return
+    
+    
+    # remove target item from player inventory
+    tuser.char.removeItem(tgtitem)
+    
+    # put target item into container
+    conitem.addItem(tgtitem)
+        
+    tuser.send("You put %s into %s.\n" %(tgtitem.getExName(), conitem.getExName()) )
+            
 
 def doWield(tuser, cdict, *argv):
     args = []
@@ -795,147 +971,17 @@ def addHealth(tactor, amount):
 
 #####################################################################
 if __name__ == "__main__":
-    import testclient
-    import zone
-    import room
-    import item
-    import character
-
-    # init test mode
-    defs.configTestMode()
-
-    # init user
-    tuser = testclient.TestClient()
-    tuser.char = character.Character()
-    game.clients = [tuser]
+    import gameinit
+    gameinit.gameInitTest()
     
-    doquit = False
+    teststring = "long sword cloth bag"
     
     
-    # init items
-    item.loadItems()
+    titems = findItemsInString(teststring)
     
-    # init zones
-    game.zones = []
-    newzone = zone.Zone()
-
+    print "Finding items in string:%s" %teststring
     
-    # build test rooms
-    newroom = room.Room()
-    newroom.name = "Bathroom"
-    newroom.desc = ["You are standing in a cramped dingy bathroom that smells of ",
-                    "old urine.  The yellow stained walls are streaked with water ",
-                    "damage. A sink hangs precariously from the wall."]
-    newroom.desc = "".join(newroom.desc)
-    newroom.descriptors.update( {"sink":"The sink is layed with years of soap scum."})
-    newroom.addNewItem("sword")
-    newroom.inventory[-1].properties.update( {"desc":"A plain long sword."})
-    newroom.addExit("north", 1)
-    
-    newzone.addRoom(newroom)
-    newroom = room.Room()
-    newroom.name = "Bedroom"
-    newroom.desc = "This bedroom makes you uncomfortable."
-    newroom.addExit("south",0)
-    newzone.addRoom(newroom)
-    game.zones.append(newzone)
-    
-    
-    
-    newzone2 = zone.Zone()
-    newroom = room.Room()
-    newroom.name = "Outside"
-    newroom.desc = "It's beautiful out here!"
-    newzone2.addRoom(newroom)
-    game.zones.append(newzone2)
-    
-    zone.saveZones()
-    
-    for z in game.zones:
-        z.show()
-
-
-    """
-    def t(tuser, cdict):
-        tuser.send("This is a test function!\n")
-
-    def ta(tuser, cdict, *argv):
-        tuser.send("This is a test function with args!\n")
-        if argv[0] == None:
-            print "No args"
-        else:
-            for a in argv[0]:
-                print a
-
-    def quittest(tuser, cdict):
-        global doquit
-        doquit = True
-
-    def dohelp(tuser, cdict):
-        print "Help Menu"
-        print "---------"
-        for i in cset.commands:
-            print "%s - %s" %(i.cdict["name"], i.cdict["helpstring"])
-
-    cset = CommandSet()
-    cset.add("t", "Tests a function with no args", t)
-    cset.add("ta", "Tests a function with args", ta, True)
-    cset.add("help", "Help menu", dohelp)
-    cset.add("quit", "Quit test", quittest)
-    """
-
-    cset = initMainCommands()
-
-
-    def showSelf(tuser, cdict):
-        tuser.show()
-        
-    def showRoom(tuser, cdict):
-        getCurrentRoom(tuser).show()
-    
-    def showZone(tuser, cdict):
-        getCurrentZone(tuser).show()
-
-
-    cset.add("showself", "Client debug", showSelf)
-    cset.add("showroom", "Room debug", showRoom)
-    cset.add("showzone", "Zone debug", showZone)
-
-    # test
-    tuser.current_zone = 0
-
-
-
-    cset.getAndExecute(tuser, "look")
-
-    while not doquit:
-
-        tuser.send(">")
-        tuser.last_input = raw_input()
-
-        cmds = tuser.last_input.split()
-
-        # if no commands were entered, ignore
-        if len(cmds) == 0:
-            continue
-
-        if cmds[0] == "quit":
-            doquit = True
-            continue
-
-        # get commands from input
-        tcmd = cset.getCommand(cmds[0])
-
-        # if no valid command was found
-        if tcmd == None:
-            tuser.send("ERROR\n")
-        # if only one command was found, execute
-        elif len(tcmd) == 1:
-            tcmd[0].execute(tuser,cmds[1:])
-        # or if multiple commands found, print them
-        else:
-            for c in tcmd:
-                print c.cdict["name"]
-
+    for i in titems:
+        print i.getExName()
 
 

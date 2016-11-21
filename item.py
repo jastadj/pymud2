@@ -13,16 +13,18 @@ class Item(worldobject.WorldObject):
     def isArmor(self):
         return issubclass( type(self), game.OBJECT_CLASSES["Armor"])
     
+    def isContainer(self):
+        return issubclass( type(self), game.OBJECT_CLASSES["Container"])
+    
     def show(self):
         worldobject.WorldObject.show(self)
+        print "isContainer:%s" %self.isContainer()
         print "isWeapon:%s" %self.isWeapon()
-        print "isArmor:%s" %self.isArmor()
-        
         if self.isWeapon():
             print "Weapon Data:"
             print "    Damage:%d" %self.getDamage()
             print "    Hands :%d" %self.getHands()
-        
+        print "isArmor:%s" %self.isArmor()
         if self.isArmor():
             print "Armor Data:"
             print "    Slots used:"
@@ -46,7 +48,7 @@ class Item(worldobject.WorldObject):
         if self.isArmor():
             for s in self.getSlotsUsed():
                 istrings.append("%s_armor_slot:%s" %( self.getType(),s) )
-        
+                
         return istrings
 
 

@@ -43,6 +43,12 @@ if __name__ == "__main__":
     newitemarmor.setSlotUsed("head")
     game.items_common.append(newitemarmor)
     
+    #####
+    newitemcont = game.OBJECT_CLASSES["Container"]("bag")
+    newitemcont.addAdjective("cloth")
+    newitemcont.setDescription("A simple bag for storing items.")
+    game.items_common.append(newitemcont)
+    
     print "Saving items to file..."
     gameinit.saveItems()
     
@@ -76,6 +82,7 @@ if __name__ == "__main__":
     bathroom.addDescriptor( {"sink":"The sink hasn't been cleaned in years.  It is layered in soap scum."} )
     bathroom.addExit("north", 1)
     bathroom.addNewItem("sword")
+    bathroom.addNewItem("cloth bag")
     newzone.addRoom(bathroom)
     
     #####

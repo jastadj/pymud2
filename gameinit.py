@@ -12,6 +12,7 @@ import command
 import character
 import weapon
 import armor
+import container
 import mob
 
 from tools import *
@@ -26,6 +27,7 @@ def gameInit():
     addObjectClass(item.Item)
     addObjectClass(weapon.Weapon)
     addObjectClass(armor.Armor)
+    addObjectClass(container.Container)
     addObjectClass(character.Character)
     addObjectClass(mob.Mob)
     addObjectClass(room.Room)

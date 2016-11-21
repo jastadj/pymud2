@@ -90,6 +90,7 @@ def handleClient(tclient):
 if __name__ == "__main__":
     import gameinit
     import credential
+    import command
     gameinit.gameInitTest()
 
     testthread = thread.start_new_thread( tickTest, () )
@@ -122,7 +123,14 @@ if __name__ == "__main__":
             elif tuser.getLastInput() == "edit":
                 tuser.setMode("editmode1")
             elif tuser.getLastInput() == "debug1":
-                pass
+                newitem = command.newItem("bag")
+                newitem2 = command.newItem("sword")
+                newitem.addItem(newitem2)
+                tuser.char.addItem(newitem)
+                
+                
+                
+                
         elif tuser.getLastInput() == "quitquit":
             doquit = True
 
