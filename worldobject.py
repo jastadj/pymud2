@@ -16,6 +16,9 @@ class WorldObject(noun.Noun):
 		noun.Noun.loadFromStrings(self, tstrings)
     """
     
+    def onTick(self):
+        pass
+    
     def show(self):
         print "Type:%s" %self.getType()
         print "Name:%s" %self.getName()

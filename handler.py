@@ -28,6 +28,14 @@ client_modes.update( {"editroom3_1":editmode.editRoom}) # edit room name
 client_modes.update( {"editroom3_2":editmode.editRoom}) # edit room name confirmation
 client_modes.update( {"editroom4_1":editmode.editRoom}) # edit room desc
 client_modes.update( {"editroom4_2":editmode.editRoom}) # edit room desc confirmation
+client_modes.update( {"editroomdesc1":editmode.editRoomDescriptors}) # edit descriptors menu
+client_modes.update( {"editroomdesc2":editmode.editRoomDescriptors}) # edit descriptors selection
+client_modes.update( {"editroomdesc3_1":editmode.editRoomDescriptors}) # new descriptor val
+client_modes.update( {"editroomdesc3_2":editmode.editRoomDescriptors}) # new descriptor conf
+client_modes.update( {"editroomdesc3_3":editmode.editRoomDescriptors}) # new descriptor conf process
+client_modes.update( {"editroomdesc4_1":editmode.editRoomDescriptors}) # check descriptor delete
+client_modes.update( {"editroomdesc4_2":editmode.editRoomDescriptors}) # confirm descriptor deletion
+
 
 # main modes
 client_modes.update( {"maingamestart":game.mainGame}) # main game prompt
@@ -78,14 +86,19 @@ if __name__ == "__main__":
     
     while not doquit:
         
+        game.doTimer()
+        
         handleClient(tuser)
         
         tuser.last_input = tuser.receive()
         
-        if tuser.getLastInput() == "quit":
+        if tuser.getMode() == "maingame":
+            if tuser.getLastInput() == "quit" or tuser.getLastInput() == "q":
+                doquit = True
+            elif tuser.getLastInput() == "edit":
+                tuser.setMode("editmode1")                
+        elif tuser.getLastInput() == "quitquit":
             doquit = True
-        elif tuser.getLastInput() == "edit":
-            tuser.setMode("editmode1")
 
     print "Disconnecting and saving character..."
     tuser.disconnect()

@@ -1,4 +1,5 @@
 import defs
+import timer
 import credential
 import testclient
 import game
@@ -11,6 +12,7 @@ import character
 import weapon
 import armor
 import mob
+
 
 from tools import *
 
@@ -38,6 +40,7 @@ def gameInit():
     game.items = []
     game.mobs = []
     game.zones = []
+    game.clients = []
     
     # load credentials
     credential.loadCredentials()
@@ -62,6 +65,10 @@ def gameInit():
     print "%d items loaded." %len(game.items)
     print "%d mobs loaded." %len(game.mobs)
     print "%d zones loaded." %len(game.zones)
+    
+    # timer
+    game.timer = timer.Timer()
+    print "Timer start:%f" %game.timer.getStartTime()
     
 
 

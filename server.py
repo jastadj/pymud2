@@ -5,14 +5,13 @@ import credential
 import client
 import handler
 import gameinit
-
+import game
 from tools import *
 
 class Server(object):
     def __init__(self):
                 
         self.socket = None
-        self.clients = []
         #0=uninit, 1=initialized, -1=shutdown
         self.status = 0 
         self.accounts = None
@@ -58,17 +57,19 @@ class Server(object):
         
         # add server socket
         slist.append(self.socket)
+
         
         # add all client sockets
-        for cnt in self.clients:
-            slist.append( cnt.socket)
+        for u in game.clients:
+            print u
+            slist.append( u.socket)
         
         return slist
 
     def getClient(self, tsocket):
         
         # look and return client with target socket
-        for tclient in self.clients:
+        for tclient in game.clients:
             if tsocket == tclient.socket:
                 return tclient
         
@@ -79,11 +80,13 @@ class Server(object):
         
         while self.isRunning():
             
-            # get sockets with selector
             try:
-                read_sockets,write_sockets,error_sockets = select.select( self.getAllSockets(),[],[])
+                read_sockets,write_sockets,error_sockets = select.select( self.getAllSockets(),[],[], 0)
             except:
-                pass
+                print "Selector failed to read."
+                continue
+            
+            game.doTimer()
             
             for tsock in read_sockets:
                 
@@ -100,7 +103,7 @@ class Server(object):
                     newclient.port = addr[1]
                     
                     # add new client to list
-                    self.clients.append(newclient)
+                    game.clients.append(newclient)
                     print "Client %s:%d connected." %(newclient.getIP(), newclient.getPort())
                     
                     #print WELCOME screen
@@ -129,7 +132,7 @@ class Server(object):
                     if cdata == None:
                         # remove client from list
                         print "Client %s:%d disconnected." %(tclient.ip, tclient.port)
-                        self.clients.remove(tclient)
+                        game.clients.remove(tclient)
                         continue
                     
                     # debug
@@ -157,8 +160,8 @@ class Server(object):
         print "Credentials saved."
         
         # save zones
-        zone.saveZones()
-        print "Zones and rooms saved."
+        #zone.saveZones()
+        #print "Zones and rooms saved."
         
         # shutdown and close server socket
         self.socket.shutdown(0)

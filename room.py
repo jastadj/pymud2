@@ -165,6 +165,9 @@ class Room(worldobject.WorldObject):
     
     def addDescriptor(self, descdict):
         self.descriptors.update( descdict)
+        
+    def getDescriptors(self):
+		return self.descriptors
 
     def saveToStrings(self):
         
