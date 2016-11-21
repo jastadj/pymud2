@@ -86,7 +86,7 @@ class Server(object):
                 print "Selector failed to read."
                 continue
             
-            game.doTimer()
+            handler.doTimer()
             
             for tsock in read_sockets:
                 

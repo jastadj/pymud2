@@ -11,19 +11,16 @@ COLOR_MAGENTA = 5
 COLOR_CYAN = 6
 COLOR_WHITE = 7
 
-DISABLE_COLOR = False
 TERM_ESCAPE = 0x1b
 
 def resetColor():
-    if DISABLE_COLOR: return ""
     return "%c[%dm" % (TERM_ESCAPE, 0)
 
 def setColor(tcolor, tbold = False):
     # esc[31m = red color
     # esc[31;1m = bold red color
-    if DISABLE_COLOR: return ""
     if not tbold:
-        return "%c[%dm" %(TERM_ESCAPE, 30+tcolor)
+        return "%s%c[%dm" %( resetColor(),TERM_ESCAPE, 30+tcolor)
     else:
         return "%c[%d;%dm" %(TERM_ESCAPE, 30+tcolor, 1)
 

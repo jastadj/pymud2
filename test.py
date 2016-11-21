@@ -97,7 +97,7 @@ if __name__ == "__main__":
     # ACCOUNT
     #####
     game.credentials = []
-    newcredential = credential.Credential("j","j","cholo.dat")
+    newcredential = credential.Credential("j","j",True,"cholo.dat")
     game.credentials.append(newcredential)
     newchar = character.Character()
     newchar.setName("Cholo")

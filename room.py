@@ -167,7 +167,7 @@ class Room(worldobject.WorldObject):
         self.descriptors.update( descdict)
         
     def getDescriptors(self):
-		return self.descriptors
+        return self.descriptors
 
     def saveToStrings(self):
         
@@ -244,8 +244,21 @@ class Room(worldobject.WorldObject):
                 self.exits.append(roomexit.RoomExit())
             
 
-                
-                
+    def getChildren(self):
+        
+        children = []
+        children += self.mobs
+        children += self.inventory
+        children += self.exits
+        
+        return children
+    
+    def onTick(self):
+        
+        children = self.getChildren()
+        
+        for c in children:
+            c.onTick()
     
     def show(self):
         

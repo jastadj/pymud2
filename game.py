@@ -19,16 +19,7 @@ items = None
 items_common = None
 mobs = None
 mobs_common = None
-
-# timer update
-def doTimer():
     
-    if timer.getElapsedSec() >= 1:
-        doTick()
-        timer.reset()
-
-def doTick():
-    pass
 
 # main
 def mainGame(tuser):

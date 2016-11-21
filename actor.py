@@ -202,7 +202,16 @@ class Actor(worldobject.WorldObject):
                 aitems = self.getInventory()
                 founditems = command.findItemsInList(witem, aitems)
                 self.wield(founditems[0])
-                
+    
+    def getChildren(self):
+        
+        children = []
+        children += self.inventory
+        children += self.getEquipment()
+        
+        return children
+        
+        
 if __name__ == "__main__":
     import gameinit
     gameinit.gameInitTest()

@@ -140,6 +140,11 @@ class Zone(object):
                         
         f.close()
     
+    def doTick(self):
+        # update all rooms
+        for r in self.rooms:
+            r.doTick()
+    
     def show(self):
         
         print "Zone Info:"

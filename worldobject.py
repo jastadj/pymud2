@@ -1,9 +1,10 @@
 import noun
+import game
 
 class WorldObject(noun.Noun):
     def __init__(self, name = "unnamed"):
         noun.Noun.__init__(self, name)
-        pass
+        
     
     def getType(self):
         return self.__class__.__name__
@@ -16,8 +17,18 @@ class WorldObject(noun.Noun):
 		noun.Noun.loadFromStrings(self, tstrings)
     """
     
+    def doTick(self):
+        
+        self.onTick()
+        
+        for c in self.getChildren():
+            c.onTick()
+    
     def onTick(self):
         pass
+    
+    def getChildren(self):
+        return []
     
     def show(self):
         print "Type:%s" %self.getType()

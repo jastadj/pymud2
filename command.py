@@ -84,6 +84,7 @@ def initMainCommands():
     cs.add("drop","Drop something", doDrop, True)
     cs.add("wield", "Wield a weapon", doWield, True)
     cs.add("unwield", "Unwield a weapon", doUnwield, True)
+    cs.add("color", "Color on or off", doColor, True)
     
     #cs.add("debug", "do something", doDebug)
 
@@ -122,12 +123,32 @@ def showHelpMenu(tuser, cdict):
         tuser.send("Unable to print help menu, no source in dictionary!")
         return
 
-    tuser.send("%sHelp Menu%s\n" % (setColor(COLOR_MAGENTA, True), resetColor() ) )
-    tuser.send("%s---------%s\n" % ( setColor(COLOR_MAGENTA, False) , resetColor() ) )
-    tuser.send("%s" % setColor(COLOR_GREEN) )
+    tuser.send("#C%dHelp Menu\n" % COLOR_MAGENTA )
+    tuser.send("#c%d---------\n" % COLOR_MAGENTA )
+    tuser.send("#c%d" %COLOR_GREEN )
     for i in range(0, tset.count() ) :
         tuser.send("%s - %s\n" %(tset.commands[i].cdict["name"], tset.commands[i].cdict["helpstring"]) )
-    tuser.send("%s" % resetColor() )
+    tuser.send("#cr")
+
+def doColor(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        tuser.send("Colors = %s\n" %tuser.credential.colors)
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+    
+    if args[0].lower() == "on":
+        tuser.credential.colors = True
+        tuser.send("Colors set to #c6on#cr.\n")
+    elif args[0].lower() == "off":
+        tuser.credential.colors = False
+        tuser.send("Colors set to off.\n")
+    else:
+        tuser.send("Unknown color parameter.  color on or color off.\n")
+        
 
 def doLook(tuser, cdict, *argv):
     args = []
@@ -185,10 +206,12 @@ def doLookRoom(tuser, troom):
         tuser.send("Invalid room look - room is null!\n")
         return
 
-    tuser.send("%s%s%s\n" %(setColor(COLOR_CYAN, True), troom.getName(), resetColor()) )
+    tuser.send("#C%d%s#cr\n" %(COLOR_CYAN,troom.getName()) )
+    tuser.send("#C%d" %COLOR_BLACK)
     desclines = fitStringToWidth(troom.getDescription())
     for l in desclines:
         tuser.send("%s\n" %l)
+    tuser.send("#cr")
 
     # get room exits
     estring = "Exits: "

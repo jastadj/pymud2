@@ -3,51 +3,52 @@ import defs
 import game
 
 class Credential(object):
-    def __init__(self, accountname, password, characterfile):
+    def __init__(self, accountname, password, colors, characterfile):
         self.accountname = accountname
         self.password = password
         self.characterfile = characterfile
+        self.colors = colors
 
 def accountNameAvailable(accountname):
-	
-	for c in game.credentials:
-		if c.accountname == accountname:
-			return False
-	
-	return True
+    
+    for c in game.credentials:
+        if c.accountname == accountname:
+            return False
+    
+    return True
 
 def addNewAccount(accountname, password):
-	if not accountNameAvailable(accountname):
-		print "Error adding new account %s, name not available!" %accountname
-		return None
-	
-	newaccount = Credential(accountname, password, None)
-	game.credentials.append(newaccount)
-	
-	print "New account created for:%s" %accountname
-	
-	return newaccount
+    if not accountNameAvailable(accountname):
+        print "Error adding new account %s, name not available!" %accountname
+        return None
+    
+    newaccount = Credential(accountname, password,True, None)
+    game.credentials.append(newaccount)
+    
+    print "New account created for:%s" %accountname
+    
+    return newaccount
 
 def doLogin(accountname, password):
-	
-	tcred = None
-	
-	# check credentials for account name
-	for c in game.credentials:
-		if accountname == c.accountname:
-			tcred = c
-	
-	# no account name found
-	if tcred == None:
-		return None
-		
-	# check password match, return credential
-	if tcred.password == password:
-		return tcred
-	
-	# no matching name/pass found
-	return None
-		
+    
+    tcred = None
+    
+    # check credentials for account name
+    for c in game.credentials:
+        if accountname == c.accountname:
+            tcred = c
+    
+    # no account name found
+    if tcred == None:
+        return None
+        
+    # check password match, return credential
+    if tcred.password == password:
+        return tcred
+    
+    # no matching name/pass found
+    return None
+        
 
 def loadCredentials():
     
@@ -87,13 +88,20 @@ def loadCredentials():
                     apass = line[:cfind]
                     line = line[cfind+1:]
                     
+                    # get account color mode
+                    cfind = line.find(',')
+                    acolor = line[:cfind]
+                    if acolor == "True": acolor = True
+                    else: acolor = False
+                    line = line[cfind+1:]
+                    
                     # get account character file
                     acharfile = line
                     if acharfile == "None":
-						acharfile = None
+                        acharfile = None
                     
                     # create credential
-                    game.credentials.append(Credential(aname, apass, acharfile))
+                    game.credentials.append(Credential(aname, apass, acolor, acharfile))
         f.close()
                     
 
@@ -106,7 +114,7 @@ def saveCredentials():
     f = open(fp, "w")
     
     for c in game.credentials:
-        f.write("ACCOUNT:%s,%s,%s\n" %(c.accountname, c.password, c.characterfile) )
+        f.write("ACCOUNT:%s,%s,%s,%s\n" %(c.accountname, c.password, c.colors, c.characterfile) )
     
     f.close()
 
@@ -120,11 +128,12 @@ if __name__ == "__main__":
             print "account name  :%s" %c.accountname
             print "account pass  :%s" %c.password
             print "character file:%s" %c.characterfile
+            print "account colors:%s" %c.colors
     
     # create test credentials
     game.credentials = []
-    game.credentials.append(Credential("john", "monkey", "billy.dat") )
-    game.credentials.append(Credential("j","j","j.dat") )
+    game.credentials.append(Credential("john", "monkey", True, "billy.dat") )
+    game.credentials.append(Credential("j","j",True, "j.dat") )
     
     # save credentials
     saveCredentials()

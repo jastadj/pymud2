@@ -2,6 +2,7 @@ import login
 import game
 import charcreation
 import editmode
+import thread
 
 client_modes = {}
 
@@ -41,6 +42,27 @@ client_modes.update( {"editroomdesc4_2":editmode.editRoomDescriptors}) # confirm
 client_modes.update( {"maingamestart":game.mainGame}) # main game prompt
 client_modes.update( {"maingame":game.mainGame}) # main game prompt
 
+# timer update
+def doTimer():
+    
+    if game.timer.getElapsedSec() >= 1:
+        doTick()
+        game.timer.reset()
+
+def doTick():
+    # update zones
+    for z in game.zones:
+        z.doTick()
+        
+    # update clients
+    for u in game.clients:
+        u.doTick()
+
+def tickTest():
+    while True:
+        doTimer()
+
+        
 def handleClient(tclient):
     
     cc = tclient.getLastInput()
@@ -69,7 +91,9 @@ if __name__ == "__main__":
     import gameinit
     import credential
     gameinit.gameInitTest()
-        
+
+    testthread = thread.start_new_thread( tickTest, () )
+
     def showCredentials():
         for c in game.credentials:
             print ""
@@ -86,7 +110,7 @@ if __name__ == "__main__":
     
     while not doquit:
         
-        game.doTimer()
+        doTimer()
         
         handleClient(tuser)
         
@@ -96,7 +120,10 @@ if __name__ == "__main__":
             if tuser.getLastInput() == "quit" or tuser.getLastInput() == "q":
                 doquit = True
             elif tuser.getLastInput() == "edit":
-                tuser.setMode("editmode1")                
+                tuser.setMode("editmode1")
+            elif tuser.getLastInput() == "debug1":
+                for o in game.worldobjects:
+                    print o
         elif tuser.getLastInput() == "quitquit":
             doquit = True
 
@@ -109,4 +136,4 @@ if __name__ == "__main__":
     print "saving credentials..."
     credential.saveCredentials()
     
-    
+    exit()
