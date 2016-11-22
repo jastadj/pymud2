@@ -1,7 +1,5 @@
 import login
 import game
-import charcreation
-import editmode
 import thread
 
 client_modes = {}
@@ -15,32 +13,11 @@ client_modes.update( {"loginnewpass":login.loginMenu}) # new login pass verify
 client_modes.update( {"loginnewpass2":login.loginMenu}) # new login pass verify
 client_modes.update( {"loginvalid":login.loginMenu}) # login valid, check character
 
-# character creation
-client_modes.update( {"charcreation1":charcreation.charCreation}) # create char : name
-client_modes.update( {"charcreation2":charcreation.charCreation}) # verify char name valid
-client_modes.update( {"charcreation3":charcreation.charCreation}) # confirm name
-
-# editor mode
-client_modes.update( {"editmode1":editmode.editMenu}) # edit menu
-client_modes.update( {"editmode2":editmode.editMenu}) # get selected option
-client_modes.update( {"editroom1":editmode.editRoom}) # edit room menu
-client_modes.update( {"editroom2":editmode.editRoom}) # edit room selection
-client_modes.update( {"editroom3_1":editmode.editRoom}) # edit room name
-client_modes.update( {"editroom3_2":editmode.editRoom}) # edit room name confirmation
-client_modes.update( {"editroom4_1":editmode.editRoom}) # edit room desc
-client_modes.update( {"editroom4_2":editmode.editRoom}) # edit room desc confirmation
-client_modes.update( {"editroomdesc1":editmode.editRoomDescriptors}) # edit descriptors menu
-client_modes.update( {"editroomdesc2":editmode.editRoomDescriptors}) # edit descriptors selection
-client_modes.update( {"editroomdesc3_1":editmode.editRoomDescriptors}) # new descriptor val
-client_modes.update( {"editroomdesc3_2":editmode.editRoomDescriptors}) # new descriptor conf
-client_modes.update( {"editroomdesc3_3":editmode.editRoomDescriptors}) # new descriptor conf process
-client_modes.update( {"editroomdesc4_1":editmode.editRoomDescriptors}) # check descriptor delete
-client_modes.update( {"editroomdesc4_2":editmode.editRoomDescriptors}) # confirm descriptor deletion
-
+client_modes.update( {"lobby":game.lobby} ) # test lobby
 
 # main modes
-client_modes.update( {"maingamestart":game.mainGame}) # main game prompt
-client_modes.update( {"maingame":game.mainGame}) # main game prompt
+#client_modes.update( {"maingamestart":game.mainGame}) # main game prompt
+#client_modes.update( {"maingame":game.mainGame}) # main game prompt
 
 # timer update
 def doTimer():
@@ -50,13 +27,7 @@ def doTimer():
         game.timer.reset()
 
 def doTick():
-    # update zones
-    for z in game.zones:
-        z.doTick()
-        
-    # update clients
-    for u in game.clients:
-        u.doTick()
+    pass
 
 def tickTest():
     while True:
@@ -100,7 +71,6 @@ if __name__ == "__main__":
             print ""
             print "account name  :%s" %c.accountname
             print "account pass  :%s" %c.password
-            print "character file:%s" %c.characterfile  
     
     # debug show credentials
     showCredentials()
@@ -117,21 +87,7 @@ if __name__ == "__main__":
         
         tuser.last_input = tuser.receive()
         
-        if tuser.getMode() == "maingame":
-            if tuser.getLastInput() == "quit" or tuser.getLastInput() == "q":
-                doquit = True
-            elif tuser.getLastInput() == "edit":
-                tuser.setMode("editmode1")
-            elif tuser.getLastInput() == "debug1":
-                newitem = command.newItem("bag")
-                newitem2 = command.newItem("sword")
-                newitem.addItem(newitem2)
-                tuser.char.addItem(newitem)
-                
-                
-                
-                
-        elif tuser.getLastInput() == "quitquit":
+        if tuser.getLastInput() == "quit":
             doquit = True
 
     print "Disconnecting and saving character..."

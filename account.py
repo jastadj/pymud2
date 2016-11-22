@@ -1,12 +1,12 @@
 from tools import *
 import defs
-import game
+import hub
 
-class Credential(object):
-    def __init__(self, accountname, password, colors, characterfile):
-        self.accountname = accountname
+class Account(object):
+    def __init__(self, accountname, password, colors = True):
+        
+        self.name = accountname
         self.password = password
-        self.characterfile = characterfile
         self.colors = colors
 
 def accountNameAvailable(accountname):
@@ -22,10 +22,12 @@ def addNewAccount(accountname, password):
         print "Error adding new account %s, name not available!" %accountname
         return None
     
-    newaccount = Credential(accountname, password,True, None)
+    newaccount = Credential(accountname, password,True)
     game.credentials.append(newaccount)
     
     print "New account created for:%s" %accountname
+    
+    saveCredentials()
     
     return newaccount
 
@@ -94,14 +96,10 @@ def loadCredentials():
                     if acolor == "True": acolor = True
                     else: acolor = False
                     line = line[cfind+1:]
-                    
-                    # get account character file
-                    acharfile = line
-                    if acharfile == "None":
-                        acharfile = None
+
                     
                     # create credential
-                    game.credentials.append(Credential(aname, apass, acolor, acharfile))
+                    game.credentials.append(Credential(aname, apass, acolor))
         f.close()
                     
 
@@ -114,7 +112,7 @@ def saveCredentials():
     f = open(fp, "w")
     
     for c in game.credentials:
-        f.write("ACCOUNT:%s,%s,%s,%s\n" %(c.accountname, c.password, c.colors, c.characterfile) )
+        f.write("ACCOUNT:%s,%s,%s\n" %(c.accountname, c.password, c.colors) )
     
     f.close()
 

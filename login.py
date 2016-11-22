@@ -1,6 +1,4 @@
-
 import credential
-import character
 
 def loginMenu(tuser):
     
@@ -99,23 +97,8 @@ def loginMenu(tuser):
         
         # login was valid, either create new character if necessary or goto game
         elif tuser.getMode() == "loginvalid":
-            
-            # if character file, load character
-            if tuser.credential.characterfile != None:
-                
-                # attempt to load character file
-                tuser.char = character.Character()
-                tuser.char.loadFromFile( tuser.credential.characterfile )
-                tuser.char.client = tuser
-                
-                # character loaded, enter game
-                tuser.setMode("maingamestart")
-                tuser.skip_input = 1
-            
-            # no characer file, create character
-            else:
-                tuser.skip_input = 1
-                tuser.setMode("charcreation1")
+            tuser.skip_input = 1
+            tuser.setMode("lobby")
                 
         
         

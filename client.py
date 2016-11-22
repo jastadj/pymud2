@@ -1,5 +1,4 @@
 import socket
-import character
 import game
 from tools import *
 
@@ -11,8 +10,6 @@ class Client(object):
         self.ip = None
         self.port = None
         self.credential = None
-
-        self.char = None
 
         # starting user mode
         self.mode = None
@@ -179,12 +176,6 @@ class Client(object):
         if self.socket != None:
             self.socket.close()
 
-        # save character
-        if self.credential.characterfile != None:
-            print "Saving character %s to %s" %(self.char.getName() , self.credential.characterfile)
-            self.char.saveToFile(self.credential.characterfile)
-        else:
-            print "%s's character %s : character file is null" %(self.credential.accountname, self.char.getName())
 
 if __name__ == "__main__":
 

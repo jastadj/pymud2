@@ -1,7 +1,6 @@
 import defs
 
 # class refs
-ZONE = None
 COMMAND = None
 COMMAND_SET = None
 
@@ -12,14 +11,26 @@ OBJECT_CLASSES = {}
 server = None
 timer = None
 credentials = None
-zones = None
 cmds_main = None
 clients = None
-items = None
-items_common = None
-mobs = None
-mobs_common = None
+
+def lobby(tuser):
     
+    do_passes = 0
+    
+    while do_passes >= 0:
+        
+        if tuser.mode == "lobby":
+            
+            cmds = tuser.last_input.split()
+            
+            if len(cmds) > 0:
+                pass
+            
+            tuser.send("echo:%s\n" %tuser.getLastInput())
+            tuser.send(">")
+        
+        do_passes -= 1 
 
 # main
 def mainGame(tuser):

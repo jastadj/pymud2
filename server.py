@@ -1,5 +1,3 @@
-
-
 import socket, select
 import credential
 import client
