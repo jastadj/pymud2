@@ -1,6 +1,6 @@
-import credential
+import hub
 
-def loginMenu(tuser):
+def loginmenu(tuser):
     
     # loop through menu this many times
     dopasses = 0
@@ -8,97 +8,111 @@ def loginMenu(tuser):
     while dopasses >= 0:
         
         # login prompt
-        if tuser.getMode() == "login0":
+        if tuser.getmode() == "login0":
             tuser.send("Login:")
-            tuser.setMode("login1")
+            tuser.setmode("login1")
         
         # check login / get password
-        elif tuser.getMode() == "login1":
+        elif tuser.getmode() == "login1":
             
             # store login name var
-            tuser.setVar({"login":tuser.getLastInput()})
+            tuser.setvar({"login":tuser.getlastinput()})
             
             # new login name
-            if credential.accountNameAvailable(tuser.getVar("login") ):
+            if not hub.accounts.exists(tuser.getvar("login") ):
                 tuser.send("Create new account? (y/n)")
-                tuser.setMode("loginnew")
+                tuser.setmode("loginnew")
                 return
             
             # else, login exists, query password
             tuser.send("Password:")
-            tuser.setMode("loginverify")
+            tuser.setmode("loginverify")
         
         # verify username and password
-        elif tuser.getMode() == "loginverify":
+        elif tuser.getmode() == "loginverify":
             #store password var
-            tuser.setVar({"password":tuser.getLastInput()})
+            tuser.setvar({"password":tuser.getlastinput()})
             
             #check credential
-            login = credential.doLogin(tuser.getVar("login"), tuser.getVar("password"))
+            login = hub.accounts.dologin(tuser.getvar("login"), tuser.getvar("password"))
             
             # if login is valid
             if login != None:
-                tuser.setMode("loginvalid")
-                tuser.credential = login
+                tuser.setmode("loginvalid")
+                tuser.account = login
+                
+                print "%s logged in." %tuser.account.getuser()
+                
                 dopasses = 0
                 continue
             # if login is NOT valid
             else:
                 tuser.send("Invalid login/password!\n")
-                tuser.setMode("login0")
+                tuser.setmode("login0")
                 dopasses = 0
                 continue
                 
         
         # create new user query / password query
-        elif tuser.getMode() == "loginnew":
+        elif tuser.getmode() == "loginnew":
             # new user confirmation, ask about new password
             try:
-                if tuser.getLastInput()[0] == "y" or tuser.getLastInput()[0] == "Y":
+                if tuser.getlastinput().lower()[0] == "y":
                     tuser.send("Enter new password:")
-                    tuser.setMode("loginnewpass")
+                    tuser.setmode("loginnewpass")
                 else:
-                    tuser.setMode("login0")
+                    tuser.setmode("login0")
                     continue
             # ERROR
             except:
-                tuser.setMode("login0")
+                tuser.setmode("login0")
                 dopasses = 0
                 continue
         
         # new account password / verify
-        elif tuser.getMode() == "loginnewpass":
-            tuser.setVar({"password":tuser.getLastInput()})
+        elif tuser.getmode() == "loginnewpass":
+            tuser.setvar({"password":tuser.getlastinput()})
             tuser.send("Enter new password again:")
-            tuser.setMode("loginnewpass2")
+            tuser.setmode("loginnewpass2")
         
         # new account password verify
-        elif tuser.getMode() == "loginnewpass2":
+        elif tuser.getmode() == "loginnewpass2":
             # if passwords do not match
-            if tuser.getLastInput() != tuser.getVar("password"):
+            if tuser.getlastinput() != tuser.getvar("password"):
                 tuser.send("Passwords do not match!\n")
-                tuser.setMode("login0")
+                tuser.setmode("login0")
                 dopasses = 1
             # else passwords match, create account
             else:
-                # create new account
-                newaccount = credential.addNewAccount( tuser.getVar("login"), tuser.getVar("password") )
+                
+                # create new account and login
+                hub.accounts.add(tuser.getvar("login"), tuser.getvar("password") )
+                newaccount = hub.accounts.dologin( tuser.getvar("login"), tuser.getvar("password") )
                 
                 # account creation was successful?
                 if newaccount != None:
-                    tuser.credential = newaccount
-                    tuser.setMode("loginvalid")
+                    
+                    print "Created new user account:%s" %newaccount.getuser()
+                    tuser.send("\nAccount created successfully.\n")
+                    
+                    # associate client with account
+                    tuser.account = newaccount
+                    tuser.setmode("loginvalid")
+                    
+                    # save accounts
+                    hub.accounts.save()
+                    
                     continue
                 # if not, start over
                 else:
-                    print "Error creating user account:%s" %tuser.getVar("login")
-                    tuser.setMode("login0")
+                    print "Error creating user account:%s" %tuser.getvar("login")
+                    tuser.setmode("login0")
                     dopasses = 1
         
         # login was valid, either create new character if necessary or goto game
-        elif tuser.getMode() == "loginvalid":
+        elif tuser.getmode() == "loginvalid":
             tuser.skip_input = 1
-            tuser.setMode("lobby")
+            tuser.setmode("lobby")
                 
         
         

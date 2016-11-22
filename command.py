@@ -1,9 +1,9 @@
-import game
+import hub
 from tools import *
 import copy
 import defs
 
-class Command(object):
+class command(object):
     def __init__(self, name, helpstr, fptr, hasargs = False):
         self.cdict = {"name":name,
                       "helpstring":helpstr,
@@ -12,7 +12,7 @@ class Command(object):
         if hasargs:
             self.cdict.update({"hasargs":True})
 
-    def getFunction(self):
+    def getfunction(self):
         return self.cdict["function"]
 
     def execute(self, tuser, *argv):
@@ -30,30 +30,30 @@ class Command(object):
                     args.append(a)
             self.cdict["function"](tuser, self.cdict, args)
 
-class CommandSet(object):
+class commandset(object):
 
     def __init__(self):
         self.commands = []
         self.aliases = {}
-        self.invalidFunction = None
+        self.invalidfunction = None
         
     def add(self, name, helpstr, fptr, hasargs = False):
-        self.commands.append( Command(name, helpstr, fptr, hasargs) )
+        self.commands.append( command(name, helpstr, fptr, hasargs) )
 
-    def setInvalidFunction(self, func):
-        self.invalidFunction = func
+    def setinvalidfunction(self, func):
+        self.invalidfunction = func
         
     def count(self):
         return len(self.commands)
 
-    def getAndExecute(self, tuser, cstr, *argv):
+    def getandexecute(self, tuser, cstr, *argv):
         tcmds = self.getCommand(cstr)
         tcmds[0].execute(tuser, argv)
     
-    def getInvalidFunction(self):
-        return self.invalidFunction
+    def getinvalidfunction(self):
+        return self.invalidfunction
     
-    def getCommand(self, cstr):
+    def getcommand(self, cstr):
         foundcmds = []
 
         # if command string is an alias
@@ -73,31 +73,16 @@ class CommandSet(object):
             return foundcmds
 
 
-def initMainCommands():
-    cs = CommandSet()
-    cs.add("help", "Show help menu", showHelpMenu)
+def initmaincommands():
+    cs = commandset()
+    cs.add("help", "Show help menu", showhelpmenu)
     cs.commands[-1].cdict.update({"source":cs})
-    cs.add("color", "Color on or off", doColor, True)
+    cs.add("color", "Color on or off", docolor, True)
     
-    #cs.add("debug", "do something", doDebug)
-
-
-    # setup command aliases
-    cs.aliases.update( {"?":"help"})
-    cs.aliases.update( {"s":"south"} )
 
     return cs
 
-def mainGameInvalid(tuser):
-    
-    cstr = tuser.getLastInput()
-    
-    # check to see if noncmd is actually an exit
-    troom = getCurrentRoom(tuser)
-    
-    if troom.isExit(cstr):
-        doMove(tuser, troom.getExit(cstr) )
-        return True
+def maingameinvalid(tuser):
     
     tuser.send("Invalid command!\n")
     
@@ -106,7 +91,7 @@ def mainGameInvalid(tuser):
 #####################################################################
 ##      COMMANDS
 
-def showHelpMenu(tuser, cdict):
+def showhelpmenu(tuser, cdict):
 
     tset = None
 
@@ -123,7 +108,7 @@ def showHelpMenu(tuser, cdict):
         tuser.send("%s - %s\n" %(tset.commands[i].cdict["name"], tset.commands[i].cdict["helpstring"]) )
     tuser.send("#cr")
 
-def doColor(tuser, cdict, *argv):
+def docolor(tuser, cdict, *argv):
     args = []
     # no arguments, do a room look
     if argv[0] == None:
@@ -146,8 +131,8 @@ def doColor(tuser, cdict, *argv):
 
 #####################################################################
 if __name__ == "__main__":
-    import gameinit
-    gameinit.gameInitTest()
+    import hubinit
+    hubinit.hubinittest()
 
 
 

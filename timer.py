@@ -1,31 +1,31 @@
 import time
 
-class Timer(object):
+class timer(object):
     def __init__(self):
-        self.startTime = time.time()
+        self.starttime = time.time()
     
-    def getElapsedSec(self):
-        return int(time.time() - self.startTime)
+    def getelapsedsec(self):
+        return int(time.time() - self.starttime)
         
-    def getStartTime(self):
-        return self.startTime
+    def getstarttime(self):
+        return self.starttime
         
     def reset(self):
-        self.startTime = time.time()
+        self.starttime = time.time()
 
 
 if __name__ == "__main__":
     
-    mytimer = Timer()
+    mytimer = timer()
     
     sleepfor = 3
     
-    print "Start Time:%f" %mytimer.getStartTime()
+    print "Start Time:%f" %mytimer.getstarttime()
     
     print "Sleeping for %d seconds..." %sleepfor
     time.sleep(sleepfor)
     
-    print "Elapsed Time : %d seconds" %mytimer.getElapsedSec()
+    print "Elapsed Time : %d seconds" %mytimer.getelapsedsec()
     
     
     

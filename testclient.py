@@ -1,15 +1,15 @@
 from __future__ import print_function
 import client
 
-class TestClient(client.Client):
+class testclient(client.client):
         REC_BUFFER = 4096
         
         def __init__(self):
-                client.Client.__init__(self)
+                client.client.__init__(self)
         
         def send(self, msg):
                 
-                msg = self.processColors(msg)
+                msg = self.processcolors(msg)
                 
                 if self.socket == None:
                         print(msg, end="")
@@ -25,7 +25,7 @@ class TestClient(client.Client):
                 # try to receivee data
                 try:
                         # get input from client
-                        cdata = self.socket.recv(Client.REC_BUFFER)
+                        cdata = self.socket.recv(client.REC_BUFFER)
                         
                         # if client data valid
                         if cdata:
@@ -48,6 +48,7 @@ class TestClient(client.Client):
                 
 if __name__ == "__main__":
         
-        myclient = TestClient()
+        myclient = testclient()
         
-        myclient.send("#c1THIS IS A TEST!")
+        myclient.send("#c1THIS IS A TEST!#cr")
+

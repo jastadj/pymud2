@@ -1,42 +1,42 @@
 import defs
 import timer
-import credential
+import account
 import client
 import testclient
-import game
+import hub
 import command
 
 
 from tools import *
 
-def gameInit():
+def hubinit():
 
     
     # load credentials
-    credential.loadCredentials()
+    hub.accounts = account.accountmanager()
     
     # load commands
-    game.cmds_main = command.initMainCommands()
-    game.cmds_main.setInvalidFunction( command.mainGameInvalid )
+    hub.cmds_main = command.initmaincommands()
+    hub.cmds_main.setinvalidfunction( command.maingameinvalid )
         
     # timer
-    game.timer = timer.Timer()
-    print "Timer start:%f" %game.timer.getStartTime()
+    hub.timer = timer.timer()
+    print "Timer start:%f" %hub.timer.getstarttime()
     
 
 
-def gameInitTest():
+def hubinittest():
     # load test configuration
     defs.TEST_MODE = True
-    defs.configTestMode()
+    defs.configtestmode()
     
-    gameInit()
+    hubinit()
     
     # create test user
-    tuser = testclient.TestClient()
-    tuser.setMode("login0")
-    game.clients = []
-    game.clients.append(tuser)
+    tuser = testclient.testclient()
+    tuser.setmode("login0")
+    hub.clients = []
+    hub.clients.append(tuser)
     print "TestUser created..."
 
 
@@ -45,4 +45,4 @@ def gameInitTest():
 
 
 if __name__ == "__main__":
-    gameInitTest()
+    hubinittest()

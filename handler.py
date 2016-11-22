@@ -1,42 +1,42 @@
 import login
-import game
+import hub
 import thread
 
 client_modes = {}
 
 # login modes
-client_modes.update( {"login0":login.loginMenu}) # reget login
-client_modes.update( {"login1":login.loginMenu}) # get password
-client_modes.update( {"loginverify":login.loginMenu}) # login auth
-client_modes.update( {"loginnew":login.loginMenu}) # new login query
-client_modes.update( {"loginnewpass":login.loginMenu}) # new login pass verify
-client_modes.update( {"loginnewpass2":login.loginMenu}) # new login pass verify
-client_modes.update( {"loginvalid":login.loginMenu}) # login valid, check character
+client_modes.update( {"login0":login.loginmenu}) # reget login
+client_modes.update( {"login1":login.loginmenu}) # get password
+client_modes.update( {"loginverify":login.loginmenu}) # login auth
+client_modes.update( {"loginnew":login.loginmenu}) # new login query
+client_modes.update( {"loginnewpass":login.loginmenu}) # new login pass verify
+client_modes.update( {"loginnewpass2":login.loginmenu}) # new login pass verify
+client_modes.update( {"loginvalid":login.loginmenu}) # login valid, check character
 
-client_modes.update( {"lobby":game.lobby} ) # test lobby
+client_modes.update( {"lobby":hub.lobby} ) # test lobby
 
 # main modes
 #client_modes.update( {"maingamestart":game.mainGame}) # main game prompt
 #client_modes.update( {"maingame":game.mainGame}) # main game prompt
 
 # timer update
-def doTimer():
+def dotimer():
     
-    if game.timer.getElapsedSec() >= 1:
-        doTick()
-        game.timer.reset()
+    if hub.timer.getelapsedsec() >= 1:
+        dotick()
+        hub.timer.reset()
 
-def doTick():
+def dotick():
     pass
 
-def tickTest():
+def ticktest():
     while True:
-        doTimer()
+        dotimer()
 
         
-def handleClient(tclient):
+def handleclient(tclient):
     
-    cc = tclient.getLastInput()
+    cc = tclient.getlastinput()
     
     # run loop, skipping input if set
     while tclient.skip_input >= 0:
@@ -59,35 +59,30 @@ def handleClient(tclient):
     tclient.skip_input = 0
 
 if __name__ == "__main__":
-    import gameinit
-    import credential
+    import hubinit
+    import account
     import command
-    gameinit.gameInitTest()
-
-    testthread = thread.start_new_thread( tickTest, () )
-
-    def showCredentials():
-        for c in game.credentials:
-            print ""
-            print "account name  :%s" %c.accountname
-            print "account pass  :%s" %c.password
     
-    # debug show credentials
-    showCredentials()
+    hubinit.hubinittest()
+
+    testthread = thread.start_new_thread( ticktest, () )
+
+    hub.accounts.show()
     
-    tuser = game.clients[0]
+    
+    tuser = hub.clients[0]
     
     doquit = False
     
     while not doquit:
         
-        doTimer()
+        dotimer()
         
-        handleClient(tuser)
+        handleclient(tuser)
         
         tuser.last_input = tuser.receive()
         
-        if tuser.getLastInput() == "quit":
+        if tuser.getlastinput() == "quit":
             doquit = True
 
     print "Disconnecting and saving character..."
@@ -96,7 +91,7 @@ if __name__ == "__main__":
     #print "Saving zones..."
     #zone.saveZones()
     
-    print "saving credentials..."
-    credential.saveCredentials()
+    print "saving accounts..."
+    hub.accounts.save()
     
     exit()

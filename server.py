@@ -1,27 +1,26 @@
 import socket, select
-import credential
+import account
 import client
 import handler
-import gameinit
-import game
+import hubinit
+import hub
 from tools import *
 
-class Server(object):
+class server(object):
     def __init__(self):
                 
         self.socket = None
         #0=uninit, 1=initialized, -1=shutdown
         self.status = 0 
-        self.accounts = None
         
-    def isRunning(self):
+    def isrunning(self):
         if self.status == 1:
             return True
         else: return False
     
-    def initServer(self):
+    def initserver(self):
         
-        if self.isRunning():
+        if self.isrunning():
             print "Unable to start server!"
             return False
 
@@ -41,12 +40,13 @@ class Server(object):
         print "Socket is listening..."
         
         # init main game
-        gameinit.gameInit()
+        hubinit.hubinit()
         
         return True
         
-    def getAllSockets(self):
-        if not self.isRunning():
+    def getallsockets(self):
+        
+        if not self.isrunning():
             print "Unable to get all sockets, server is not running!"
             return None
         
@@ -58,33 +58,33 @@ class Server(object):
 
         
         # add all client sockets
-        for u in game.clients:
+        for u in hub.clients:
             print u
             slist.append( u.socket)
         
         return slist
 
-    def getClient(self, tsocket):
+    def getclient(self, tsocket):
         
         # look and return client with target socket
-        for tclient in game.clients:
+        for tclient in hub.clients:
             if tsocket == tclient.socket:
                 return tclient
         
         # not found, return None
         return None
 
-    def startMainLoop(self):
+    def mainloop(self):
         
-        while self.isRunning():
+        while self.isrunning():
             
             try:
-                read_sockets,write_sockets,error_sockets = select.select( self.getAllSockets(),[],[], 0)
+                read_sockets,write_sockets,error_sockets = select.select( self.getallsockets(),[],[], 0)
             except:
                 print "Selector failed to read."
                 continue
             
-            handler.doTimer()
+            handler.dotimer()
             
             for tsock in read_sockets:
                 
@@ -95,27 +95,26 @@ class Server(object):
                     newsock, addr = self.socket.accept()
                     
                     # create new client
-                    newclient = client.Client()
-                    newclient.setSocket(newsock)
+                    newclient = client.client()
+                    newclient.setsocket(newsock)
                     newclient.ip = addr[0]
                     newclient.port = addr[1]
                     
                     # add new client to list
                     game.clients.append(newclient)
-                    print "Client %s:%d connected." %(newclient.getIP(), newclient.getPort())
+                    print "Client %s:%d connected." %(newclient.getip(), newclient.getport())
                     
                     #print WELCOME screen
-                    newclient.send("\n%sWelcome!%s\n\n" %(setColor(COLOR_GREEN, True),
-                                                        resetColor()) )
+                    newclient.send("\n#c2Welcome!#cr\n\n")
                     
                     # configure client starting mode
-                    newclient.setMode("login1")
+                    newclient.setmode("login1")
                     newclient.send("login:")
                 
                 # else a client has something to do
                 else:
                     
-                    tclient = self.getClient(tsock)
+                    tclient = self.getclient(tsock)
                     
                     if tclient == None:
                         print "Error finding client with target socket!"
@@ -140,12 +139,12 @@ class Server(object):
                     
                     # input is valid
                     # now give client feedback
-                    handler.handleClient(tclient)
+                    handler.handleclient(tclient)
                     
                     
             
 
-    def shutdownServer(self):           
+    def shutdownserver(self):           
         
         print "Shutting down server..."
         
@@ -154,12 +153,8 @@ class Server(object):
         
         
         # save stuff
-        credential.saveCredentials()
-        print "Credentials saved."
-        
-        # save zones
-        #zone.saveZones()
-        #print "Zones and rooms saved."
+        hub.accounts.saveaccounts()
+        print "Accounts saved."
         
         # shutdown and close server socket
         self.socket.shutdown(0)
@@ -173,6 +168,6 @@ class Server(object):
 
 
 if __name__ == "__main__":
-    testserver = Server()
-    testserver.initServer()
-    testserver.shutdownServer()
+    testserver = server()
+    testserver.initserver()
+    testserver.shutdownserver()

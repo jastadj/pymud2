@@ -1,15 +1,15 @@
 import socket
-import game
+import hub
 from tools import *
 
-class Client(object):
+class client(object):
     REC_BUFFER = 4096
 
     def __init__(self):
         self.socket = None
         self.ip = None
         self.port = None
-        self.credential = None
+        self.account = None
 
         # starting user mode
         self.mode = None
@@ -21,46 +21,46 @@ class Client(object):
         self.tempvars = {}
         self.last_input = ""
 
-    def getAccountName(self):
-        if self.credential != None:
-            return self.credential.accountname
+    def getaccountname(self):
+        if self.account != None:
+            return self.account.getuser()
         else:
             return None
 
-    def getIP(self):
+    def getip(self):
         if self.ip != None:
             return self.ip
         else:
             return "No IP"
 
-    def getPort(self):
+    def getport(self):
         if self.port != None:
             return self.port
         else:
             return 0
 
-    def setSocket(self, tsocket):
+    def setsocket(self, tsocket):
         self.socket = tsocket
 
-    def getMode(self):
+    def getmode(self):
         return self.mode
 
-    def setMode(self, tmode):
+    def setmode(self, tmode):
         self.mode = tmode
 
-    def clearVars(self):
+    def clearvars(self):
         self.tempvars = {}
 
-    def getLastInput(self):
+    def getlastinput(self):
         return self.last_input
 
-    def getVars(self):
+    def getvars(self):
         return self.tempvars;
 
-    def setVar(self, nvar):
+    def setvar(self, nvar):
         self.tempvars.update(nvar)
 
-    def getVar(self, key):
+    def getvar(self, key):
         try:
             return self.tempvars[key]
         except:
@@ -71,7 +71,7 @@ class Client(object):
             return self.credential.colors
         else: return True
 
-    def processColors(self, msg):
+    def processcolors(self, msg):
 
         # get message range to iterate through
         mlen = len(msg)
@@ -126,14 +126,14 @@ class Client(object):
 
     def send(self, msg):
 
-        msg = self.processColors(msg)
+        msg = self.processcolors(msg)
 
         if self.socket == None:
             print msg
         else:
             self.socket.send(msg);
 
-    def doTick(self):
+    def dotick(self):
         if self.char != None:
             self.char.doTick()
 
@@ -170,7 +170,7 @@ class Client(object):
     def disconnect(self):
 
         # remove client from clients list
-        game.clients.remove(self)
+        hub.clients.remove(self)
 
         # close socket
         if self.socket != None:
@@ -179,5 +179,5 @@ class Client(object):
 
 if __name__ == "__main__":
 
-    myclient = Client()
+    myclient = client()
     myclient.send("#c1This is #c2a#cr test!")

@@ -1,146 +1,118 @@
-from tools import *
+import json
 import defs
-import hub
+from tools import *
 
-class Account(object):
-    def __init__(self, accountname, password, colors = True):
+class account(object):
+    def __init__(self, user, password):
+        self.data = {"user":user, "password":password}
+
+    def getuser(self):
+        return self.data["user"]
         
-        self.name = accountname
-        self.password = password
-        self.colors = colors
-
-def accountNameAvailable(accountname):
+class accountmanager(object):
     
-    for c in game.credentials:
-        if c.accountname == accountname:
-            return False
+    flags = 0
+    accounts = []
     
-    return True
-
-def addNewAccount(accountname, password):
-    if not accountNameAvailable(accountname):
-        print "Error adding new account %s, name not available!" %accountname
-        return None
-    
-    newaccount = Credential(accountname, password,True)
-    game.credentials.append(newaccount)
-    
-    print "New account created for:%s" %accountname
-    
-    saveCredentials()
-    
-    return newaccount
-
-def doLogin(accountname, password):
-    
-    tcred = None
-    
-    # check credentials for account name
-    for c in game.credentials:
-        if accountname == c.accountname:
-            tcred = c
-    
-    # no account name found
-    if tcred == None:
-        return None
+    def __init__(self):
         
-    # check password match, return credential
-    if tcred.password == password:
-        return tcred
+        self.load()
     
-    # no matching name/pass found
-    return None
+    def load(self):
+        if accountmanager.flags != 0:
+            return
         
-
-def loadCredentials():
-    
-    fp = defs.CREDENTIAL_FILE
-    
-    game.credentials = []
-    
-    #print "LOADING CREDENTIALS FROM %s" %fp
-    
-    # if file already exists
-    if createNewFile(fp) == None:
+        fp = defs.ACCOUNTS_FILE
         
-        # check each line in credential file
+        createNewFile(fp)
+        
         with open(fp, "r") as f:
             for line in f:
-                # trim off newline
-                line = line[:-1]
+                astrings = line[:-1]
                 
-                #ignore blank lines
-                if line == "":
-                    continue
+                if astrings == "": continue
                 
-                # if account entry
-                if line.startswith("ACCOUNT:"):
-                    
-                    # find delmiter, trip off entry type
-                    dfind = line.find(':')
-                    line = line[dfind+1:]
-                    
-                    # get account name
-                    cfind = line.find(',')
-                    aname = line[:cfind]
-                    line = line[cfind+1:]
-                    
-                    # get account password
-                    cfind = line.find(',')
-                    apass = line[:cfind]
-                    line = line[cfind+1:]
-                    
-                    # get account color mode
-                    cfind = line.find(',')
-                    acolor = line[:cfind]
-                    if acolor == "True": acolor = True
-                    else: acolor = False
-                    line = line[cfind+1:]
-
-                    
-                    # create credential
-                    game.credentials.append(Credential(aname, apass, acolor))
+                jsonobj = json.loads(astrings)
+                
+                taccount = account("temp", "temp")
+                
+                taccount.data = jsonobj["data"]
+                
+                accountmanager.accounts.append(taccount)
+        
         f.close()
-                    
-
-def saveCredentials():
+        
+        accountmanager.flags = 1
+        
+    def save(self):
+        
+        fp = defs.ACCOUNTS_FILE
+        
+        createNewFile(fp)
+        
+        f = open(fp, "w")
+        
+        for a in accountmanager.accounts:
+            
+            astrings = json.dumps(a.__dict__)
+            f.write(astrings + "\n")
+        
+        f.close()
+        
+    def add(self, user, password):
+        
+        newaccount = account(user, password)
+        accountmanager.accounts.append(newaccount)
     
-    fp = defs.CREDENTIAL_FILE
+    def count(self):
+        
+        return len(accountmanager.accounts)
     
-    createNewFile(fp)
+    def exists(self, user):
+        
+        for a in accountmanager.accounts:
+            if user == a.getuser(): return True
+        
+        return False
     
-    f = open(fp, "w")
+    def dologin(self, user, password):
+        
+        for a in accountmanager.accounts:
+            if user == a.getuser():
+                if a.data["password"] == password:
+                    return a
+                else: return None
+        
+        return None
     
-    for c in game.credentials:
-        f.write("ACCOUNT:%s,%s,%s\n" %(c.accountname, c.password, c.colors) )
-    
-    f.close()
+    def show(self):
+        
+        print "Accounts:"
+        
+        for a in accountmanager.accounts:
+            print a.getuser()
+        
+        print "%d account(s)." %self.count()
 
 if __name__ == "__main__":
     
     defs.configTestMode()
     
-    def showCredentials():
-        for c in game.credentials:
-            print ""
-            print "account name  :%s" %c.accountname
-            print "account pass  :%s" %c.password
-            print "character file:%s" %c.characterfile
-            print "account colors:%s" %c.colors
+    dotest = 2
     
-    # create test credentials
-    game.credentials = []
-    game.credentials.append(Credential("john", "monkey", True, "billy.dat") )
-    game.credentials.append(Credential("j","j",True, "j.dat") )
+    acnts = accountmanager()
     
-    # save credentials
-    saveCredentials()
+    # clear account database and create new accounts
+    if dotest == 1:
+        accountmanager.accounts = []
+        
+        acnts.addaccount("john", "monkey")
+        acnts.addaccount("chong", "ler")
+        
+        acnts.save()
+
+        acnts.show()
     
-    # clear game credentials
-    game.credentials = []
-    
-    # load game credentials
-    loadCredentials()
-    
-    showCredentials()  
-    
+    # show accounts loaded from file
+    elif dotest == 2:
+        acnts.show()

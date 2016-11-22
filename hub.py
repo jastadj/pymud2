@@ -22,18 +22,18 @@ def lobby(tuser):
         
         if tuser.mode == "lobby":
             
-            cmds = tuser.last_input.split()
+            cmds = tuser.getlastinput().split()
             
             if len(cmds) > 0:
                 pass
             
-            tuser.send("echo:%s\n" %tuser.getLastInput())
+            tuser.send("echo:%s\n" %tuser.getlastinput())
             tuser.send(">")
         
         do_passes -= 1 
 
 # main
-def mainGame(tuser):
+def maingame(tuser):
     
     do_passes = 0
     
@@ -41,16 +41,16 @@ def mainGame(tuser):
         
         if tuser.mode == "maingame":
             
-            cmds = tuser.last_input.split()
+            cmds = tuser.getlastinput().split()
             
             if len(cmds) > 0:
                 
                 # process main game command
-                tcmd = cmds_main.getCommand(cmds[0])
+                tcmd = cmds_main.getcommand(cmds[0])
                 
                 # no valid command found
                 if tcmd == None:
-					cmds_main.getInvalidFunction()(tuser)
+					cmds_main.getinvalidfunction()(tuser)
                 # exactly one command found, execute
                 elif len(tcmd) == 1:
                     tcmd[0].execute(tuser, cmds[1:])
@@ -64,7 +64,7 @@ def mainGame(tuser):
             
         # if entering the game after login
         elif tuser.mode == "maingamestart":
-            cmds_main.getAndExecute(tuser, "look")
+            cmds_main.getandexecute(tuser, "look")
             tuser.mode = "maingame"
             do_passes = 1
         
