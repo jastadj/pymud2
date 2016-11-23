@@ -4,15 +4,53 @@ import defs
 COMMAND = None
 COMMAND_SET = None
 
-# see gameinit - initializes object classes in dict
-OBJECT_CLASSES = {}
-
-# objects(lists)
+# objects
 server = None
 timer = None
-credentials = None
+accounts = None
 cmds_main = None
-clients = None
+
+# lists
+clients = []
+
+# dicts
+worldobjects = {}
+worldobjects_specific = {}
+zones = {}
+
+
+def addworldobject(tobj):
+    
+    # get dict entry of world object
+    tdict = {tobj.getuid():tobj}
+    
+    objtype = tobj.gettype()
+    
+    # update master world objects list
+    worldobjects.update( tdict )
+    
+    # update specific object list
+    if not objtype in worldobjects_specific.keys():
+        worldobjects_specific.update( {objtype:{}} )
+    worldobjects_specific[objtype].update(tdict)
+        
+def showworldobjects(specific = None):
+    
+    if specific == None:
+        print "World Objects:"
+        print "--------------"
+        for o in worldobjects.keys():
+            print "  %d:%s" %( o, worldobjects[o].getname())
+    else:
+        
+        if not specific in worldobjects_specific:
+            print "World Objects Specific does not contain %s type!" %specific
+            return
+        
+        print "World Objects of Type:%s" %specific
+        print "----------------------" + "-"*len(specific)
+        for o in worldobjects_specific[specific].keys():
+            print "  %d:%s" %(o, worldobjects_specific[specific][o].getname() )
 
 def lobby(tuser):
     
@@ -21,6 +59,7 @@ def lobby(tuser):
     while do_passes >= 0:
         
         if tuser.mode == "lobby":
+            
             
             cmds = tuser.getlastinput().split()
             

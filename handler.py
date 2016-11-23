@@ -1,4 +1,5 @@
 import login
+import createchar
 import hub
 import thread
 
@@ -12,12 +13,17 @@ client_modes.update( {"loginnew":login.loginmenu}) # new login query
 client_modes.update( {"loginnewpass":login.loginmenu}) # new login pass verify
 client_modes.update( {"loginnewpass2":login.loginmenu}) # new login pass verify
 client_modes.update( {"loginvalid":login.loginmenu}) # login valid, check character
+client_modes.update( {"loadchar":login.loginmenu}) # all is good, load character file
+
+client_modes.update( {"createchar1":createchar.createchar}) # create character
+client_modes.update( {"createchar2":createchar.createchar}) # check char name validity
+client_modes.update( {"createchar3":createchar.createchar}) # check keep confirmation
 
 client_modes.update( {"lobby":hub.lobby} ) # test lobby
 
 # main modes
-#client_modes.update( {"maingamestart":game.mainGame}) # main game prompt
-#client_modes.update( {"maingame":game.mainGame}) # main game prompt
+client_modes.update( {"maingamestart":hub.maingame}) # main game prompt
+client_modes.update( {"maingame":hub.maingame}) # main game prompt
 
 # timer update
 def dotimer():
@@ -88,6 +94,8 @@ if __name__ == "__main__":
     print "Disconnecting and saving character..."
     tuser.disconnect()
     
+    if tuser.char != None:
+        tuser.char.save()
     #print "Saving zones..."
     #zone.saveZones()
     

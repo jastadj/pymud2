@@ -11,6 +11,8 @@ class client(object):
         self.port = None
         self.account = None
 
+        self.char = None
+
         # starting user mode
         self.mode = None
 
@@ -67,8 +69,8 @@ class client(object):
             return None
 
     def colors(self):
-        if self.credential != None:
-            return self.credential.colors
+        if self.account != None:
+            return self.account.colors()
         else: return True
 
     def processcolors(self, msg):

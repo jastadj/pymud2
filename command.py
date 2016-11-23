@@ -47,7 +47,7 @@ class commandset(object):
         return len(self.commands)
 
     def getandexecute(self, tuser, cstr, *argv):
-        tcmds = self.getCommand(cstr)
+        tcmds = self.getcommand(cstr)
         tcmds[0].execute(tuser, argv)
     
     def getinvalidfunction(self):
@@ -78,11 +78,25 @@ def initmaincommands():
     cs.add("help", "Show help menu", showhelpmenu)
     cs.commands[-1].cdict.update({"source":cs})
     cs.add("color", "Color on or off", docolor, True)
-    
+    cs.add("look", "Look at something", dolook, True)
 
     return cs
 
 def maingameinvalid(tuser):
+    
+    # auto alias common directions
+    i = tuser.getlastinput()
+    
+    if i == "n": i = "north"
+    elif i == "s": i = "south"
+    elif i == "e": i = "east"
+    elif i == "w": i = "west"
+    
+    # check to see if command was an exit
+    troom = getcurrentroom(tuser)
+    if i in troom.getexits().keys():
+        doroomexit(tuser, i)
+        return
     
     tuser.send("Invalid command!\n")
     
@@ -112,22 +126,77 @@ def docolor(tuser, cdict, *argv):
     args = []
     # no arguments, do a room look
     if argv[0] == None:
-        tuser.send("Colors = %s\n" %tuser.credential.colors)
+        pass
     # arguments
     else:
         for a in argv[0]:
             args.append(a)
     
+    
+    if len(args) == 0:
+        tuser.send("Colors = %s\n" %tuser.account.colors())
+        return
+    
     if args[0].lower() == "on":
-        tuser.credential.colors = True
+        tuser.account.setcolors(True)
         tuser.send("Colors set to #c6on#cr.\n")
     elif args[0].lower() == "off":
-        tuser.credential.colors = False
+        tuser.account.setcolors(False)
         tuser.send("Colors set to off.\n")
     else:
         tuser.send("Unknown color parameter.  color on or color off.\n")
 
+
+
+###########################################
+##      ROOM
+
+def getcurrentroom(tuser):
+    tzone = tuser.char.getcurrentzoneid()
     
+    troom = hub.zones[tzone].getroom(tuser.char.getcurrentroomid())
+    
+    return troom    
+
+def dolook(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        pass
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)    
+    
+    # if no arguments provided, look at room
+    if len(args) == 0:
+        doroomlook(tuser, getcurrentroom(tuser) )
+
+def doroomlook(tuser, troom):
+        
+    # print room name and desc
+    tuser.send("#C6%s#cr\n" %troom.getname() )
+    tuser.send("#C0%s#cr\n" %troom.getdescription() )
+    
+    # print exits
+    if len(troom.getexits().keys()) == 0:
+        tuser.send("There are no obvious exits.\n")
+    else:
+        tuser.send("Exits: ")
+        
+        for e in troom.getexits().keys():
+            tuser.send("%s " %e)
+        tuser.send("\n")
+        
+def doroomexit(tuser, exitname):
+    
+    troom = getcurrentroom(tuser)
+    
+    # find exit string, and change users room to exit room number
+    if exitname in troom.getexits().keys():
+        tuser.char.setcurrentroomid( troom.getexits()[exitname])
+        doroomlook(tuser, getcurrentroom(tuser) )
+
 
 #####################################################################
 if __name__ == "__main__":

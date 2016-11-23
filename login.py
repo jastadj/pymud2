@@ -1,4 +1,5 @@
 import hub
+import character
 
 def loginmenu(tuser):
     
@@ -112,8 +113,18 @@ def loginmenu(tuser):
         # login was valid, either create new character if necessary or goto game
         elif tuser.getmode() == "loginvalid":
             tuser.skip_input = 1
-            tuser.setmode("lobby")
-                
+            
+            if tuser.account.getcharacterfile() == None:
+                tuser.setmode("createchar1")
+            else:
+                tuser.setmode("loadchar")
+        
+        elif tuser.getmode() == "loadchar":
+            
+            tuser.char = character.character(tuser.account)
+            
+            tuser.setmode("maingamestart")
+            tuser.skip_input = 1
         
         
         #decrement passes
