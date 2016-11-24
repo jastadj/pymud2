@@ -9,6 +9,7 @@ import hub
 import command
 import worldobject
 import item
+import actor
 
 import zone
 
@@ -36,14 +37,28 @@ def hubinit():
     # load items
     loaditems()
     
+    # load mobs
+    loadmobs()
+    
     # load zones
     loadzones()
 
+    # if zone 0 room 0 does not exist
+    try:
+        troom = hub.zones[0].getroom(0)
+    except:
+        print "Zone 0 - Room 0 does not exist!  Creating default.."
+        newzone = zone.zone(0, "default.zn", True)
+        newzone.newroom("Default Room")
+        newzone.getroom(0).setdescription("This is a default room.")
+        hub.zones.update( {0:newzone} )        
 
     # init summary
     print "Loaded %d accounts." %hub.accounts.count()
+    print "Loaded %d common items." %len(hub.commonitems)
+    print "Loaded %d common mobs." %len(hub.commonmobs)
     print "Loaded %d zones." %len(hub.zones.keys())
-    print "Loaded %d items." %len(hub.commonitems)
+    
 
 def hubinittest():
     # load test configuration
@@ -64,6 +79,8 @@ def save():
     
     print "Saving items..."
     saveitems()
+    print "Saving mobs..."
+    savemobs()
     print "Saving accounts..."
     hub.accounts.save()
     print "Saving zones..."
@@ -146,7 +163,45 @@ def loaditems():
             hub.commonitems.append(newitem)
     
     f.close()
+    
 
+#############################################
+##      MOBS
+
+def savemobs():
+    
+    fp = defs.MOBS_COMMON
+    
+    createNewFile(fp)
+    
+    f = open(fp, "w")
+    
+    for i in hub.commonmobs:
+        f.write( i.toJSONstr() + "\n")
+    
+    f.close()
+        
+def loadmobs():
+    
+    fp = defs.MOBS_COMMON
+    
+    createNewFile(fp)
+    
+    with open(fp, "r") as f:
+        
+        for line in f:
+            
+            line = line[:-1]
+            
+            if line == "": continue
+            
+            # load item
+            newmob = actor.mob("unnamed", json.loads(line) )
+            
+            # store common mob loaded into common mobs list
+            hub.commonmobs.append(newmob)
+    
+    f.close()
 
 #############################################
 ##      ZONES
@@ -196,9 +251,7 @@ def loadzones():
                 
                 # update zone dict
                 hub.zones.update( {zid:tzone})
-
-
-        
+    
 
 
 if __name__ == "__main__":

@@ -16,10 +16,13 @@ class worldobjectinstance(object):
         
         # increate iid counter
         if jobj != None:
-            self.fromJSON(jobj)
+            worldobjectinstance.fromJSON(self, jobj)
         else:
             worldobjectinstance.iidcount += 1
-    
+
+    def gettype(self):
+        return self.__class__.__name__
+
     def getuidref(self):
         return self.data["uidref"]
     

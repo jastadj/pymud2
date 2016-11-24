@@ -14,6 +14,7 @@ cmds_main = None
 # lists
 clients = []
 commonitems = [] #this is used for saving/loading common items only
+commonmobs = [] # this is used for saving/loading common mobs only
 
 # dicts, stores all items by uid, and all item instances by iid
 worldobjects = {}
@@ -44,7 +45,7 @@ def showworldobjects(specific = None):
         print "World Objects:"
         print "--------------"
         for o in worldobjects.keys():
-            print "  %d:%s" %( o, worldobjects[o].getname())
+            print "  %d:%s (%s)" %( o, worldobjects[o].getname(), worldobjects[o].gettype())
     else:
         
         if not specific in worldobjects_specific:

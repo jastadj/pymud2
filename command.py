@@ -88,7 +88,8 @@ def initmaincommands():
     cd.add("drop", "Drop an item", dodropitem, True)
     
     cd.add("debug", "Do a debug #", dodebug, True)
-
+    cd.add("showuid", "Show object of uid#", dodebugshowuid, True)
+    cd.add("showiid", "Show object instance of iid#", dodebugshowiid, True)
     
     # set aliases
     cd.setalias( {"i":"inventory"} )
@@ -138,7 +139,7 @@ def dodebug(tuser, cdict, *argv):
     
     if debugmode == 0:
         for o in hub.worldobjects.keys():
-            tuser.send("%d : %s\n" %(o, hub.worldobjects[o].getnameex() ) )
+            tuser.send("%d : %s (%s)\n" %(o, hub.worldobjects[o].getnameex(), hub.worldobjects[o].gettype() ) )
         
         try:
             tempval = hub.worldobjects.keys()[0]
@@ -151,7 +152,7 @@ def dodebug(tuser, cdict, *argv):
     
     if debugmode == 1:
         for o in hub.worldobjects_instance.keys():
-            tuser.send("%d : %s\n" %(o, hub.worldobjects_instance[o].getrefname() ) )
+            tuser.send("%d : %s (%s)\n" %(o, hub.worldobjects_instance[o].getrefname(), hub.worldobjects_instance[o].gettype() ) )
         
         try:
             tempval = hub.worldobjects_instance.keys()[0]
@@ -162,6 +163,48 @@ def dodebug(tuser, cdict, *argv):
         
         tuser.send("%d world instance objects.\n" %len(hub.worldobjects_instance.keys() ) )            
 
+
+def dodebugshowuid(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        pass
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+    
+    if len(args) == 0:
+        return
+        
+    tgtuid = None
+    
+    try:
+        tgtuid = int(args[0])
+        hub.worldobjects[tgtuid].show()
+    except:
+        return
+
+def dodebugshowiid(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        pass
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+    
+    if len(args) == 0:
+        return
+        
+    tgtiid = None
+    
+    try:
+        tgtiid = int(args[0])
+        hub.worldobjects_instance[tgtiid].show()
+    except:
+        return
 
 #####################################################################
 ##      COMMANDS
@@ -255,6 +298,65 @@ def dosay(tuser, cdict, *argv):
 
 ###########################################
 ##      ITEMS
+
+def dolook(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        pass
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)    
+    
+    # if no arguments provided, look at room
+    if len(args) == 0:
+        doroomlook(tuser, getcurrentroom(tuser) )
+        return
+    
+    
+    # remove junk words
+    if "at" in args:
+        args.remove("at")
+    
+    monoarg = " ".join(args)
+    
+    descstr = None
+    troom = getcurrentroom(tuser)
+    
+    # check if item in inventory
+    for i in tuser.char.getinventory():
+        if i.getref().hasmatch(monoarg):
+            descstr = i.getref().getdescription()
+            break
+    
+    # check if item in room
+    if descstr == None:
+        for i in troom.getitems():
+            if i.getref().hasmatch(monoarg):
+                descstr = i.getref().getdescription()
+                break
+    
+    # check if player is looking at mob
+    if descstr == None:
+        for m in troom.getmobs():
+            if m.getref().hasmatch(monoarg):
+                descstr = m.getref().getdescription()
+    
+    # check room descriptors
+    if descstr == None:
+        if monoarg in troom.getdescriptors():
+            descstr = troom.getdescriptors()[monoarg]
+    
+    if descstr != None:
+        
+        tuser.send("%s\n" %descstr )
+        return
+    else:
+        tuser.send("You do not see that here!\n")
+        return
+        
+    
 
 def doinventory(tuser, cdict):
     
@@ -386,20 +488,6 @@ def getallclientsinroom(troom):
     
     return clist
 
-def dolook(tuser, cdict, *argv):
-    args = []
-    # no arguments, do a room look
-    if argv[0] == None:
-        pass
-    # arguments
-    else:
-        for a in argv[0]:
-            args.append(a)    
-    
-    # if no arguments provided, look at room
-    if len(args) == 0:
-        doroomlook(tuser, getcurrentroom(tuser) )
-
 def doroomlook(tuser, troom):
         
     # print room name and desc
@@ -415,6 +503,9 @@ def doroomlook(tuser, troom):
         for e in troom.getexits().keys():
             tuser.send("%s " %e)
         tuser.send("\n")
+    
+    for m in troom.getmobs():
+        tuser.send("    %s\n" %m.getrefname() )
     
     for i in troom.getitems():
         tuser.send("    %s\n" %i.getrefname() )

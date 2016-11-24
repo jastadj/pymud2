@@ -59,7 +59,7 @@ def createNewFile(fp):
 
 def fitStringToWidth(s, width = 80):
     
-    lines = []
+    lines = ""
     
     #print "Length of string=%d" %len(s)
     
@@ -69,23 +69,23 @@ def fitStringToWidth(s, width = 80):
     while len(s) > width:
         
         if s[width-1] == " ":
-            lines.append( s[:width])
+            lines += s[:width] + "\n"
             s = s[width:]
         else:
             for c in range(1, width):
                 if s[width-1-c] == " ":
-                    lines.append( s[:width-c])
+                    lines +=  s[:width-c] + "\n"
                     s = s[width-c:]
                     break
                 elif c == width-1:
-                    lines.append( s[:width])
+                    lines += s[:width] + "\n"
                     s = s[width:]
                     break
 
         
 
     # add leftover
-    lines.append(s)
+    lines += s
     
     return lines
             
@@ -131,7 +131,6 @@ if __name__ == "__main__":
     p = fitStringToWidth(teststr)
     print teststr
     print "\n\n"
-    for l in p:
-        print l
+    print p
     
     print "dice roll = %d" %rollDice()

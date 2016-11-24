@@ -4,6 +4,7 @@ import hub
 import copy
 
 import item
+import actor
 
 class room(worldobject.worldobject):
     def __init__(self, zoneid, roomid, name = "unnamed", jobj = None):
@@ -13,7 +14,9 @@ class room(worldobject.worldobject):
 
         # init class data
         self.data = {"zid":zoneid, "rid":roomid, "exits":{} }
+        self.data.update( {"descriptors":{}} )
         self.items = []
+        self.mobs = []
 
         # if json obj provided, load in data
         if jobj != None:
@@ -31,6 +34,15 @@ class room(worldobject.worldobject):
     def addexit(self, exitname, exitroomnum):
         self.data["exits"].update( {exitname:exitroomnum} )
 
+    def adddescriptor(self, ddict):
+        self.data["descriptors"].update( ddict )
+
+    def getdescriptors(self):
+        return self.data["descriptors"]
+
+    def getitems(self):
+        return self.items
+        
     def additem(self,titem):
         self.items.append(titem)
     
@@ -41,8 +53,23 @@ class room(worldobject.worldobject):
         except:
             return False
         
-    def getitems(self):
-        return self.items
+
+
+    def getmobs(self):
+        return self.mobs
+    
+    def addmob(self, tmob):
+        self.mobs.append(tmob)
+    
+    def removemob(self, tmob):
+        try:
+            self.mobs.remove(tmob)
+            return True
+        except:
+            return False
+
+
+    
 
     def todict(self):
         
@@ -55,6 +82,11 @@ class room(worldobject.worldobject):
         tdict.update( {"items":[] })
         for i in self.items:
             tdict["items"].append( i.todict() )
+        
+        # mobs
+        tdict.update( {"mobs":[] } )
+        for m in self.mobs:
+            tdict["mobs"].append( m.todict() )
         
         return tdict
 
@@ -72,6 +104,9 @@ class room(worldobject.worldobject):
             newi = item.iteminstance(0, i)
             self.items.append(newi)
         
+        for m in jobj["mobs"]:
+            newm = actor.mobinstance(0, m)
+            self.mobs.append(newm)
 
     def show(self):
         worldobject.worldobject.show(self)
@@ -81,6 +116,10 @@ class room(worldobject.worldobject):
         print "Items:"
         for i in self.items:
             print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getrefname())
+        
+        print "Mobs:"
+        for m in self.mobs:
+            print "  iid:%d / refid(%d) : %s" %(m.getiid(), m.getuidref(), m.getrefname())
 
 if __name__ == "__main__":
     import item
@@ -90,12 +129,17 @@ if __name__ == "__main__":
     item1i = item1.create()
     item2i = item2.create()
     
+    mob1 = actor.mob("dog")
+    mob1i = mob1.create()
     
     
     room1 = room(0, 0, "Living Room")
-    room1.setdescription("A pretty standard clean living room.")
+    room1.setdescription("A pretty standard clean living room.  A large coffee table is covered in magazines.")
+    room1.adddescriptor({"table":"The coffee table looks like it has been well used."})
+    room1.adddescriptor({"magazine":"Some old National Geographics."})
     room1.additem(item1i)
     room1.additem(item2i)
+    room1.addmob(mob1i)
     room1str = room1.toJSONstr()
     
     room1copy = room(1,1,"test", json.loads(room1str) )
