@@ -1,40 +1,36 @@
 
 class noun(object):
     def __init__(self, name = "no name"):
-        self.name = name
-        self.description = "No description."
-        self.article = "a"
-        self.adjectives = []
-        self.verb = None        
-        self.proper = False
         
-        
+        self.noundata = { "name":name, "description":"no description", "article":"a"}
+        self.noundata.update( {"adjectives":[], "verb":None, "proper":False} )
+                
         # calc article
         self.calculatearticle()
     
     # setters
     def setname(self, name):
-        self.name = name
+        self.noundata["name"]= name
         self.calculatearticle()
     
     def setdescription(self, desc):
-        self.description = desc
+        self.noundata["description"] = desc
     
     def setarticle(self, article):
-        self.article = article
+        self.noundata["article"] = article
     
     def addadjective(self, adjective):
-        self.adjectives.append(adjective)
+        self.noundata["adjectives"].append(adjective)
     
     def setverb(self, vstring):
-        self.verb = vstring
+        self.noundata["verb"] = vstring
     
     def setproper(self, proper):
-        self.proper = proper
+        self.noundata["proper"] = proper
     
     # getters
     def getname(self):
-        return self.name
+        return self.noundata["name"]
     
     def getnameex(self, withverb = False):
         dstr = ""
@@ -61,33 +57,33 @@ class noun(object):
         return dstr
     
     def getdescription(self):
-        return self.description
+        return self.noundata["description"]
     
     def getarticle(self):
-        return self.article
+        return self.noundata["article"]
     
     def getadjectives(self):
-        return self.adjectives
+        return self.noundata["adjectives"]
     
     def getverb(self):
-        return self.verb
+        return self.noundata["verb"]
     
     def isproper(self):
-        return self.proper
+        return self.noundata["proper"]
     
     # functions
     def calculatearticle(self):
         
-        if self.name == "":
-            self.article = "a"
+        if self.getname() == "":
+            self.setarticle("a")
             return
         
         vowels= ['a','e','i','o','u']
         
-        self.article = "a"
+        self.setarticle("a")
         
-        if self.name[0] in vowels:
-            self.article = "an"
+        if self.getname()[0] in vowels:
+            self.setarticle("an")
     
     def hasmatch(self, tstr):
         

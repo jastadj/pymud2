@@ -74,13 +74,14 @@ class commandset(object):
 
 
 def initmaincommands():
-    cs = commandset()
-    cs.add("help", "Show help menu", showhelpmenu)
-    cs.commands[-1].cdict.update({"source":cs})
-    cs.add("color", "Color on or off", docolor, True)
-    cs.add("look", "Look at something", dolook, True)
+    cd = commandset()
+    cd.add("help", "Show help menu", showhelpmenu)
+    cd.commands[-1].cdict.update({"source":cd})
+    cd.add("color", "Color on or off", docolor, True)
+    cd.add("look", "Look at something", dolook, True)
+    cd.add("say" , "Say something", dosay, True)
 
-    return cs
+    return cd
 
 def maingameinvalid(tuser):
     
@@ -146,6 +147,40 @@ def docolor(tuser, cdict, *argv):
     else:
         tuser.send("Unknown color parameter.  color on or color off.\n")
 
+###########################################
+##      COMMUNICATION
+
+def dosay(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        pass
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+    
+    if len(args) == 0:
+        tuser.send("Say what?\n")
+        return
+    
+    monoarg = " ".join(args)
+    
+    cmsg = "%s says \"%s\"\n" %(tuser.char.getname(), monoarg)
+    umsg = "You say \"%s\"\n" %(monoarg)
+    
+    for c in hub.clients:
+        if c == tuser:
+            tuser.send(umsg)
+        else:
+            c.send(cmsg)
+
+###########################################
+##      ITEMS
+
+def newitem(uid):
+    newitem = hub.ITEM(uid)
+    return newitem
 
 
 ###########################################
@@ -187,6 +222,9 @@ def doroomlook(tuser, troom):
         for e in troom.getexits().keys():
             tuser.send("%s " %e)
         tuser.send("\n")
+    
+    for i in troom.getinventory():
+        tuser.send("    %s\n" %hub.worldobjects[i.getrefuid()].getnameex() )
         
 def doroomexit(tuser, exitname):
     

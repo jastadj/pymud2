@@ -26,7 +26,7 @@ class character(worldobject.worldobject):
                     
                     line = line[:-1]
                     
-                    self.fromJSON(line)
+                    self.fromJSON( json.loads(line) )
                     
             f.close()
     
@@ -42,11 +42,17 @@ class character(worldobject.worldobject):
     def setcurrentroomid(self, rid):
         self.data["currentroom"] = rid
     
-    def fromJSON(self, jsonstring):
+    def todict(self):
         
-        worldobject.worldobject.fromJSON(self, jsonstring)
+        tdict = worldobject.worldobject.todict(self)
         
-        jobj = json.loads(jsonstring)
+        tdict.update( {"data":self.data} )
+        
+        return tdict
+    
+    def fromJSON(self, jobj):
+        
+        worldobject.worldobject.fromJSON(self, jobj)
         
         self.data = jobj["data"]
         
@@ -64,7 +70,7 @@ class character(worldobject.worldobject):
         
         f = open(fp, "w")
         
-        f.write( self.toJSON() + "\n")
+        f.write( self.toJSONstr() + "\n")
         
         f.close()
         

@@ -7,8 +7,11 @@ class worldobject(noun.noun):
     # uidnum of 0 is reserved for all players
     uidcount = 1
     
-    def __init__(self, name = "unnamed", jstr = None):
+    def __init__(self, name = "unnamed", jobj = None):
         noun.noun.__init__(self, name)
+        
+        self.uid = worldobject.uidcount
+        
 
         # if type is character, uid 0 is reserved
         if self.gettype() == "character":
@@ -16,11 +19,10 @@ class worldobject(noun.noun):
             return
 
         # if no json string provided, assume new item
-        if jstr == None:
-            self.uid = worldobject.uidcount
+        if jobj == None:
             worldobject.uidcount += 1
         else:
-            self.fromJSON(jstr)
+            worldobject.fromJSON(self, jobj)
         
         # register world object
         hub.addworldobject(self)
@@ -38,19 +40,24 @@ class worldobject(noun.noun):
         print "type:%s" %self.gettype()
         print "name:%s" %self.getnameex()
 
-    def toJSON(self):
-        return json.dumps(self.__dict__)
+
+    def todict(self):
         
-    def fromJSON(self, jsonstring):
-        jobj = json.loads(jsonstring)
+        tdict = {}
         
+        tdict.update( {"noundata":self.noundata} )
+        tdict.update( {"uid":self.uid} )
+        
+        
+        return tdict
+        
+    def toJSONstr(self):
+        return json.dumps( self.todict() )
+        
+    def fromJSON(self, jobj):
+        
+        self.noundata = jobj["noundata"]
         self.uid = jobj["uid"]
-        self.name = jobj["name"]
-        self.description = jobj["description"]
-        self.article = jobj["article"]
-        self.adjectives = jobj["adjectives"]
-        self.verb = jobj["verb"]
-        self.proper = jobj["proper"]
 
 if __name__ == "__main__":
     
@@ -64,10 +71,10 @@ if __name__ == "__main__":
     
     myobjs[0].addadjective("mangy")
     myobjs[0].setverb(" is sitting here patiently")
-    myjstr = myobjs[0].toJSON()
+    myjstr = myobjs[0].toJSONstr()
     
     print myjstr
     
-    testobj = worldobject("unnamed", myjstr)
+    testobj = worldobject("unnamed", json.loads(myjstr) )
     
     testobj.show()

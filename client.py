@@ -148,7 +148,7 @@ class client(object):
         # try to receivee data
         try:
             # get input from client
-            cdata = self.socket.recv(Client.REC_BUFFER)
+            cdata = self.socket.recv(client.REC_BUFFER)
 
             # if client data valid
             if cdata:

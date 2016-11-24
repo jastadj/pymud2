@@ -59,7 +59,6 @@ class server(object):
         
         # add all client sockets
         for u in hub.clients:
-            print u
             slist.append( u.socket)
         
         return slist
@@ -101,7 +100,7 @@ class server(object):
                     newclient.port = addr[1]
                     
                     # add new client to list
-                    game.clients.append(newclient)
+                    hub.clients.append(newclient)
                     print "Client %s:%d connected." %(newclient.getip(), newclient.getport())
                     
                     #print WELCOME screen
@@ -129,7 +128,7 @@ class server(object):
                     if cdata == None:
                         # remove client from list
                         print "Client %s:%d disconnected." %(tclient.ip, tclient.port)
-                        game.clients.remove(tclient)
+                        #hub.clients.remove(tclient)
                         continue
                     
                     # debug

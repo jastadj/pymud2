@@ -1,17 +1,22 @@
 import json
 import worldobject
 import hub
+import copy
        
 
 class room(worldobject.worldobject):
-    def __init__(self, zoneid, roomid, name = "unnamed", jstr = None):
-        worldobject.worldobject.__init__(self, name, jstr)
-                
-        self.data = {"zid":zoneid, "rid":roomid, "exits":{} }
+    def __init__(self, zoneid, roomid, name = "unnamed", jobj = None):
+        
+        # init baseclass
+        worldobject.worldobject.__init__(self, name, jobj)
 
-        # if json strings provided
-        if jstr != None:
-            self.fromJSON(jstr)
+        # init class data
+        self.data = {"zid":zoneid, "rid":roomid, "exits":{} }
+        self.inventory = []
+
+        # if json obj provided, load in data
+        if jobj != None:
+            room.fromJSON(self,jobj)
         
     def getzoneid(self):
         return self.data["zid"]
@@ -25,13 +30,29 @@ class room(worldobject.worldobject):
     def addexit(self, exitname, exitroomnum):
         self.data["exits"].update( {exitname:exitroomnum} )
 
-    def fromJSON(self, jsonstring):
+    def newitem(self, iuid):
+        
+        self.inventory.append(hub.ITEM(iuid))
+
+    def getinventory(self):
+        return self.inventory
+
+    def todict(self):
+        
+        tdict = worldobject.worldobject.todict(self)
+        
+        # room data
+        tdict.update( {"data":self.data} )
+        
+        return tdict
+
+    def fromJSON(self, jobj):
         
         # base class json load
-        worldobject.worldobject.fromJSON(self, jsonstring)
+        # not necessary since this is done in constructor
+        #worldobject.worldobject.fromJSON(self, jobj)
         
-        # room data json load
-        jobj = json.loads(jsonstring)
+        # room data
         self.data = jobj["data"]
 
     def show(self):
@@ -44,7 +65,26 @@ class room(worldobject.worldobject):
             print "Exits:"
             for e in self.getexits().keys():
                 print "  %s:%d" %(e, self.getexits()[e])
+        print "Inventory:"
+        for i in self.inventory:
+            print "  iid:%d (%d)" %(i.getiid(), i.getrefuid())
 
 if __name__ == "__main__":
-    pass
+    
+    room1 = room(0, 0, "Living Room")
+    room1.setdescription("A pretty standard clean living room.")
+    
+    room1str = room1.toJSONstr()
+    
+    room1copy = room(1,1,"test", json.loads(room1str) )
+    
+    print "room1 json str:"
+    print room1str
+    
+    print "\nroom1:"
+    room1.show()
+    
+    print "\nroom1 copy:"
+    room1copy.show()
+    
     

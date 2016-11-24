@@ -96,10 +96,7 @@ if __name__ == "__main__":
     
     if tuser.char != None:
         tuser.char.save()
-    #print "Saving zones..."
-    #zone.saveZones()
     
-    print "saving accounts..."
-    hub.accounts.save()
+    hubinit.save()
     
     exit()

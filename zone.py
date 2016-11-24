@@ -34,9 +34,9 @@ class zone(object):
                     if line == "": continue
                     
                     if linesread == 0:
-                        self.fromJSON(line)
+                        self.fromJSON( json.loads(line) )
                     else:
-                        troom = room.room(self.getid(), 0, "unnamed", line)
+                        troom = room.room(self.getid(), 0, "unnamed", json.loads(line) )
                         self.rooms.update( {troom.getroomid():troom})
                     
                     linesread += 1
@@ -95,14 +95,20 @@ class zone(object):
         r2.addexit(r2exit, r1num)
         
         return True
-
-    def toJSON(self):
-        return json.dumps(self.data)
-
-    def fromJSON(self, jstrings):
+    
+    def todict(self):
+        tdict = {}
         
-        jobj = json.loads(jstrings)
-        self.data = jobj
+        tdict.update( {"data":self.data } )
+        
+        return tdict
+    
+    def toJSONstr(self):
+        return json.dumps( self.todict() )
+
+    def fromJSON(self, jobj):
+        
+        self.data = jobj["data"]
 
     def save(self):
         
@@ -112,11 +118,11 @@ class zone(object):
         f = open(fp, "w")
 
         # write zone data
-        f.write( self.toJSON() + "\n")
+        f.write( self.toJSONstr() + "\n")
 
         # write rooms
         for r in self.rooms.keys():
-            f.write( self.rooms[r].toJSON() + "\n")
+            f.write( self.rooms[r].toJSONstr() + "\n")
 
         f.close()
     

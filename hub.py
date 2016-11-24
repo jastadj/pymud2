@@ -3,6 +3,7 @@ import defs
 # class refs
 COMMAND = None
 COMMAND_SET = None
+ITEM = None
 
 # objects
 server = None
@@ -12,10 +13,13 @@ cmds_main = None
 
 # lists
 clients = []
+commonitems = [] #this is used for saving/loading common items only
 
 # dicts
 worldobjects = {}
 worldobjects_specific = {}
+worldobjects_instance = {}
+
 zones = {}
 
 

@@ -7,6 +7,8 @@ if __name__ == "__main__":
     import account
     import character
     import zone
+    import item
+    import command
     
     defs.configtestmode()
     #hubinit.hubinittest()
@@ -24,6 +26,13 @@ if __name__ == "__main__":
     # CHARACTERS
     newcharacter = character.character(testaccount)
     newcharacter.save()
+    
+    
+    #####
+    # ITEMS
+
+    
+    
     
     #####
     # ZONES / ROOMS
@@ -48,10 +57,15 @@ if __name__ == "__main__":
     
     #####
     # WORLD OBJECTS SUMMARY
+    
     print ""
+    print "uidcount = %d" %worldobject.worldobject.uidcount
     hub.showworldobjects()
     
     #####
     print "\nTest data done."
     
+    
+    
+    hubinit.save()
     
