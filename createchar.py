@@ -1,4 +1,5 @@
 import defs
+import character
 from tools import *
 
 def createchar(tuser):
@@ -50,6 +51,7 @@ def createchar(tuser):
             if tuser.getlastinput().lower()[0] == "y":
                 # create character
                 tuser.account.data["characterfile"] = tuser.getvar("charname") + ".dat"
+                tuser.char = character.character(tuser.account, tuser.getvar("charname"))
                 tuser.setmode("loadchar")
                 tuser.skip_input = 1
             else:

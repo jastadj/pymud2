@@ -34,8 +34,7 @@ def hubinit():
     print "Timer start:%f" %hub.timer.getstarttime()
     
     # load items
-    #hub.ITEM = item.item
-    #loaditems()
+    loaditems()
     
     # load zones
     loadzones()
@@ -44,7 +43,7 @@ def hubinit():
     # init summary
     print "Loaded %d accounts." %hub.accounts.count()
     print "Loaded %d zones." %len(hub.zones.keys())
-    #print "Loaded %d items." %len(hub.commonitems)
+    print "Loaded %d items." %len(hub.commonitems)
 
 def hubinittest():
     # load test configuration
@@ -63,8 +62,8 @@ def hubinittest():
 
 def save():
     
-    #print "Saving items..."
-    #saveitems()
+    print "Saving items..."
+    saveitems()
     print "Saving accounts..."
     hub.accounts.save()
     print "Saving zones..."
@@ -80,7 +79,7 @@ def savepersistentdata():
     
     pdata = {}
     pdata.update( {"uidcount":worldobject.worldobject.uidcount} )
-    pdata.update( {"iidcount":item.item.iidcount} )
+    pdata.update( {"iidcount":worldobject.worldobjectinstance.iidcount} )
     
     f = open(fp, "w")
     f.write( json.dumps(pdata) + "\n")
@@ -105,7 +104,7 @@ def loadpersistentdata():
                 worldobject.worldobject.uidcount = jobj["uidcount"]
             
             if "iidcount" in jobj.keys():
-                item.item.iidcount = jobj["iidcount"]
+                worldobject.worldobjectinstance.iidcount = jobj["iidcount"]
                 
     f.close()
     
@@ -122,7 +121,7 @@ def saveitems():
     f = open(fp, "w")
     
     for i in hub.commonitems:
-        f.write( i.toJSON() + "\n")
+        f.write( i.toJSONstr() + "\n")
     
     f.close()
         
@@ -140,7 +139,11 @@ def loaditems():
             
             if line == "": continue
             
-            newitem = item.itemmaster("unnamed", True, line)
+            # load item
+            newitem = item.item("unnamed", json.loads(line) )
+            
+            # store common item loaded into common items list
+            hub.commonitems.append(newitem)
     
     f.close()
 

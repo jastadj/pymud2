@@ -2,7 +2,8 @@ import json
 import worldobject
 import hub
 import copy
-       
+
+import item
 
 class room(worldobject.worldobject):
     def __init__(self, zoneid, roomid, name = "unnamed", jobj = None):
@@ -12,7 +13,7 @@ class room(worldobject.worldobject):
 
         # init class data
         self.data = {"zid":zoneid, "rid":roomid, "exits":{} }
-        self.inventory = []
+        self.items = []
 
         # if json obj provided, load in data
         if jobj != None:
@@ -30,12 +31,18 @@ class room(worldobject.worldobject):
     def addexit(self, exitname, exitroomnum):
         self.data["exits"].update( {exitname:exitroomnum} )
 
-    def newitem(self, iuid):
+    def additem(self,titem):
+        self.items.append(titem)
+    
+    def removeitem(self, titem):
+        try:
+            self.items.remove(titem)
+            return True
+        except:
+            return False
         
-        self.inventory.append(hub.ITEM(iuid))
-
-    def getinventory(self):
-        return self.inventory
+    def getitems(self):
+        return self.items
 
     def todict(self):
         
@@ -43,6 +50,11 @@ class room(worldobject.worldobject):
         
         # room data
         tdict.update( {"data":self.data} )
+        
+        # inventory
+        tdict.update( {"items":[] })
+        for i in self.items:
+            tdict["items"].append( i.todict() )
         
         return tdict
 
@@ -54,26 +66,36 @@ class room(worldobject.worldobject):
         
         # room data
         self.data = jobj["data"]
+        
+        # add items
+        for i in jobj["items"]:
+            newi = item.iteminstance(0, i)
+            self.items.append(newi)
+        
 
     def show(self):
         worldobject.worldobject.show(self)
         for d in self.data.keys():
             print "%s:%s" %(d, self.data[d])
-        if len(self.getexits().keys()) == 0:
-            print "No exits."
-        else:
-            print "Exits:"
-            for e in self.getexits().keys():
-                print "  %s:%d" %(e, self.getexits()[e])
-        print "Inventory:"
-        for i in self.inventory:
-            print "  iid:%d (%d)" %(i.getiid(), i.getrefuid())
+
+        print "Items:"
+        for i in self.items:
+            print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getrefname())
 
 if __name__ == "__main__":
+    import item
+    
+    item1 = item.item("rock")
+    item2 = item.item("book")
+    item1i = item1.create()
+    item2i = item2.create()
+    
+    
     
     room1 = room(0, 0, "Living Room")
     room1.setdescription("A pretty standard clean living room.")
-    
+    room1.additem(item1i)
+    room1.additem(item2i)
     room1str = room1.toJSONstr()
     
     room1copy = room(1,1,"test", json.loads(room1str) )

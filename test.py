@@ -24,15 +24,21 @@ if __name__ == "__main__":
     
     #####
     # CHARACTERS
-    newcharacter = character.character(testaccount)
+    newcharacter = character.character(testaccount, "Cholo")
     newcharacter.save()
     
     
     #####
     # ITEMS
-
+    myitems = []
+    myitems.append( item.item("rock") )
+    myitems.append( item.item("mug") )
     
+    for i in myitems:
+        i.show()
     
+    # store all common items in common items list
+    hub.commonitems = myitems
     
     #####
     # ZONES / ROOMS
@@ -40,6 +46,7 @@ if __name__ == "__main__":
     newzone.newroom("White Eagle Tavern")
     newzone.newroom("Hallway")
     newzone.getroom(0).setdescription("The dayroom of this tavern smells of sour booze and stale tobacco.")
+    newzone.getroom(0).additem( myitems[1].create())
     newzone.getroom(1).setdescription("This hallway leads to the various rentable rooms of the tavern.")
     if not newzone.connectrooms( newzone.getroom(0), "east", newzone.getroom(1), "west"):
         print "ERROR CONNECTING ROOMS!"
@@ -64,8 +71,8 @@ if __name__ == "__main__":
     
     #####
     print "\nTest data done."
-    
-    
-    
     hubinit.save()
+    
+    
+    
     

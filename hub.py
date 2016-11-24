@@ -15,7 +15,7 @@ cmds_main = None
 clients = []
 commonitems = [] #this is used for saving/loading common items only
 
-# dicts
+# dicts, stores all items by uid, and all item instances by iid
 worldobjects = {}
 worldobjects_specific = {}
 worldobjects_instance = {}
@@ -55,6 +55,18 @@ def showworldobjects(specific = None):
         print "----------------------" + "-"*len(specific)
         for o in worldobjects_specific[specific].keys():
             print "  %d:%s" %(o, worldobjects_specific[specific][o].getname() )
+
+def createobject(uid):
+    
+    tobj = None
+    
+    try:
+        tobj = worldobjects[uid]
+        tobj.create()
+    except:
+        return None
+        
+    return tobj
 
 def lobby(tuser):
     

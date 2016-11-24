@@ -2,6 +2,58 @@ import noun
 import hub
 import json
 
+class worldobjectinstance(object):
+    # instance id counter
+    iidcount = 0
+    
+    def __init__(self, uidref, jobj = None):
+        
+        # init persistent item data
+        self.data = {"uidref":uidref, "iid":worldobjectinstance.iidcount}
+        
+        # update persistent item dictionary with instance id
+        hub.worldobjects_instance.update( { self.data["iid"]: self} )
+        
+        # increate iid counter
+        if jobj != None:
+            self.fromJSON(jobj)
+        else:
+            worldobjectinstance.iidcount += 1
+    
+    def getuidref(self):
+        return self.data["uidref"]
+    
+    def getiid(self):
+        return self.data["iid"]
+    
+    def getref(self):
+        return hub.worldobjects[ self.data["uidref"] ]
+    
+    def getrefname(self):
+        return hub.worldobjects[ self.data["uidref"] ].getnameex()
+    
+    def todict(self):
+        tdict = {}
+        
+        tdict.update( {"data":self.data } )
+        
+        return tdict
+        
+    def toJSONstr(self):
+        return json.dumps( self.todict() )
+        
+    def fromJSON(self, jobj):
+        
+        self.data = jobj["data"]
+    
+    def show(self):
+        print "item instance:"
+        print "--------------"
+        print "iid:%d" %self.data["iid"]
+        print "uid ref:%d" %self.data["uidref"]
+        print "ref name:%s" %hub.worldobjects[self.data["uidref"]].getnameex()
+        
+
 class worldobject(noun.noun):
     
     # uidnum of 0 is reserved for all players

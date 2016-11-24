@@ -1,19 +1,24 @@
 import json
-import worldobject
+import actor
 import defs
 import hub
 from tools import *
 
-class character(worldobject.worldobject):
+import item
+
+class character(actor.actor):
     def __init__(self, user, name = "unnamed"):
         
         if user.getcharacterfile() == None:
-            self = None
-            return
+            print "Error creating character, character file is none!"
         
-        worldobject.worldobject.__init__(self, name)
+        actor.actor.__init__(self, name)
         
-        self.data = {"owner":user.getuser(), "currentzone":0, "currentroom":0}
+        self.setproper(True)
+        
+        self.data.update( {"owner":user.getuser(), "currentzone":0, "currentroom":0} )
+        self.inventory = []
+        
         
         fp = defs.CHARACTERS_PATH + user.getcharacterfile()
         
@@ -42,19 +47,54 @@ class character(worldobject.worldobject):
     def setcurrentroomid(self, rid):
         self.data["currentroom"] = rid
     
+    def getinventory(self):
+        return self.inventory
+    
+    def additem(self, titem):
+        self.inventory.append(titem)
+    
+    def removeitem(self, titem):
+        try:
+            self.inventory.remove(titem)
+            return True
+        except:
+            return False
+    
     def todict(self):
         
-        tdict = worldobject.worldobject.todict(self)
+        # get base class data
+        tdict = actor.actor.todict(self)
         
+        # get class data
         tdict.update( {"data":self.data} )
+        
+        # get class inventory
+        tdict.update( {"inventory":[]} )
+        for i in self.inventory:
+            tdict["inventory"].append( i.todict() )        
         
         return tdict
     
     def fromJSON(self, jobj):
         
-        worldobject.worldobject.fromJSON(self, jobj)
+        # get base class data
+        actor.actor.fromJSON(self, jobj)
         
+        # get class data
         self.data = jobj["data"]
+        
+        # get class inventory
+        for k in jobj["inventory"]:
+            newi = item.iteminstance(0, k)
+            self.inventory.append(newi)        
+    
+    def show(self):
+        
+        actor.actor.show(self)
+        
+        print "Inventory:"
+        for i in self.inventory:
+            print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getrefname())        
         
     def save(self):
         
@@ -74,4 +114,15 @@ class character(worldobject.worldobject):
         
         f.close()
         
-        
+if __name__ == "__main__":
+    
+    import hubinit
+    import hub
+    hubinit.hubinittest()
+    
+    hub.accounts.add("test","test")
+    taccount = hub.accounts.dologin("test","test")
+    taccount.data["characterfile"] = "testchar.dat"
+    
+    mychar = character(taccount, "Billy")
+    mychar.show()

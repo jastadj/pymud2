@@ -121,7 +121,8 @@ def loginmenu(tuser):
         
         elif tuser.getmode() == "loadchar":
             
-            tuser.char = character.character(tuser.account)
+            if tuser.char == None:
+                tuser.char = character.character(tuser.account)
             
             tuser.setmode("maingamestart")
             tuser.skip_input = 1
