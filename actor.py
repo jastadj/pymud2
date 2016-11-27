@@ -85,7 +85,9 @@ class actorinstancedata(object):
     
     def __init__(self, tactor):
         
+        self.pdata = {"currentzoneid":0, "currentroomid":0 }
         self.pattributes = {"currenthp": tactor.getattribute("hp")}
+        self.pinventory = []
 
     def getattribute(self, attribute):
         if attribute in self.pattributes.keys():
@@ -105,21 +107,79 @@ class actorinstancedata(object):
             return False
         return True
 
+    def getcurrentzoneid(self):
+        return self.pdata["currentzoneid"]
+    
+    def getcurrentroomid(self):
+        return self.pdata["currentroomid"]
+        
+    def setcurrentzoneid(self, zid):
+        self.pdata["currentzoneid"] = zid
+    
+    def setcurrentroomid(self, rid):
+        self.pdata["currentroomid"] = rid
+
+
+    def getinventory(self):
+        return self.pinventory
+    
+    def additem(self, titem):
+        if titem != None:
+            self.pinventory.append(titem)
+            return True
+        else:
+            return False
+    
+    def removeitem(self, titem):
+        try:
+            self.pinventory.remove(titem)
+            return True
+        except:
+            return False
+
+
     def todict(self):
         tdict = {}
         
+        # get persistent data
+        tdict.update( {"pdata": self.pdata } )
+        
+        # get persistent attributes
         tdict.update( {"pattributes":self.pattributes } )
+
+        # get persistent inventory
+        tdict.update( {"pinventory":[]} )
+        for i in self.pinventory:
+            tdict["pinventory"].append( i.todict() ) 
         
         return tdict
         
     def fromJSON(self, jobj):
         
+        # get persistent dat
+        self.pdata = jobj["pdata"]
+        
+        # get persistent attributes
         self.pattributes = jobj["pattributes"]
         
+        # get persistent inventory
+        for k in jobj["pinventory"]:
+            newi = item.iteminstance(0, k)
+            self.pinventory.append(newi)        
+        
     def show(self):
+        
+        print "Persistent Data:"
+        for p in self.pdata.keys():
+            print "  %s:%s" %(p, self.pdata[p] )
+        
         print "Persistent Attributes:"
         for p in self.pattributes.keys():
             print "  %s:%s" %(p, self.pattributes[p])
+        
+        print "Inventory:"
+        for i in self.pinventory:
+            print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getrefname())
 
 class mob(actor):
     def __init__(self, name = "unnamed", jobj = None):

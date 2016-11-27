@@ -19,9 +19,7 @@ class character(actor.actor, actor.actorinstancedata):
         
         self.setproper(True)
         
-        self.data.update( {"owner":user.getuser(), "currentzone":0, "currentroom":0} )
-        self.inventory = []
-        
+        self.data.update( {"owner":user.getuser()} )
         
         fp = defs.CHARACTERS_PATH + user.getcharacterfile()
         
@@ -37,31 +35,9 @@ class character(actor.actor, actor.actorinstancedata):
                     self.fromJSON( json.loads(line) )
                     
             f.close()
+
     
-    def getcurrentzoneid(self):
-        return self.data["currentzone"]
-    
-    def getcurrentroomid(self):
-        return self.data["currentroom"]
-        
-    def setcurrentzoneid(self, zid):
-        self.data["currentzone"] = zid
-    
-    def setcurrentroomid(self, rid):
-        self.data["currentroom"] = rid
-    
-    def getinventory(self):
-        return self.inventory
-    
-    def additem(self, titem):
-        self.inventory.append(titem)
-    
-    def removeitem(self, titem):
-        try:
-            self.inventory.remove(titem)
-            return True
-        except:
-            return False
+
     
     def todict(self):
         
@@ -72,11 +48,6 @@ class character(actor.actor, actor.actorinstancedata):
         
         # get class data
         tdict.update( {"data":self.data} )
-        
-        # get class inventory
-        tdict.update( {"inventory":[]} )
-        for i in self.inventory:
-            tdict["inventory"].append( i.todict() )        
         
         return tdict
     
@@ -90,19 +61,12 @@ class character(actor.actor, actor.actorinstancedata):
         # get class data
         self.data = jobj["data"]
         
-        # get class inventory
-        for k in jobj["inventory"]:
-            newi = item.iteminstance(0, k)
-            self.inventory.append(newi)        
+        
     
     def show(self):
         
         actor.actor.show(self)
         actor.actorinstancedata.show(self)
-        
-        print "Inventory:"
-        for i in self.inventory:
-            print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getrefname())        
         
     def save(self):
         
