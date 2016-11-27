@@ -32,6 +32,7 @@ class actor(worldobject.worldobject):
         self.bodyparts.update( {defs.BODYPART_RIGHTFOOT:"right foot"} )
 
         
+        
         # config attributes
         self.attributes.update( {"maxhp":1})
         

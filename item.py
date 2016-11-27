@@ -1,6 +1,7 @@
 import worldobject
 import json
 import hub
+import copy
 
 class iteminstance(worldobject.worldobjectinstance):
     
@@ -9,8 +10,50 @@ class iteminstance(worldobject.worldobjectinstance):
         # init base class data
         worldobject.worldobjectinstance.__init__(self, uidref, jobj)
         
+        if self.getref().iscontainer():
+            self.container = self.getref().container.getpersistentdata()
+        
+        if jobj != None:
+            self.fromJSON(jobj)
+    
+    def getlookstr(self):
+        
+        lookstr = worldobject.worldobjectinstance.getlookstr(self)
+        
+        if self.getref().iscontainer():
+            citems = self.container.getitems()
+            
+            lookstr += "\n"
+            
+            if len(citems) == 0:
+                lookstr += "It contains nothing.\n"
+            else:
+                lookstr += "It Contains:\n"
+                
+                for i in citems:
+                    lookstr += "  %s\n" %i.getref().getnameex()
+                    
+            
+        return lookstr
+        
+    def todict(self):
+        tdict = worldobject.worldobjectinstance.todict(self)
+        
+        if self.getref().iscontainer():
+            tdict.update( {"container": self.container.todict() } )
+        
+        return tdict
+    
+    def fromJSON(self, jobj):
+        
+        if self.getref().iscontainer():
+            self.container.fromJSON(jobj["container"])
+        
     def show(self):
         worldobject.worldobjectinstance.show(self)
+        
+        if self.getref().iscontainer():
+            self.container.show()
 
 class weapon(object):
     def __init__(self):
@@ -33,6 +76,84 @@ class weapon(object):
         for d in self.weapon.keys():
             print "  %s:%s" %(d, self.weapon[d])
 
+class pcontainer(object):
+    def __init__(self):
+        self.inventory = []
+    
+    def getitems(self):
+        return self.inventory
+    
+    def additem(self, titem):
+        if titem == None:
+            return False
+        self.inventory.append(titem)
+        return True
+    
+    def removeitem(self, titem):
+        if titem == None: return False
+        if titem in self.inventory:
+            self.inventory.remove(titem)
+            return True
+        return False
+
+    def todict(self):
+        
+        tdict = {}
+        
+        tdict.update( {"items":[]} )
+        
+        for i in self.inventory:
+            tdict["items"].append( i.todict() )
+        
+        return tdict
+    
+    def fromJSON(self, jobj):
+        
+        for i in jobj["items"]:          
+            newitem = iteminstance(0, i)
+            self.inventory.append(newitem)
+
+    def show(self):
+        print "Items:"
+        for i in self.inventory:
+            print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getrefname())
+
+class container(object):
+    def __init__(self):
+        self.container = {"maxweight":0, "maxvolume":0}
+
+    def getpersistentdata(self):
+        return pcontainer()
+        
+    def getmaxweight(self):
+        return self.container["maxweight"]
+    
+    def getmaxvolume(self):
+        return self.container["maxvolume"]
+        
+    def setmaxweight(self, weight):
+        self.container["maxwieght"] = weight
+    
+    def setmaxvolume(self, volume):
+        self.container["maxvolume"] = volume
+
+    def todict(self):
+        
+        tdict = {}
+        
+        tdict.update( {"container": self.container} )
+        
+        return tdict
+    
+    def fromJSON(self, jobj):
+        
+        self.container = jobj["container"]
+
+    def show(self):
+        print "Container Data:"
+        for d in self.container.keys():
+            print "  %s:%s" %(d, self.container[d])   
+
 class item(worldobject.worldobject):
         
     def __init__(self, name = "unnamed", jobj = None):
@@ -45,6 +166,7 @@ class item(worldobject.worldobject):
         
         # optional item structs
         self.weapon = None
+        self.container = None
         
         if jobj != None:
             self.fromJSON(jobj)
@@ -57,8 +179,16 @@ class item(worldobject.worldobject):
             return True
         else: return False
     
+    def iscontainer(self):
+        if self.container != None:
+            return True
+        else: return False
+    
     def makeweapon(self):
         self.weapon = weapon()
+    
+    def makecontainer(self):
+        self.container = container()
     
     def todict(self):
         tdict = worldobject.worldobject.todict(self)
@@ -67,6 +197,9 @@ class item(worldobject.worldobject):
         
         if self.isweapon():
             tdict.update( {"weapon":self.weapon.todict()} )
+        
+        if self.iscontainer():
+            tdict.update( {"container":self.container.todict() } )
         
         return tdict
     
@@ -78,6 +211,10 @@ class item(worldobject.worldobject):
             self.weapon = weapon()
             self.weapon.fromJSON( jobj["weapon"])
     
+        if "container" in jobj.keys():
+            self.container = container()
+            self.container.fromJSON( jobj["container"])
+    
     def create(self):
         newinstance = iteminstance(self.uid)
         
@@ -88,6 +225,9 @@ class item(worldobject.worldobject):
         print "isweapon:%s" %self.isweapon()
         if self.isweapon():
             self.weapon.show()
+        print "iscontainer:%s" %self.iscontainer()
+        if self.iscontainer():
+            self.container.show()
         
 if __name__ == "__main__":
     
@@ -96,5 +236,21 @@ if __name__ == "__main__":
     item1.makeweapon()
     item1.show()
 
-    itemi = item1.create()
-    itemi.show()
+    print "\nItem 2:"
+    item2 = item("sack")
+    item2.makecontainer()
+    item2.show()
+
+    print "\nItem 1 Instance:"
+    item1i = item1.create()
+    item1i.show()
+
+    print "\nItem 2 Instance:"
+    item2i = item2.create()
+    item2i.container.additem(item1i)
+    item2i.show()
+    
+    jstrings = item2i.toJSONstr()
+    print "\nItem 2 Instance Copy"
+    item2icopy = iteminstance(0, json.loads(jstrings) )
+    item2icopy.show()

@@ -43,10 +43,19 @@ def defaultitems():
     # ITEMS
     myitems = []
     myitems.append( item.item("rock") )
+    myitems[-1].setdescription("Just a dirty old rock.")    
     myitems.append( item.item("mug") )
+    myitems[-1].setdescription("A small ceramic mug.")    
     myitems.append( item.item("dagger") )
     myitems[-1].makeweapon()
     myitems[-1].weapon.setdamage(4)
+    myitems[-1].setdescription("A small but lethal dagger.")
+    myitems.append( item.item("sack") )
+    myitems[-1].setdescription("A small leather sack used for storing things.")
+    myitems[-1].addadjective("small")
+    myitems[-1].addadjective("leather")
+    myitems[-1].makecontainer()
+    
     
     # store all common items in common items list
     hub.commonitems = myitems
@@ -56,10 +65,12 @@ def defaultmobs():
     # MOBS
     mymobs = []
     mymobs.append( actor.mob("Gil") )
+    mymobs[-1].setdescription("He looks like a no-nonsense bartender.")
     mymobs[-1].setproper(True)
     mymobs[-1].setattribute("maxhp", 42)
     
     mymobs.append( actor.mob("rabbit") )
+    mymobs[-1].setdescription("A cute little bunny rabbit.")
     mymobs[-1].setproper(False)
     mymobs[-1].setattribute("maxhp", 3)
     mymobs[-1].addadjective("fluffy")
@@ -77,6 +88,7 @@ def defaultzones():
     newzone.getroom(0).newspawner( hub.finduidbyname("dagger"), 5 )
     newzone.getroom(0).newspawner( hub.finduidbyname("gil"), 5 )
     newzone.getroom(1).newspawner( hub.finduidbyname("rabbit"), 5)
+    newzone.getroom(1).newspawner( hub.finduidbyname("sack"), 5000)
     #newzone.getroom(0).additem( hub.commonitems[1].create())
     #newzone.getroom(0).addmob( hub.commonmobs[0].create() )
     newzone.getroom(1).setdescription("This hallway leads to the various rentable rooms of the tavern.")

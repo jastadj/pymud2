@@ -125,7 +125,7 @@ class worldobjectinstance(object):
         hub.addworldinstanceobject(self)
 
         if jobj != None:
-            self.fromJSON(jobj)
+            worldobjectinstance.fromJSON(self,jobj)
 
     def dotick(self):
         pass
@@ -144,6 +144,9 @@ class worldobjectinstance(object):
     
     def getrefname(self):
         return hub.worldobjects[ self.data["uidref"] ].getnameex()
+
+    def getlookstr(self):
+        return self.getref().getdescription()
     
     def todict(self):
         tdict = {}

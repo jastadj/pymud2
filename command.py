@@ -90,6 +90,7 @@ def initmaincommands():
     cd.add("inventory", "Show inventory", doinventory, False)
     cd.add("get", "Get an item", dogetitem, True)
     cd.add("drop", "Drop an item", dodropitem, True)
+    cd.add("put", "Put an item into something", doputitem, True)
     cd.add("wield", "Wield a weapon", dowield, True)
     cd.add("unwield", "Unwield a weapon", dounwield, True)
     cd.add("score", "Show player info", doscore, False)
@@ -566,41 +567,42 @@ def dolook(tuser, cdict, *argv):
         args.remove("at")
     
     monoarg = " ".join(args)
-    
     descstr = None
     troom = getcurrentroom(tuser)
     
-    # check if item in inventory
-    for i in tuser.char.getinventoryandequipment():
-        if i.getref().hasmatch(monoarg):
-            descstr = i.getref().getdescription()
+    while True:
+        # check if item in inventory
+        tobj = gettargetobjfromargs(tuser, tuser.char.getinventory(), args)
+        if tobj != None:
             break
-    
-    # check if item in room
-    if descstr == None:
-        for i in troom.getitems():
-            if i.getref().hasmatch(monoarg):
-                descstr = i.getref().getdescription()
-                break
-    
-    # check if player is looking at mob
-    if descstr == None:
-        for m in troom.getmobs():
-            if m.getref().hasmatch(monoarg):
-                descstr = m.getref().getdescription()
-    
-    # check room descriptors
-    if descstr == None:
+
+        tobj = gettargetobjfromargs(tuser, tuser.char.getinventoryandequipment(), args)
+        if tobj != None:
+            break
+
+        tobj = gettargetobjfromargs(tuser, troom.getitems(), args)
+        if tobj != None:
+            break
+        
+        tobj = gettargetobjfromargs(tuser, troom.getmobs(), args)
+        if tobj != None:
+            break
+        
+        # check room descriptors
         if monoarg in troom.getdescriptors():
             descstr = troom.getdescriptors()[monoarg]
-    
-    if descstr != None:
+            tuser.send("%s\n" %descstr)
+            return
         
-        tuser.send("%s\n" %descstr )
+        break
+        
+    if tobj != None:
+        descstr = tobj.getlookstr()
+        tuser.send("%s\n" %descstr)
         return
     else:
         tuser.send("You do not see that here!\n")
-        return
+
         
     
 
@@ -675,7 +677,61 @@ def dodropitem(tuser, cdict, *argv):
     tuser.send("You do not have that!\n")
     return False    
 
- 
+def doputitem(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        pass
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+    
+    if len(args) == 0:
+        tuser.send("Put what into what?\n")
+        return False
+        
+    # remove junk words
+    if "in" in args:
+        args.remove("in")
+    elif "into" in args:
+        args.remove("into")
+    
+    item1 = None
+    item2 = None
+    
+    # get item 1
+    spos = 1
+    for a in range(1, len(args)+1):
+        titem = gettargetobjfromargs(tuser, tuser.char.getinventory(), args[:a])
+        if titem != None:
+            item1 = titem
+            spos = a
+            break
+    
+    print "FOUND ITEM 1:%s" %item1.getref().getnameex()
+    print "SPOS = %d" %spos
+    
+    args2 = args[spos:]
+    
+    # get item 2
+    item2 = gettargetobjfromargs(tuser, tuser.char.getinventory(), args2)
+    if item2 != None:
+        print "FOUND ITEM 2:%s" %item2.getref().getnameex()
+    
+    if item1 != None and item2 != None:
+        if item2.getref().iscontainer():
+            
+            # remove item 1 from inventory
+            tuser.char.removeitem(item1)
+            
+            # add item 1 to container 2
+            item2.container.additem(item1)
+            
+            return True
+    
+    tuser.send("Put what into what?\n")
+    return False
     
 ###########################################
 ##      ROOM
