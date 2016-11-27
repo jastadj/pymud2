@@ -63,6 +63,10 @@ class commandset(object):
         if cstr in self.aliases.keys():
             cstr = self.aliases[cstr]
 
+        # if string was a directional (n,e,s,w,etc..)
+        if cstr in ["n", "s", "e", "w"]:
+            return None
+
         for i in range(0, self.count() ):
             #found absolute
             if self.commands[i].cdict["name"] == cstr:
@@ -86,7 +90,10 @@ def initmaincommands():
     cd.add("inventory", "Show inventory", doinventory, False)
     cd.add("get", "Get an item", dogetitem, True)
     cd.add("drop", "Drop an item", dodropitem, True)
+    cd.add("wield", "Wield a weapon", dowield, True)
+    cd.add("unwield", "Unwield a weapon", dounwield, True)
     cd.add("score", "Show player info", doscore, False)
+    cd.add("kill", "Kill target", dokill, True)
     
     cd.add("debug", "Do a debug #", dodebug, True)
     cd.add("showuid", "Show object of uid#", dodebugshowuid, True)
@@ -164,7 +171,9 @@ def dodebug(tuser, cdict, *argv):
             pass
         
         tuser.send("%d world instance objects.\n" %len(hub.worldobjects_instance.keys() ) )            
-
+    
+    if debugmode == 2:
+        hub.showworldobjects("room")
 
 def dodebugshowuid(tuser, cdict, *argv):
     args = []
@@ -252,6 +261,38 @@ def docolor(tuser, cdict, *argv):
     else:
         tuser.send("Unknown color parameter.  color on or color off.\n")
 
+def gettargetobjfromargs(tuser, tlist, args):
+    
+    # target item number ( for multiples)
+    itemnum = 0
+    
+    # if item number supplied in args
+    try:
+        itemnum = int(args[-1]) - 1
+        args = args[:-1]
+        if itemnum < 0: itemnum = 0
+    except:
+        itemnum = 0
+    
+    # get string from supplied arguments
+    monoarg = " ".join(args)
+    
+    # look for target item in list
+    foundcount = 0
+    for i in tlist:
+        if i.getref().hasmatch(monoarg):
+            
+            # skip item
+            if foundcount != itemnum:
+                foundcount += 1
+                continue
+            
+            # return found item
+            return i
+    
+    
+    return None
+
 ###########################################
 ##      COMMUNICATION
 
@@ -294,6 +335,94 @@ def dosay(tuser, cdict, *argv):
 
 
 ###########################################
+##      COMBAT
+
+def docombat(tactor):
+    
+    tactor.combatticks -= 1
+    
+    # if actor ready to attack
+    if tactor.combatticks <= 0:
+        
+        troom = tactor.getroom()
+        
+        tactor.combatticks = tactor.getcombatspeed()
+        
+        tdmg = tactor.getattackroll()
+        
+        ctarget = tactor.combattarget
+        
+        
+        cmsg = "%s hits %s for %d damage.\n" %(tactor.getnameex(), ctarget.getnameex(), tdmg)
+        aggmsg = "You hit %s for %d damage.\n" %(ctarget.getnameex(), tdmg)
+        defmsg = "%s hits you for %d damage.\n" %(tactor.getnameex(), tdmg)
+        
+        
+        ctarget.takehit(tdmg)
+        
+        for c in getallclientsinroom(troom):
+            if c.char == tactor:
+                c.send(aggmsg)
+            elif c.char == ctarget:
+                c.send(defmsg)
+            else:
+                c.send(cmsg)
+       
+
+def dokill(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        pass
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+    
+    if len(args) == 0:
+        tuser.send("Kill what?\n")
+        return
+    
+    monoarg = " ".join(args)
+    
+    troom = getcurrentroom(tuser)
+    tmob = None
+    
+    # check that target mob is in the room
+    for m in troom.getmobs():
+        if m.getref().hasmatch(monoarg):
+            tmob = m
+            break
+    
+    # mob found, attack mob
+    if tmob != None:
+        
+        tmob.setcombattarget(tuser.char)
+        tuser.char.setcombattarget(tmob)
+        
+        tmsg = "%s starts fighting %s!\n" %(tuser.char.getnameex(), tmob.getref().getnameex())
+        umsg = "You start fighting %s\n" %(tmob.getref().getnameex())
+        doroombroadcast(troom, tmsg, tuser, umsg)
+
+        
+        """
+        # get attack damage
+        attackval = tuser.char.getattackroll()
+        
+        # apply attack damage to target mob
+        tmob.takehit(attackval)
+        
+        tmsg = "%s hits %s for %d\n" %(tuser.char.getnameex(), tmob.getref().getnameex(), attackval)
+        umsg = "You hit %s for %d\n" %(tmob.getref().getnameex(), attackval)
+        doroombroadcast(troom, tmsg, tuser, umsg)
+        """
+    
+    else:
+        tuser.send("You do not see that here!\n")
+        return False
+
+
+###########################################
 ##      CHARACTER
 
 def doscore(tuser, cdict):
@@ -302,9 +431,115 @@ def doscore(tuser, cdict):
     
     tstrings += "Name : %s\n" %tuser.char.getnameex()
     
-    tstrings += "HP : %d/%d\n" %(tuser.char.getattribute("currenthp"), tuser.char.getattribute("hp"))
+    tstrings += "HP : %d/%d\n" %(tuser.char.getattribute("hp"), tuser.char.getattribute("maxhp"))
     
     tuser.send(tstrings)
+
+def doinventory(tuser, cdict):
+    
+    tstrings = []
+    
+    tinv = tuser.char.getinventory()
+    
+    twielded = tuser.char.getwielding()
+    
+    tstrings += "You are wielding "
+    if tuser.char.getwielding() == None:
+        tstrings += "nothing.\n"
+    else:
+        tstrings += tuser.char.getwielding().getref().getnameex() + ".\n"
+    
+    
+    tstrings += "You are carring:\n"
+    
+    if len(tinv) == 0:
+        tstrings += "  Nothing!\n"
+    else:
+        for i in tinv:
+            if twielded == i:
+                pass
+            else:
+                tstrings += "  %s\n" %i.getrefname()
+
+    
+    tuser.send(tstrings)
+
+def dowield(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        pass
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+    
+    if len(args) == 0:
+        tuser.send("Wield what?\n")
+        return False
+        
+    titem = gettargetobjfromargs(tuser, tuser.char.getinventory(), args)
+    troom = getcurrentroom(tuser)
+    
+    if titem != None:
+
+        # check if item is a weapon
+        if not titem.getref().isweapon():
+            tuser.send("That is not a weapon!\n")
+            return False
+        
+        # check is wielding something
+        if tuser.char.getwielding() != None:
+            tuser.send("You are already wielding a weapon!\n")
+            return False
+        
+        # wield weapon
+        tuser.char.wield(titem)
+        
+        tmsg = "%s wields %s.\n" %(tuser.char.getnameex(), titem.getref().getnameex())
+        umsg = "You wield %s.\n" %titem.getref().getnameex()
+        doroombroadcast(troom, tmsg, tuser, umsg)
+        
+        return True
+
+    tuser.send("You do not have that!\n")
+    return False
+
+def dounwield(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        pass
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+    
+    if len(args) == 0:
+        tuser.send("Unwield what?\n")
+        return False
+        
+    titem = gettargetobjfromargs(tuser, tuser.char.getequipped(), args)
+    troom = getcurrentroom(tuser)
+    
+    if titem != None:
+
+        # check that item is wielded
+        if titem != tuser.char.getwielding():
+            tuser.send("You are not wielding that!\n")
+            return False
+        
+        # wield weapon
+        tuser.char.unwield(titem)
+        
+        tmsg = "%s unwields %s.\n" %(tuser.char.getnameex(), titem.getref().getnameex())
+        umsg = "You unwield %s.\n" %titem.getref().getnameex()
+        doroombroadcast(troom, tmsg, tuser, umsg)
+        
+        return True
+
+    tuser.send("You do not have that!\n")
+    return False
 
 
 ###########################################
@@ -336,7 +571,7 @@ def dolook(tuser, cdict, *argv):
     troom = getcurrentroom(tuser)
     
     # check if item in inventory
-    for i in tuser.char.getinventory():
+    for i in tuser.char.getinventoryandequipment():
         if i.getref().hasmatch(monoarg):
             descstr = i.getref().getdescription()
             break
@@ -369,19 +604,6 @@ def dolook(tuser, cdict, *argv):
         
     
 
-def doinventory(tuser, cdict):
-    
-    tinv = tuser.char.getinventory()
-    
-    tuser.send("Inventory:\n")
-    tuser.send("----------\n")
-    
-    if len(tinv) == 0:
-        tuser.send("  You are not carrying anything!\n")
-    else:
-        for i in tinv:
-            tuser.send("  %s\n" %i.getrefname() )
-
 def dogetitem(tuser, cdict, *argv):
     args = []
     # no arguments, do a room look
@@ -396,37 +618,28 @@ def dogetitem(tuser, cdict, *argv):
         tuser.send("Get what?\n")
         return False
         
-    monoargs = " ".join(args)    
-    
-    # get current room
     troom = getcurrentroom(tuser)
+    titem = gettargetobjfromargs(tuser,troom.getitems(), args)
     
-    titem = None
     
-    # look for target item in room item list
-    for i in troom.getitems():
-        if i.getref().hasmatch(monoargs):
-            
-            # get item
-            titem = i
-            
-            # remove item from room
-            troom.removeitem(titem)
-            
-            # add item to player
-            tuser.char.additem(titem)
-            
-            tmsg = "%s picks up %s.\n" %(tuser.char.getnameex(), titem.getref().getnameex() )
-            umsg = "You pick up %s.\n" %titem.getref().getnameex()
-            
-            doroombroadcast(troom, tmsg, tuser, umsg)
-            
-            return True
+    if titem != None:
 
-    # target item was not found anywhere
-    if titem == None:
-        tuser.send("You do not see that here!\n")
-        return False
+        # remove item from room
+        troom.removeitem(titem)
+        
+        # add item to player
+        tuser.char.additem(titem)
+        
+        tmsg = "%s picks up %s.\n" %(tuser.char.getnameex(), titem.getref().getnameex() )
+        umsg = "You pick up %s.\n" %titem.getref().getnameex()
+        
+        doroombroadcast(troom, tmsg, tuser, umsg)
+        
+        return True
+
+    tuser.send("You do not see that here!\n")
+    return False        
+
     
 def dodropitem(tuser, cdict, *argv):
     args = []
@@ -442,42 +655,28 @@ def dodropitem(tuser, cdict, *argv):
         tuser.send("Drop what?\n")
         return False
         
-    monoargs = " ".join(args)    
-    
-    # get current room
+    titem = gettargetobjfromargs(tuser, tuser.char.getinventory(), args)
     troom = getcurrentroom(tuser)
     
-    titem = None
+    if titem != None:
+
+        # remove item from player inventory
+        tuser.char.removeitem(titem)
+        
+        # add item to room
+        troom.additem(titem)
+        
+        tmsg = "%s drops %s.\n" %(tuser.char.getnameex(), titem.getref().getnameex())
+        umsg = "You drop %s.\n" %titem.getref().getnameex()
+        doroombroadcast(troom, tmsg, tuser, umsg)
+        
+        return True
+
+    tuser.send("You do not have that!\n")
+    return False    
+
+ 
     
-    # look for target item in player inventory
-    for i in tuser.char.getinventory():
-        if i.getref().hasmatch(monoargs):
-            
-            # get item
-            titem = i
-            
-            # remove item from player inventory
-            tuser.char.removeitem(titem)
-            
-            # add item to room
-            troom.additem(titem)
-            
-            tmsg = "%s drops %s.\n" %(tuser.char.getnameex(), titem.getref().getnameex())
-            umsg = "You drop %s.\n" %titem.getref().getnameex()
-            doroombroadcast(troom, tmsg, tuser, umsg)
-            
-            return True
-
-    # target item was not found anywhere
-    if titem == None:
-        tuser.send("You do not have that!\n")
-        return False    
-
-def newitem(uid):
-    newitem = hub.ITEM(uid)
-    return newitem
-
-
 ###########################################
 ##      ROOM
 
@@ -493,9 +692,8 @@ def getallclientsinroom(troom):
     clist = []
     
     for c in hub.clients:
-        if c.char.getcurrentroomid() == troom.getroomid():
-            if c.char.getcurrentzoneid() == troom.getzoneid():
-                clist.append(c)
+        if c.char.getroom() == troom:
+            clist.append(c)
     
     return clist
 
@@ -518,7 +716,10 @@ def doroomlook(tuser, troom):
         tstrings += "\n"
     
     for m in troom.getmobs():
-        tstrings += "    %s\n" %m.getrefname()
+        if m.incombat():
+            tstrings += "    %s (in combat)\n" %m.getrefname()
+        else:
+            tstrings += "    %s\n" %m.getrefname()
     
     for i in troom.getitems():
         tstrings += "    %s\n" %i.getrefname()

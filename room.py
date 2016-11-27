@@ -24,6 +24,16 @@ class room(worldobject.worldobject):
         if jobj != None:
             room.fromJSON(self,jobj)
     
+    def dotick(self):
+        
+        self.dospawners()
+        
+        for i in self.getitems():
+            i.dotick()
+        
+        for m in self.getmobs():
+            m.dotick()
+    
     def isroom(self):
         return True
     
@@ -45,9 +55,6 @@ class room(worldobject.worldobject):
     def getdescriptors(self):
         return self.data["descriptors"]
 
-    
-    def dotick(self):
-        self.dospawners()
 
     #####
     # ITEMS
@@ -79,6 +86,8 @@ class room(worldobject.worldobject):
     def addmob(self, tmob):
         if tmob != None:
             self.mobs.append(tmob)
+            tmob.setcurrentroomid(self.getroomid())
+            tmob.setcurrentzoneid(self.getzoneid())
             return True
         else:
             return False
@@ -89,7 +98,7 @@ class room(worldobject.worldobject):
             return True
         except:
             return False
-
+    
 
     #####
     # SPAWNERS

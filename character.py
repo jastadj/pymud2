@@ -21,6 +21,8 @@ class character(actor.actor, actor.actorinstancedata):
         
         self.data.update( {"owner":user.getuser()} )
         
+        self.client = None
+        
         fp = defs.CHARACTERS_PATH + user.getcharacterfile()
         
         # character file exists
@@ -36,7 +38,11 @@ class character(actor.actor, actor.actorinstancedata):
                     
             f.close()
 
-    
+    def setclient(self, tclient):
+        self.client = tclient
+        
+    def getclient(self):
+        return self.client
 
     
     def todict(self):

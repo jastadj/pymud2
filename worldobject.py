@@ -39,7 +39,12 @@ class objectspawner(object):
         return hub.worldobjects[ self.data["objuid"] ]
 
     def getlastinstance(self):
-        return self.data["lastinstance"]
+        if self.data["lastinstance"] != None:
+            try:
+                return hub.worldobjects_instance[ self.data["lastinstance"] ]
+            except:
+                return None
+        return None
 
     def setmaxticks(self, maxticks):
         self.data["maxticks"] = maxticks
@@ -62,7 +67,7 @@ class objectspawner(object):
                 # if last instance of item is in target room, do nothing
                 if self.getlastinstance() != None:
                     for i in troom.getitems():
-                        if i.getiid() == self.getlastinstance():
+                        if i.getiid() == self.getlastinstance().getiid():
                             return
 
                 # create object
@@ -75,7 +80,7 @@ class objectspawner(object):
                 
                 # if last instance of is still alive, ignore
                 if self.getlastinstance() != None:
-                    if hub.worldobjects_instance[ self.getlastinstance() ].isalive():
+                    if self.getlastinstance().isalive():
                         return
                 
                 # create object
@@ -89,7 +94,7 @@ class objectspawner(object):
 
             # debug
             #print "Spawned %s" %newobj.getnameex()
-            print "Spawned %s" %self.getref().getnameex()
+            #print "Spawned %s" %self.getref().getnameex()
     
     def todict(self):
         
@@ -121,6 +126,9 @@ class worldobjectinstance(object):
 
         if jobj != None:
             self.fromJSON(jobj)
+
+    def dotick(self):
+        pass
 
     def gettype(self):
         return self.__class__.__name__

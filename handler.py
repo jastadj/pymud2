@@ -28,15 +28,25 @@ client_modes.update( {"maingame":hub.maingame}) # main game prompt
 # timer update
 def dotimer():
     
-    if hub.timer.getelapsedsec() >= 1:
-        dotick()
-        hub.timer.reset()
+    hub.mutex.acquire()
+    
+    try:
+        if hub.timer.getelapsedsec() >= 1:
+            dotick()
+            hub.timer.reset()
+    finally:
+        hub.mutex.release()
 
 def dotick():
     
     # update all rooms
-    for r in hub.worldobjects_specific["room"]:
+    for r in hub.worldobjects_specific["room"].keys():
         hub.worldobjects[r].dotick()
+    
+    # update players for combat
+    for u in hub.clients:
+        if u.char != None:
+            u.char.dotick()
 
 def ticktest():
     while True:
@@ -45,27 +55,34 @@ def ticktest():
         
 def handleclient(tclient):
     
-    cc = tclient.getlastinput()
+    hub.mutex.acquire()
     
-    # run loop, skipping input if set
-    while tclient.skip_input >= 0:
-    
-        # client output, goto client mode function pointer
-        client_modes[ tclient.mode ](tclient)
+    try:
         
-        # client input
-        if cc == "quit":
-            tclient.disconnect()
+        cc = tclient.getlastinput()
         
-        # decrement input skip for next pass
-        if tclient.skip_input != 0:
-            tclient.last_input = ""
+        # run loop, skipping input if set
+        while tclient.skip_input >= 0:
+        
+            # client output, goto client mode function pointer
+            client_modes[ tclient.mode ](tclient)
             
-        # decrement skip input
-        tclient.skip_input -= 1
+            # client input
+            if cc == "quit":
+                tclient.disconnect()
+            
+            # decrement input skip for next pass
+            if tclient.skip_input != 0:
+                tclient.last_input = ""
+                
+            # decrement skip input
+            tclient.skip_input -= 1
+        
+        # reset input skip counter
+        tclient.skip_input = 0
     
-    # reset input skip counter
-    tclient.skip_input = 0
+    finally:
+        hub.mutex.release()
 
 if __name__ == "__main__":
     import hubinit

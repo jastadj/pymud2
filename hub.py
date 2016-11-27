@@ -1,4 +1,8 @@
 import defs
+import threading
+
+# thread
+mutex = threading.Lock()
 
 # class refs
 COMMAND = None

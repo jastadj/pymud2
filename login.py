@@ -123,6 +123,7 @@ def loginmenu(tuser):
             
             if tuser.char == None:
                 tuser.char = character.character(tuser.account)
+                tuser.char.setclient(tuser)
             
             tuser.setmode("maingamestart")
             tuser.skip_input = 1

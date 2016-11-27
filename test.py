@@ -18,15 +18,25 @@ def defaultaccounts():
     print "User accounts = %d" %hub.accounts.count()
     testaccount = hub.accounts.dologin("cholo", "cholo")
     testaccount.data["characterfile"] = "cholo.dat"
+    
+    
+    hub.accounts.add("j","j")
+    testaccount2 = hub.accounts.dologin("j","j")
+    testaccount2.data["characterfile"] = "john.dat"
+    
     hub.accounts.save()
     
     #####
     # CHARACTERS
     newcharacter = character.character(testaccount, "Cholo")
+    newcharacter.setattribute("maxhp", 12)
     newcharacter.setattribute("hp", 12)
-    newcharacter.setattribute("currenthp", 12)
     newcharacter.save()
 
+    newchar2 = character.character(testaccount2, "John")
+    newchar2.setattribute("maxhp", 12)
+    newchar2.setattribute("hp", 12)
+    newchar2.save()
 
 def defaultitems():
     #####
@@ -47,8 +57,12 @@ def defaultmobs():
     mymobs = []
     mymobs.append( actor.mob("Gil") )
     mymobs[-1].setproper(True)
-    mymobs[-1].setattribute("hp", 42)
+    mymobs[-1].setattribute("maxhp", 42)
     
+    mymobs.append( actor.mob("rabbit") )
+    mymobs[-1].setproper(False)
+    mymobs[-1].setattribute("maxhp", 3)
+    mymobs[-1].addadjective("fluffy")
     # store all common mobs in common mobs list
     hub.commonmobs = mymobs
 
@@ -62,6 +76,7 @@ def defaultzones():
     newzone.getroom(0).adddescriptor({"bar":"The bar looks fairly scuffed up, possibly due to fighting."})
     newzone.getroom(0).newspawner( hub.finduidbyname("dagger"), 5 )
     newzone.getroom(0).newspawner( hub.finduidbyname("gil"), 5 )
+    newzone.getroom(1).newspawner( hub.finduidbyname("rabbit"), 5)
     #newzone.getroom(0).additem( hub.commonitems[1].create())
     #newzone.getroom(0).addmob( hub.commonmobs[0].create() )
     newzone.getroom(1).setdescription("This hallway leads to the various rentable rooms of the tavern.")
@@ -73,7 +88,18 @@ def defaultzones():
     #hubinit.savezones()
 
 if __name__ == "__main__":
-        
+    
+    deletetestfolder = True
+    
+    if deletetestfolder:
+        import shutil
+        try:
+            shutil.rmtree('./test')
+            print "Removed test folder."     
+        except:
+            print "Could not remove test folder."
+            pass
+    
     defs.configtestmode()
     #hubinit.hubinittest()
     
