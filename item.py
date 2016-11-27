@@ -49,6 +49,9 @@ class item(worldobject.worldobject):
         if jobj != None:
             self.fromJSON(jobj)
 
+    def isitem(self):
+        return True
+
     def isweapon(self):
         if self.weapon != None:
             return True

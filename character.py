@@ -1,18 +1,21 @@
 import json
 import actor
+import worldobject
 import defs
 import hub
 from tools import *
 
 import item
 
-class character(actor.actor):
+class character(actor.actor, actor.actorinstancedata):
     def __init__(self, user, name = "unnamed"):
         
         if user.getcharacterfile() == None:
             print "Error creating character, character file is none!"
         
+        # init base class data
         actor.actor.__init__(self, name)
+        actor.actorinstancedata.__init__(self, self)
         
         self.setproper(True)
         
@@ -65,6 +68,8 @@ class character(actor.actor):
         # get base class data
         tdict = actor.actor.todict(self)
         
+        tdict.update( actor.actorinstancedata.todict(self) )
+        
         # get class data
         tdict.update( {"data":self.data} )
         
@@ -78,7 +83,9 @@ class character(actor.actor):
     def fromJSON(self, jobj):
         
         # get base class data
+        worldobject.worldobject.fromJSON(self, jobj)
         actor.actor.fromJSON(self, jobj)
+        actor.actorinstancedata.fromJSON(self, jobj)
         
         # get class data
         self.data = jobj["data"]
@@ -91,6 +98,7 @@ class character(actor.actor):
     def show(self):
         
         actor.actor.show(self)
+        actor.actorinstancedata.show(self)
         
         print "Inventory:"
         for i in self.inventory:

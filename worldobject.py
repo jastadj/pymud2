@@ -2,6 +2,107 @@ import noun
 import hub
 import json
 
+class objectspawner(object):
+    def __init__(self, troom = None, tobj = None, maxticks = 60):
+        
+        if troom == None or tobj == None:
+            self.data = {"roomuid":troom, "objuid":tobj, "ticks":0, "maxticks":maxticks}
+            self.data.update( {"lastinstance":None} )
+        else:
+            if type(troom) == int:
+                troom = hub.worldobjects[troom]
+                if not troom.isroom():
+                    troom = None
+            if type(tobj) == int:
+                tobj = hub.worldobjects[tobj]
+                if not tobj.isitem():
+                    if not tobj.isactor():
+                        tobj = None
+            self.data = {"roomuid":troom.getuid(), "objuid":tobj.getuid(), "ticks":0, "maxticks":maxticks}
+    
+    def getdata(self):
+        return self.data
+    
+    def getroomuid(self):
+        return self.data["roomuid"]
+        
+    def getobjuid(self):
+        return self.data["objuid"]
+        
+    def getticks(self):
+        return self.data["ticks"]
+    
+    def getmaxticks(self):
+        return self.data["maxticks"]
+
+    def getref(self):
+        return hub.worldobjects[ self.data["objuid"] ]
+
+    def getlastinstance(self):
+        return self.data["lastinstance"]
+
+    def setmaxticks(self, maxticks):
+        self.data["maxticks"] = maxticks
+        
+    def setticks(self, ticks):
+        self.data["ticks"] = ticks
+        
+    def dotick(self):
+        self.data["ticks"] += 1
+        if self.data["ticks"] >= self.data["maxticks"]:
+            self.data["ticks"] = 0
+            
+            # get room for spawning
+            troom = hub.worldobjects[ self.data["roomuid"] ]
+            newobj = None
+            
+            #if target object is item
+            if self.getref().isitem():
+                
+                # if last instance of item is in target room, do nothing
+                if self.getlastinstance() != None:
+                    for i in troom.getitems():
+                        if i.getiid() == self.getlastinstance():
+                            return
+
+                # create object
+                newobj = hub.createobject( self.data["objuid"] )
+                
+                # add object to room
+                troom.additem(newobj)
+
+            elif self.getref().isactor():
+                
+                # if last instance of is still alive, ignore
+                if self.getlastinstance() != None:
+                    if hub.worldobjects_instance[ self.getlastinstance() ].isalive():
+                        return
+                
+                # create object
+                newobj = hub.createobject( self.data["objuid"] )
+                
+                # add actor to room
+                troom.addmob(newobj)
+            
+            # set last instance reference to this new object
+            self.data["lastinstance"] = newobj.getiid()
+
+            # debug
+            #print "Spawned %s" %newobj.getnameex()
+            print "Spawned %s" %self.getref().getnameex()
+    
+    def todict(self):
+        
+        tdict = {"data":self.data}
+        
+        return tdict
+    
+    def fromJSON(self, jobj):
+        self.data = jobj["data"]
+        self.data["lastinstance"] = None
+    
+    
+
 class worldobjectinstance(object):
     # instance id counter
     iidcount = 0
@@ -9,16 +110,17 @@ class worldobjectinstance(object):
     def __init__(self, uidref, jobj = None):
         
         # init persistent item data
-        self.data = {"uidref":uidref, "iid":worldobjectinstance.iidcount}
+        self.data = {"uidref":uidref}
         
-        # update persistent item dictionary with instance id
-        hub.worldobjects_instance.update( { self.data["iid"]: self} )
-        
-        # increate iid counter
+        self.iid = worldobjectinstance.iidcount
+        # increase iid counter
+        worldobjectinstance.iidcount += 1
+
+        # register instance object
+        hub.addworldinstanceobject(self)
+
         if jobj != None:
-            worldobjectinstance.fromJSON(self, jobj)
-        else:
-            worldobjectinstance.iidcount += 1
+            self.fromJSON(jobj)
 
     def gettype(self):
         return self.__class__.__name__
@@ -27,7 +129,7 @@ class worldobjectinstance(object):
         return self.data["uidref"]
     
     def getiid(self):
-        return self.data["iid"]
+        return self.iid
     
     def getref(self):
         return hub.worldobjects[ self.data["uidref"] ]
@@ -52,7 +154,7 @@ class worldobjectinstance(object):
     def show(self):
         print "item instance:"
         print "--------------"
-        print "iid:%d" %self.data["iid"]
+        print "iid:%d" %self.iid
         print "uid ref:%d" %self.data["uidref"]
         print "ref name:%s" %hub.worldobjects[self.data["uidref"]].getnameex()
         
@@ -87,6 +189,13 @@ class worldobject(noun.noun):
     
     def gettype(self):
         return self.__class__.__name__
+    
+    def isroom(self):
+        return False
+    def isitem(self):
+        return False
+    def isactor(self):
+        return False
     
     def show(self):
         print "object info:"

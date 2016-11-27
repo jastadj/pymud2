@@ -39,6 +39,28 @@ def addworldobject(tobj):
         worldobjects_specific.update( {objtype:{}} )
     worldobjects_specific[objtype].update(tdict)
         
+def addworldinstanceobject(tiobj):
+    # get dict entry of world object
+    tdict = {tiobj.getiid():tiobj}
+    
+    
+    # update master world objects list
+    worldobjects_instance.update( tdict )
+
+def finduidbyname(tdesc):
+    for o in worldobjects.keys():
+        if worldobjects[o].hasmatch(tdesc):
+            return o
+    return None
+
+def findworldobjectbyname(tdesc):
+    tobj = finduidbyname(tdesc)
+    
+    if tobj != None:
+        return worldobjects[tobj]
+    
+    return None
+        
 def showworldobjects(specific = None):
     
     if specific == None:
@@ -59,11 +81,11 @@ def showworldobjects(specific = None):
 
 def createobject(uid):
     
+    objref = None
     tobj = None
-    
     try:
-        tobj = worldobjects[uid]
-        tobj.create()
+        objref = worldobjects[uid]
+        tobj = objref.create()
     except:
         return None
         

@@ -23,6 +23,8 @@ def defaultaccounts():
     #####
     # CHARACTERS
     newcharacter = character.character(testaccount, "Cholo")
+    newcharacter.setattribute("hp", 12)
+    newcharacter.setattribute("currenthp", 12)
     newcharacter.save()
 
 
@@ -58,8 +60,10 @@ def defaultzones():
     newzone.newroom("Hallway")
     newzone.getroom(0).setdescription("The dayroom of this tavern smells of sour booze and stale tobacco. A long polished bar runs along the north side of the room.")
     newzone.getroom(0).adddescriptor({"bar":"The bar looks fairly scuffed up, possibly due to fighting."})
-    newzone.getroom(0).additem( hub.commonitems[1].create())
-    newzone.getroom(0).addmob( hub.commonmobs[0].create() )
+    newzone.getroom(0).newspawner( hub.finduidbyname("dagger"), 5 )
+    newzone.getroom(0).newspawner( hub.finduidbyname("gil"), 5 )
+    #newzone.getroom(0).additem( hub.commonitems[1].create())
+    #newzone.getroom(0).addmob( hub.commonmobs[0].create() )
     newzone.getroom(1).setdescription("This hallway leads to the various rentable rooms of the tavern.")
     newzone.getroom(1).additem( hub.commonitems[2].create())
     newzone.connectrooms( newzone.getroom(0), "east", newzone.getroom(1), "west")

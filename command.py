@@ -86,10 +86,12 @@ def initmaincommands():
     cd.add("inventory", "Show inventory", doinventory, False)
     cd.add("get", "Get an item", dogetitem, True)
     cd.add("drop", "Drop an item", dodropitem, True)
+    cd.add("score", "Show player info", doscore, False)
     
     cd.add("debug", "Do a debug #", dodebug, True)
     cd.add("showuid", "Show object of uid#", dodebugshowuid, True)
     cd.add("showiid", "Show object instance of iid#", dodebugshowiid, True)
+    #cd.add("showroom", "Show current room info", dodebugshowcurrentroom, False)
     
     # set aliases
     cd.setalias( {"i":"inventory"} )
@@ -294,6 +296,15 @@ def dosay(tuser, cdict, *argv):
 ###########################################
 ##      CHARACTER
 
+def doscore(tuser, cdict):
+    
+    tstrings = ""
+    
+    tstrings += "Name : %s\n" %tuser.char.getnameex()
+    
+    tstrings += "HP : %d/%d\n" %(tuser.char.getattribute("currenthp"), tuser.char.getattribute("hp"))
+    
+    tuser.send(tstrings)
 
 
 ###########################################
@@ -489,26 +500,30 @@ def getallclientsinroom(troom):
     return clist
 
 def doroomlook(tuser, troom):
+
+    tstrings = ""
         
     # print room name and desc
-    tuser.send("#C6%s#cr\n" %troom.getname() )
-    tuser.send("#C0%s#cr\n" %troom.getdescription() )
+    tstrings += "#C6%s#cr\n" %troom.getname()
+    tstrings += "#C0%s#cr\n" %troom.getdescription()
     
     # print exits
     if len(troom.getexits().keys()) == 0:
-        tuser.send("There are no obvious exits.\n")
+        tstrings += "There are no obvious exits.\n"
     else:
-        tuser.send("Exits: ")
+        tstrings += "Exits: "
         
         for e in troom.getexits().keys():
-            tuser.send("%s " %e)
-        tuser.send("\n")
+            tstrings += "%s " %e
+        tstrings += "\n"
     
     for m in troom.getmobs():
-        tuser.send("    %s\n" %m.getrefname() )
+        tstrings += "    %s\n" %m.getrefname()
     
     for i in troom.getitems():
-        tuser.send("    %s\n" %i.getrefname() )
+        tstrings += "    %s\n" %i.getrefname()
+        
+    tuser.send(tstrings)
         
 def doroomexit(tuser, exitname):
     

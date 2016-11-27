@@ -15,13 +15,18 @@ class room(worldobject.worldobject):
         # init class data
         self.data = {"zid":zoneid, "rid":roomid, "exits":{} }
         self.data.update( {"descriptors":{}} )
+        
+        self.spawners = []
         self.items = []
         self.mobs = []
 
         # if json obj provided, load in data
         if jobj != None:
             room.fromJSON(self,jobj)
-        
+    
+    def isroom(self):
+        return True
+    
     def getzoneid(self):
         return self.data["zid"]
     
@@ -40,11 +45,22 @@ class room(worldobject.worldobject):
     def getdescriptors(self):
         return self.data["descriptors"]
 
+    
+    def dotick(self):
+        self.dospawners()
+
+    #####
+    # ITEMS
+    
     def getitems(self):
         return self.items
         
     def additem(self,titem):
-        self.items.append(titem)
+        if titem != None:
+            self.items.append(titem)
+            return True
+        else:
+            return False
     
     def removeitem(self, titem):
         try:
@@ -54,12 +70,18 @@ class room(worldobject.worldobject):
             return False
         
 
-
+    #####
+    # MOBS
+    
     def getmobs(self):
         return self.mobs
     
     def addmob(self, tmob):
-        self.mobs.append(tmob)
+        if tmob != None:
+            self.mobs.append(tmob)
+            return True
+        else:
+            return False
     
     def removemob(self, tmob):
         try:
@@ -69,6 +91,28 @@ class room(worldobject.worldobject):
             return False
 
 
+    #####
+    # SPAWNERS
+    def addspawner(self, tspawner):
+        if tspawner.getroomuid() == None:
+            return False
+        if tspawner.getobjuid() == None:
+            return False
+        
+        tspawner.setticks( tspawner.getmaxticks() )
+        self.spawners.append(tspawner)
+        
+    
+    def newspawner(self, tobj, ticktime = 60):
+        newspawner = worldobject.objectspawner(self, tobj, ticktime)
+        
+        if newspawner.getobjuid() != None:
+            self.spawners.append(newspawner)
+            newspawner.setticks( newspawner.getmaxticks() )        
+    
+    def dospawners(self):
+        for s in self.spawners:
+            s.dotick()
     
 
     def todict(self):
@@ -78,6 +122,9 @@ class room(worldobject.worldobject):
         # room data
         tdict.update( {"data":self.data} )
         
+        #####
+        # NOTE : Remove item states, should be created with spawners
+        """
         # inventory
         tdict.update( {"items":[] })
         for i in self.items:
@@ -87,6 +134,12 @@ class room(worldobject.worldobject):
         tdict.update( {"mobs":[] } )
         for m in self.mobs:
             tdict["mobs"].append( m.todict() )
+        """
+        
+        # spawners
+        tdict.update( {"spawners":[] } )
+        for s in self.spawners:
+            tdict["spawners"].append( s.todict() )
         
         return tdict
 
@@ -98,20 +151,37 @@ class room(worldobject.worldobject):
         
         # room data
         self.data = jobj["data"]
-        
+
+
+        #####
+        # NOTE : Remove item states, should be created with spawners        
+        """
         # add items
         for i in jobj["items"]:
             newi = item.iteminstance(0, i)
             self.items.append(newi)
         
+        # add mobs
         for m in jobj["mobs"]:
             newm = actor.mobinstance(0, m)
             self.mobs.append(newm)
+        """
+        
+        # add spawners
+        for s in jobj["spawners"]:
+            news = worldobject.objectspawner(None, None, None)
+            news.fromJSON(s)
+            self.addspawner(news)
+            
 
     def show(self):
         worldobject.worldobject.show(self)
         for d in self.data.keys():
             print "%s:%s" %(d, self.data[d])
+
+        print "Spawners:"
+        for s in self.spawners:
+            print "  uid:%d - %s - @ %d/%d" %(s.getobjuid(), s.getref().getnameex(), s.getticks(), s.getmaxticks() )
 
         print "Items:"
         for i in self.items:
@@ -137,6 +207,7 @@ if __name__ == "__main__":
     room1.setdescription("A pretty standard clean living room.  A large coffee table is covered in magazines.")
     room1.adddescriptor({"table":"The coffee table looks like it has been well used."})
     room1.adddescriptor({"magazine":"Some old National Geographics."})
+    room1.addspawner(item2, 60)
     room1.additem(item1i)
     room1.additem(item2i)
     room1.addmob(mob1i)

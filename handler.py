@@ -33,7 +33,10 @@ def dotimer():
         hub.timer.reset()
 
 def dotick():
-    pass
+    
+    # update all rooms
+    for r in hub.worldobjects_specific["room"]:
+        hub.worldobjects[r].dotick()
 
 def ticktest():
     while True:

@@ -22,18 +22,26 @@ class actor(worldobject.worldobject):
         if jobj != None:
             self.fromJSON(jobj)
     
+    def isactor(self):
+        return True
+    
+    def isinstance(self):
+        return issubclass(self.__class__, actorinstancedata)
+    
     def getattribute(self, attribute):
         if attribute in self.attributes.keys():
             return self.attributes[attribute]
         else:
-            return None
+            # try to get actor instance attribute
+            ap = actorinstancedata.getattribute(self, attribute)
+            return ap
     
     def setattribute(self, attribute, val):
         if attribute in self.attributes.keys():
             self.attributes[attribute] = val
             return True
         else:
-            return False        
+            return actorinstancedata.setattribute(self, attribute, val)
     
     def todict(self):
         
@@ -63,7 +71,7 @@ class actor(worldobject.worldobject):
         """
     def show(self):
         worldobject.worldobject.show(self)
-        
+        print "isinstance:%s" %self.isinstance()
         print "Attributes:"
         for a in self.attributes:
             print "  %s:%s" %(a, self.attributes[a])
@@ -73,6 +81,45 @@ class actor(worldobject.worldobject):
             print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getrefname())
         """
    
+class actorinstancedata(object):
+    
+    def __init__(self, tactor):
+        
+        self.pattributes = {"currenthp": tactor.getattribute("hp")}
+
+    def getattribute(self, attribute):
+        if attribute in self.pattributes.keys():
+            return self.pattributes[attribute]
+        else:
+            return None
+    
+    def setattribute(self, attribute, val):
+        if attribute in self.pattributes.keys():
+            self.pattributes[attribute] = val
+            return True
+        else:
+            return False
+
+    def isalive(self):
+        if self.pattributes["currenthp"] <= 0:
+            return False
+        return True
+
+    def todict(self):
+        tdict = {}
+        
+        tdict.update( {"pattributes":self.pattributes } )
+        
+        return tdict
+        
+    def fromJSON(self, jobj):
+        
+        self.pattributes = jobj["pattributes"]
+        
+    def show(self):
+        print "Persistent Attributes:"
+        for p in self.pattributes.keys():
+            print "  %s:%s" %(p, self.pattributes[p])
 
 class mob(actor):
     def __init__(self, name = "unnamed", jobj = None):
@@ -114,19 +161,18 @@ class mob(actor):
         newi = mobinstance(self.uid)
         return newi
 
-class mobinstance(worldobject.worldobjectinstance):
+class mobinstance(worldobject.worldobjectinstance, actorinstancedata):
     
     def __init__(self, uidref, jobj = None):
         
         # init base class data
         worldobject.worldobjectinstance.__init__(self, uidref, jobj)
-        
-        self.pattributes = {"currenthp": copy.deepcopy(self.getref().getattribute("hp") ) }
+        actorinstancedata.__init__(self, self.getref())
 
     def todict(self):
         tdict = worldobject.worldobjectinstance.todict(self)
         
-        tdict.update( {"pattributes":self.pattributes } )
+        tdict.update( actorinstancedata.todict(self) )
         
         return tdict
         
@@ -134,19 +180,19 @@ class mobinstance(worldobject.worldobjectinstance):
         
         worldobject.worldobjectinstance.fromJSON(self, jobj)
         
-        self.pattributes = jobj["pattributes"]
+        actorinstancedata.fromJSON(self, jobj)
     
     def show(self):
         worldobject.worldobjectinstance.show(self)
-        print "Persistent Attributes:"
-        for p in self.pattributes.keys():
-            print "  %s:%s" %(p, self.pattributes[p])
+        actor.show(self)
+        actorinstancedata.show(self)
 
      
 if __name__ == "__main__":
     
     print "\nMob 1:"
     mob1 = mob("dog")
+    mob1.setattribute("hp", 5)
     mob1.show()
     
     print "\nMob 1 Instance:"

@@ -96,7 +96,7 @@ def savepersistentdata():
     
     pdata = {}
     pdata.update( {"uidcount":worldobject.worldobject.uidcount} )
-    pdata.update( {"iidcount":worldobject.worldobjectinstance.iidcount} )
+    #pdata.update( {"iidcount":worldobject.worldobjectinstance.iidcount} )
     
     f = open(fp, "w")
     f.write( json.dumps(pdata) + "\n")
@@ -120,8 +120,10 @@ def loadpersistentdata():
             if "uidcount" in jobj.keys():
                 worldobject.worldobject.uidcount = jobj["uidcount"]
             
+            """
             if "iidcount" in jobj.keys():
                 worldobject.worldobjectinstance.iidcount = jobj["iidcount"]
+            """
                 
     f.close()
     
