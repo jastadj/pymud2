@@ -130,13 +130,24 @@ class worldobjectinstance(object):
     def dotick(self):
         pass
 
-    def setcustomverb(self, verb):
-        self.data.update({"customverb":verb})
-    
-    def getcustomverb(self):
-        if "customverb" in self.data.keys():
-            return self.data["customverb"]
-        else: return None
+    def initcustomnoun(self):
+        
+        # get json object of reference noun
+        noundict = noun.noun.todict( self.getref() )
+        nounjstr = json.dumps(noundict)
+        nounjobj = json.loads( nounjstr)
+        
+        # create copy of noun
+        cnoun = noun.noun("unnamed")
+        cnoun.fromJSON( nounjson)
+        
+        # set persistent data custom noun
+        self.data.update( {"customnoun": cnoun} )
+
+    def getcustomnoun(self):
+        
+        if "customnoun" in self.data.keys():
+            return self.data["customnoun"]
 
     def gettype(self):
         return self.__class__.__name__
@@ -151,7 +162,10 @@ class worldobjectinstance(object):
         return hub.worldobjects[ self.data["uidref"] ]
         
     def getnameex(self):
-        return self.getref().getnameex()
+        if "customnoun" in self.data.keys():
+            return self.data["customnoun"].getnameex()
+        else:
+            return self.getref().getnameex()
 
     def getlookstr(self):
         return self.getref().getdescription() + "\n"
@@ -159,7 +173,14 @@ class worldobjectinstance(object):
     def todict(self):
         tdict = {}
         
+        # pop custom noun
+        cnoun = self.data.pop("customnoun", None)
+        
         tdict.update( {"data":self.data } )
+        
+        # if custom noun, add dict
+        if cnoun != None:
+            tdict.update( {"customnoun":cnoun.todict() } )
         
         return tdict
         
@@ -169,6 +190,12 @@ class worldobjectinstance(object):
     def fromJSON(self, jobj):
         
         self.data = jobj["data"]
+        
+        # if custom noun
+        if "customnoun" in self.data.keys():
+            cnoun = noun.noun()
+            cnoun.fromJSON( self.data["customnoun"] )
+            self.data["customnoun"] = cnoun
     
     def show(self):
         print "item instance:"
@@ -176,6 +203,8 @@ class worldobjectinstance(object):
         print "iid:%d" %self.iid
         print "uid ref:%d" %self.data["uidref"]
         print "ref name:%s" %hub.worldobjects[self.data["uidref"]].getnameex()
+        if "customnoun" in self.data.keys():
+            print "Custom Noun:%s" % self.data["customnoun"].getnameex()
         
 
 class worldobject(noun.noun):
@@ -226,9 +255,8 @@ class worldobject(noun.noun):
 
     def todict(self):
         
-        tdict = {}
+        tdict = noun.noun.todict(self)
         
-        tdict.update( {"noundata":self.noundata} )
         tdict.update( {"uid":self.uid} )
         
         
@@ -239,7 +267,8 @@ class worldobject(noun.noun):
         
     def fromJSON(self, jobj):
         
-        self.noundata = jobj["noundata"]
+        noun.noun.fromJSON(self, jobj)
+        
         self.uid = jobj["uid"]
 
 if __name__ == "__main__":

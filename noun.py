@@ -123,8 +123,17 @@ class noun(object):
         # matching passes
         return True
     
+    def todict(self):
+        tdict = {"noundata":self.noundata}
+        
+        return tdict
+    
+    def fromJSON(self, jobj):
+        
+        self.noundata = jobj["noundata"]
     
 if __name__ == "__main__":
+    import json
     mynoun = noun("dog")
     mynoun.addadjective("mangy")
     mynoun.setproper(False)
@@ -132,3 +141,10 @@ if __name__ == "__main__":
     
     print mynoun.getnameex() + " " + mynoun.getverb()
     
+    
+    mynoundict = mynoun.todict()
+    mynounjstr = json.dumps(mynoundict)
+    mynounjobj = json.loads(mynounjstr)
+    mynouncopy = noun()
+    mynouncopy.fromJSON(mynounjobj)
+    print mynouncopy.getnameex() + " " + mynoun.getverb()
