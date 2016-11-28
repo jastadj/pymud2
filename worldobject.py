@@ -130,6 +130,14 @@ class worldobjectinstance(object):
     def dotick(self):
         pass
 
+    def setcustomverb(self, verb):
+        self.data.update({"customverb":verb})
+    
+    def getcustomverb(self):
+        if "customverb" in self.data.keys():
+            return self.data["customverb"]
+        else: return None
+
     def gettype(self):
         return self.__class__.__name__
 

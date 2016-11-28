@@ -50,6 +50,7 @@ def dotick():
 
 def ticktest():
     while True:
+        
         dotimer()
 
         

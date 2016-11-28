@@ -223,6 +223,7 @@ class actorinstancedata(object):
         
         # add corpse to room
         tcorpse = hub.worldobjects[hub.finduidbyname("corpse")].create()
+        tcorpse.container.setcorpsename( self.getnameex())
         troom.additem(tcorpse)
         
         # remove mob from instances

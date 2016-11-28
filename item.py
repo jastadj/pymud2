@@ -11,16 +11,10 @@ class iteminstance(worldobject.worldobjectinstance):
         worldobject.worldobjectinstance.__init__(self, uidref, jobj)
         
         if self.getref().iscontainer():
-            self.container = self.getref().container.getpersistentdata()
+            self.container = self.getref().container.createpersistentdata()
         
         if jobj != None:
             self.fromJSON(jobj)
-    
-    def getnameex(self):
-        if self.getref().iscorpse():
-            self.container.getnameex()
-        else:
-            return worldobject.worldobjectinstance.getnameex(self)
     
     def getlookstr(self):
         
@@ -150,15 +144,27 @@ class pcontainer(object):
         for i in self.inventory:
             print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getrefname())
 
-class pcontainercorpse(pcontainer):
+class pcorpse(pcontainer):
     def __init__(self):
         pcontainer.__init__(self)
+    
+    def todict(self):
+        tdict = pcontainer.todict(self)
+        
+        return tdict
+    
+    def fromJSON(self, jobj):
+        pcontainer.fromJSON(self, jobj)
+    
+    def show(self):
+        pcontainer.show(self)
+    
 
 class container(object):
     def __init__(self):
         self.container = {"maxweight":0, "maxvolume":0}
 
-    def getpersistentdata(self):
+    def createpersistentdata(self):
         return pcontainer()
         
     def getmaxweight(self):
@@ -193,13 +199,10 @@ class container(object):
 class corpse(container):
     def __init__(self):
         container.__init__(self)
-
-    def getnameex(self):
-        return self.container["corpsename"]
     
-    def getdescription(self):
-        return self.container["corpsedescription"]
-        
+    def createpersistentdata(self):
+        return pcorpse()
+    
     def todict(self):
         
         tdict = {}
