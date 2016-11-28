@@ -42,19 +42,32 @@ def defaultitems():
     #####
     # ITEMS
     myitems = []
+    
     myitems.append( item.item("rock") )
     myitems[-1].setdescription("Just a dirty old rock.")    
+    
     myitems.append( item.item("mug") )
     myitems[-1].setdescription("A small ceramic mug.")    
+    
     myitems.append( item.item("dagger") )
     myitems[-1].makeweapon()
     myitems[-1].weapon.setdamage(4)
     myitems[-1].setdescription("A small but lethal dagger.")
+    
     myitems.append( item.item("sack") )
     myitems[-1].setdescription("A small leather sack used for storing things.")
     myitems[-1].addadjective("small")
     myitems[-1].addadjective("leather")
     myitems[-1].makecontainer()
+    
+    myitems.append( item.item("bread"))
+    myitems[-1].setdescription("A piece of crusty bread.")
+    myitems[-1].addadjective("piece of")
+    myitems[-1].makefood()
+    
+    myitems.append( item.item("beer"))
+    myitems[-1].setdescription("A mug of beer.")
+    myitems[-1].makedrink()
     
     
     # store all common items in common items list
@@ -83,6 +96,7 @@ def defaultzones():
     newzone = zone.zone(0, "whiteeagle.zn", True)
     newzone.newroom("White Eagle Tavern")
     newzone.newroom("Hallway")
+    newzone.newroom("Store Room")
     newzone.getroom(0).setdescription("The dayroom of this tavern smells of sour booze and stale tobacco. A long polished bar runs along the north side of the room.")
     newzone.getroom(0).adddescriptor({"bar":"The bar looks fairly scuffed up, possibly due to fighting."})
     newzone.getroom(0).newspawner( hub.finduidbyname("dagger"), 5 )
@@ -93,7 +107,14 @@ def defaultzones():
     #newzone.getroom(0).addmob( hub.commonmobs[0].create() )
     newzone.getroom(1).setdescription("This hallway leads to the various rentable rooms of the tavern.")
     newzone.getroom(1).additem( hub.commonitems[2].create())
+    newzone.getroom(2).setdescription("This is the storeroom of the White Eagle.  Various shelves and crates fill the room.  It smells slightly musty here but looks pretty well maintained.")
+    newzone.getroom(2).adddescriptor({"shelves":"The shelves are lined with various jars."})
+    newzone.getroom(2).adddescriptor({"jars":"The jars on the shelves contain various pickled or preserved foods."})
+    newzone.getroom(2).adddescriptor({"crates":"Several large crates take up most of the space in the storeroom."})
+    newzone.getroom(2).newspawner( hub.finduidbyname("bread"), 5)
+    newzone.getroom(2).newspawner( hub.finduidbyname("beer"), 5)
     newzone.connectrooms( newzone.getroom(0), "east", newzone.getroom(1), "west")
+    newzone.connectrooms( newzone.getroom(0), "west", newzone.getroom(2), "east")
 
     hub.zones.update( {0:newzone} )
 

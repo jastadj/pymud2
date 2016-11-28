@@ -16,14 +16,15 @@ class iteminstance(worldobject.worldobjectinstance):
         if jobj != None:
             self.fromJSON(jobj)
     
+    def getnameex(self):
+        return self.getref().getnameex()
+    
     def getlookstr(self):
         
         lookstr = worldobject.worldobjectinstance.getlookstr(self)
         
         if self.getref().iscontainer():
             citems = self.container.getitems()
-            
-            lookstr += "\n"
             
             if len(citems) == 0:
                 lookstr += "It contains nothing.\n"
@@ -54,6 +55,32 @@ class iteminstance(worldobject.worldobjectinstance):
         
         if self.getref().iscontainer():
             self.container.show()
+
+class drink(object):
+    def __init__(self):
+        pass
+    
+    def todict(self):
+        pass
+    
+    def fromJSON(self, jobj):
+        pass
+    
+    def show(self):
+        pass   
+
+class food(object):
+    def __init__(self):
+        pass
+    
+    def todict(self):
+        pass
+    
+    def fromJSON(self, jobj):
+        pass
+    
+    def show(self):
+        pass
 
 class weapon(object):
     def __init__(self):
@@ -167,6 +194,8 @@ class item(worldobject.worldobject):
         # optional item structs
         self.weapon = None
         self.container = None
+        self.food = None
+        self.drink = None
         
         if jobj != None:
             self.fromJSON(jobj)
@@ -184,11 +213,27 @@ class item(worldobject.worldobject):
             return True
         else: return False
     
+    def isfood(self):
+        if self.food != None:
+            return True
+        else: return False
+    
+    def isdrink(self):
+        if self.drink != None:
+            return True
+        else: return False
+    
     def makeweapon(self):
         self.weapon = weapon()
     
     def makecontainer(self):
         self.container = container()
+    
+    def makefood(self):
+        self.food = food()
+    
+    def makedrink(self):
+        self.drink = drink()
     
     def todict(self):
         tdict = worldobject.worldobject.todict(self)
@@ -200,6 +245,12 @@ class item(worldobject.worldobject):
         
         if self.iscontainer():
             tdict.update( {"container":self.container.todict() } )
+        
+        if self.isfood():
+            tdict.update( {"food":self.food.todict() } )
+        
+        if self.isdrink():
+            tdict.update( {"drink":self.drink.todict() } )
         
         return tdict
     
@@ -215,6 +266,14 @@ class item(worldobject.worldobject):
             self.container = container()
             self.container.fromJSON( jobj["container"])
     
+        if "food" in jobj.keys():
+            self.food = food()
+            self.food.fromJSON( jobj["food"])
+        
+        if "drink" in jobj.keys():
+            self.drink = drink()
+            self.drink.fromJSON( jobj["drink"])
+            
     def create(self):
         newinstance = iteminstance(self.uid)
         
@@ -228,6 +287,12 @@ class item(worldobject.worldobject):
         print "iscontainer:%s" %self.iscontainer()
         if self.iscontainer():
             self.container.show()
+        print "isfood:%s" %self.isfood()
+        if self.isfood():
+            self.food.show()
+        print "isdrink:%s" %self.isdrink()
+        if self.isdrink():
+            self.drink.show()
         
 if __name__ == "__main__":
     

@@ -146,7 +146,7 @@ class worldobjectinstance(object):
         return hub.worldobjects[ self.data["uidref"] ].getnameex()
 
     def getlookstr(self):
-        return self.getref().getdescription()
+        return self.getref().getdescription() + "\n"
     
     def todict(self):
         tdict = {}
