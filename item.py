@@ -17,7 +17,10 @@ class iteminstance(worldobject.worldobjectinstance):
             self.fromJSON(jobj)
     
     def getnameex(self):
-        return self.getref().getnameex()
+        if self.getref().iscorpse():
+            self.container.getnameex()
+        else:
+            return worldobject.worldobjectinstance.getnameex(self)
     
     def getlookstr(self):
         
@@ -55,6 +58,8 @@ class iteminstance(worldobject.worldobjectinstance):
         
         if self.getref().iscontainer():
             self.container.show()
+
+
 
 class drink(object):
     def __init__(self):
@@ -145,6 +150,10 @@ class pcontainer(object):
         for i in self.inventory:
             print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getrefname())
 
+class pcontainercorpse(pcontainer):
+    def __init__(self):
+        pcontainer.__init__(self)
+
 class container(object):
     def __init__(self):
         self.container = {"maxweight":0, "maxvolume":0}
@@ -181,6 +190,33 @@ class container(object):
         for d in self.container.keys():
             print "  %s:%s" %(d, self.container[d])   
 
+class corpse(container):
+    def __init__(self):
+        container.__init__(self)
+
+    def getnameex(self):
+        return self.container["corpsename"]
+    
+    def getdescription(self):
+        return self.container["corpsedescription"]
+        
+    def todict(self):
+        
+        tdict = {}
+        
+        tdict.update( {"corpse": self.container} )
+        
+        return tdict
+    
+    def fromJSON(self, jobj):
+        
+        self.container = jobj["corpse"]
+
+    def show(self):
+        print "Corpse Data:"
+        for d in self.container.keys():
+            print "  %s:%s" %(d, self.container[d]) 
+
 class item(worldobject.worldobject):
         
     def __init__(self, name = "unnamed", jobj = None):
@@ -213,6 +249,11 @@ class item(worldobject.worldobject):
             return True
         else: return False
     
+    def iscorpse(self):
+        if self.container.__class__.__name__ == "corpse":
+            return True
+        else: return False
+    
     def isfood(self):
         if self.food != None:
             return True
@@ -235,6 +276,9 @@ class item(worldobject.worldobject):
     def makedrink(self):
         self.drink = drink()
     
+    def makecorpse(self):
+        self.container = corpse()
+    
     def todict(self):
         tdict = worldobject.worldobject.todict(self)
         
@@ -244,7 +288,10 @@ class item(worldobject.worldobject):
             tdict.update( {"weapon":self.weapon.todict()} )
         
         if self.iscontainer():
-            tdict.update( {"container":self.container.todict() } )
+            if self.container.__class__.__name__ == "container":
+                tdict.update( {"container":self.container.todict() } )
+            elif self.iscorpse():
+                tdict.update( {"corpse":self.container.todict() } )
         
         if self.isfood():
             tdict.update( {"food":self.food.todict() } )
@@ -265,6 +312,9 @@ class item(worldobject.worldobject):
         if "container" in jobj.keys():
             self.container = container()
             self.container.fromJSON( jobj["container"])
+        if "corpse" in jobj.keys():
+            self.container = corpse()
+            self.container.fromJSON( jobj["corpse"])
     
         if "food" in jobj.keys():
             self.food = food()
@@ -273,7 +323,7 @@ class item(worldobject.worldobject):
         if "drink" in jobj.keys():
             self.drink = drink()
             self.drink.fromJSON( jobj["drink"])
-            
+        
     def create(self):
         newinstance = iteminstance(self.uid)
         

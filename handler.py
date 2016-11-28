@@ -67,7 +67,7 @@ def handleclient(tclient):
             # client output, goto client mode function pointer
             client_modes[ tclient.mode ](tclient)
             
-            # client input
+            # client inputj
             if cc == "quit":
                 tclient.disconnect()
             

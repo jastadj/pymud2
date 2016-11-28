@@ -43,6 +43,9 @@ def defaultitems():
     # ITEMS
     myitems = []
     
+    myitems.append( item.item("corpse") )
+    myitems[-1].makecorpse()
+    
     myitems.append( item.item("rock") )
     myitems[-1].setdescription("Just a dirty old rock.")    
     
@@ -97,7 +100,7 @@ def defaultzones():
     newzone.newroom("White Eagle Tavern")
     newzone.newroom("Hallway")
     newzone.newroom("Store Room")
-    newzone.getroom(0).setdescription("The dayroom of this tavern smells of sour booze and stale tobacco. A long polished bar runs along the north side of the room.")
+    newzone.getroom(0).setdescription("You are standing in a narrow tavern that runs east to west. It smells of sour booze and stale tobacco. A long polished bar runs along the north side of the room. Various crusty regulars sit huddled together in clumps.")
     newzone.getroom(0).adddescriptor({"bar":"The bar looks fairly scuffed up, possibly due to fighting."})
     newzone.getroom(0).newspawner( hub.finduidbyname("dagger"), 5 )
     newzone.getroom(0).newspawner( hub.finduidbyname("gil"), 5 )

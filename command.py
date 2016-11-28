@@ -164,7 +164,7 @@ def dodebug(tuser, cdict, *argv):
     
     if debugmode == 1:
         for o in hub.worldobjects_instance.keys():
-            tuser.send("%d : %s (%s)\n" %(o, hub.worldobjects_instance[o].getrefname(), hub.worldobjects_instance[o].gettype() ) )
+            tuser.send("%d : %s (%s)\n" %(o, hub.worldobjects_instance[o].getnameex(), hub.worldobjects_instance[o].gettype() ) )
         
         try:
             tempval = hub.worldobjects_instance.keys()[0]
@@ -462,7 +462,7 @@ def doinventory(tuser, cdict):
             if twielded == i:
                 pass
             else:
-                tstrings += "  %s\n" %i.getrefname()
+                tstrings += "  %s\n" %i.getnameex()
 
     
     tuser.send(tstrings)
@@ -929,12 +929,12 @@ def doroomlook(tuser, troom):
     
     for m in troom.getmobs():
         if m.incombat():
-            tstrings += "    %s (in combat)\n" %m.getrefname()
+            tstrings += "    %s (in combat)\n" %m.getnameex()
         else:
-            tstrings += "    %s\n" %m.getrefname()
+            tstrings += "    %s\n" %m.getnameex()
     
     for i in troom.getitems():
-        tstrings += "    %s\n" %i.getrefname()
+        tstrings += "    %s\n" %i.getnameex()
         
     tuser.send(tstrings)
         

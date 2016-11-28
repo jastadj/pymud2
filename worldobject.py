@@ -141,9 +141,9 @@ class worldobjectinstance(object):
     
     def getref(self):
         return hub.worldobjects[ self.data["uidref"] ]
-    
-    def getrefname(self):
-        return hub.worldobjects[ self.data["uidref"] ].getnameex()
+        
+    def getnameex(self):
+        return self.getref().getnameex()
 
     def getlookstr(self):
         return self.getref().getdescription() + "\n"
