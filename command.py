@@ -928,10 +928,18 @@ def doroomlook(tuser, troom):
         tstrings += "\n"
     
     for m in troom.getmobs():
+        
+        mverb = m.getnoun().getverb()
+        postprint = None
+        
+        if mverb != None:
+            postprint = mverb
+        else: postprint = "is here"
+        
         if m.incombat():
             tstrings += "    %s (in combat)\n" %m.getnameex()
         else:
-            tstrings += "    %s\n" %m.getnameex()
+            tstrings += "    %s %s\n" %(m.getnameex(), postprint)
     
     for i in troom.getitems():
         tstrings += "    %s\n" %i.getnameex()

@@ -27,26 +27,26 @@ client_modes.update( {"maingame":hub.maingame}) # main game prompt
 
 # timer update
 def dotimer():
-    
+    if hub.timer.getelapsedsec() >= 2:
+        dotick()
+        hub.timer.reset()
+
+
+def dotick():
+
     hub.mutex.acquire()
     
     try:
-        if hub.timer.getelapsedsec() >= 1:
-            dotick()
-            hub.timer.reset()
+        # update all rooms
+        for r in hub.worldobjects_specific["room"].keys():
+            hub.worldobjects[r].dotick()
+        
+        # update players for combat
+        for u in hub.clients:
+            if u.char != None:
+                u.char.dotick()
     finally:
         hub.mutex.release()
-
-def dotick():
-    
-    # update all rooms
-    for r in hub.worldobjects_specific["room"].keys():
-        hub.worldobjects[r].dotick()
-    
-    # update players for combat
-    for u in hub.clients:
-        if u.char != None:
-            u.char.dotick()
 
 def ticktest():
     while True:
@@ -108,6 +108,8 @@ if __name__ == "__main__":
         handleclient(tuser)
         
         tuser.last_input = tuser.receive()
+        
+        tuser.send("\n")
         
         if tuser.getlastinput() == "quit":
             doquit = True

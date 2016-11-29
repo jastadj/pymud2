@@ -224,7 +224,7 @@ class actorinstancedata(object):
         # add corpse to room
         tcorpse = hub.worldobjects[hub.finduidbyname("corpse")].create()
         tcorpse.initcustomnoun()
-        tcorpse.getcustomnoun().setname("test corpse")
+        tcorpse.getcustomnoun().setname("corpse of %s" %self.getnameex())
         troom.additem(tcorpse)
         
         # remove mob from instances

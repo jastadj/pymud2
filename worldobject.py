@@ -139,7 +139,7 @@ class worldobjectinstance(object):
         
         # create copy of noun
         cnoun = noun.noun("unnamed")
-        cnoun.fromJSON( nounjson)
+        cnoun.fromJSON( nounjobj)
         
         # set persistent data custom noun
         self.data.update( {"customnoun": cnoun} )
@@ -161,11 +161,17 @@ class worldobjectinstance(object):
     def getref(self):
         return hub.worldobjects[ self.data["uidref"] ]
         
-    def getnameex(self):
+    def getnameex(self, showverb = False):
         if "customnoun" in self.data.keys():
-            return self.data["customnoun"].getnameex()
+            return self.data["customnoun"].getnameex(showverb)
         else:
-            return self.getref().getnameex()
+            return self.getref().getnameex(showverb)
+
+    def getnoun(self):
+        if "customnoun" in self.data.keys():
+            return self.data["customnoun"]
+        else:
+            return self.getref()
 
     def getlookstr(self):
         return self.getref().getdescription() + "\n"
