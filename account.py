@@ -19,6 +19,17 @@ class account(object):
     def setcolors(self, docolors):
         self.data["colors"] = docolors
         
+    def todict(self):
+        tdict = {"data":self.data}
+        return tdict
+    
+    def toJSONstr(self):
+        return json.dumps( self.todict() )
+    
+    def fromJSON(self, jobj):
+        
+        self.data = jobj["data"]
+        
 class accountmanager(object):
     
     flags = 0
@@ -36,19 +47,15 @@ class accountmanager(object):
         
         createNewFile(fp)
         
-        with open(fp, "r") as f:
-            for line in f:
-                astrings = line[:-1]
-                
-                if astrings == "": continue
-                
-                jsonobj = json.loads(astrings)
-                
-                taccount = account("temp", "temp")
-                
-                taccount.data = jsonobj["data"]
-                
-                accountmanager.accounts.update( {taccount.getuser():taccount} )
+        f = open(fp, "r")
+        
+        jstrings = f.read()
+        
+        if jstrings != "":
+        
+            jsonobj = json.loads(jstrings)
+            
+            self.fromJSON(jsonobj)
         
         f.close()
         
@@ -62,10 +69,7 @@ class accountmanager(object):
         
         f = open(fp, "w")
         
-        for a in accountmanager.accounts.keys():
-            
-            astrings = json.dumps(accountmanager.accounts[a].__dict__)
-            f.write(astrings + "\n")
+        f.write( self.toJSONstr() )
         
         f.close()
         
@@ -94,6 +98,27 @@ class accountmanager(object):
             return accountmanager.accounts[user]
         else: return None
     
+    def todict(self):
+        
+        tdict = {"accounts":{} }
+        
+        for a in accountmanager.accounts.keys():
+            
+            tdict["accounts"].update( { a : accountmanager.accounts[a].todict() } )
+        
+        return tdict
+    
+    def toJSONstr(self):
+        
+        return json.dumps( self.todict() )
+        
+    def fromJSON(self, jobj):
+        
+        for a in jobj["accounts"].keys():
+            taccount = account("test","test")
+            taccount.fromJSON( jobj["accounts"][a])
+            accountmanager.accounts.update( {taccount.getuser():taccount} )
+    
     def show(self):
         
         print "Accounts:"
@@ -113,10 +138,10 @@ if __name__ == "__main__":
     
     # clear account database and create new accounts
     if dotest == 1:
-        accountmanager.accounts = []
+        accountmanager.accounts = {}
         
-        acnts.addaccount("john", "monkey")
-        acnts.addaccount("chong", "ler")
+        acnts.add("john", "monkey")
+        acnts.add("chong", "ler")
         
         acnts.save()
 
