@@ -22,24 +22,11 @@ class zone(object):
             createNewFile(fp)
         # if zone file exists
         elif createNewFile(fp) == None:
+            f = open(fp, "r")
             
-            linesread = 0
+            jstrings = f.read()
             
-            with open(fp, "r") as f:
-                
-                for line in f:
-                    
-                    line = line[:-1]
-                    
-                    if line == "": continue
-                    
-                    if linesread == 0:
-                        self.fromJSON( json.loads(line) )
-                    else:
-                        troom = room.room(self.getid(), 0, "unnamed", json.loads(line) )
-                        self.rooms.update( {troom.getroomid():troom})
-                    
-                    linesread += 1
+            self.fromJSON( json.loads(jstrings) )
                     
             f.close()
 
@@ -101,6 +88,11 @@ class zone(object):
         
         tdict.update( {"data":self.data } )
         
+        tdict.update ( {"rooms":{} } )
+        for r in self.rooms.keys():
+            troom = self.rooms[r]
+            tdict["rooms"].update( {troom.getroomid():troom.todict() } )
+        
         return tdict
     
     def toJSONstr(self):
@@ -109,6 +101,13 @@ class zone(object):
     def fromJSON(self, jobj):
         
         self.data = jobj["data"]
+        
+        for r in jobj["rooms"].keys():
+            
+            newroom = room.room( 0, 0, "unnamed", jobj["rooms"][r] )
+            
+            self.rooms.update( { newroom.getroomid(): newroom} )
+            
 
     def save(self):
         
@@ -118,11 +117,7 @@ class zone(object):
         f = open(fp, "w")
 
         # write zone data
-        f.write( self.toJSONstr() + "\n")
-
-        # write rooms
-        for r in self.rooms.keys():
-            f.write( self.rooms[r].toJSONstr() + "\n")
+        f.write( self.toJSONstr())
 
         f.close()
     
