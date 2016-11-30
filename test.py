@@ -46,6 +46,10 @@ def defaultitems():
     myitems.append( item.item("corpse") )
     myitems[-1].makecorpse()
     
+    myitems.append( item.item("gold coin") )
+    myitems[-1].setdescription("Gold currency.")
+    myitems[-1].setstackable(True)
+    
     myitems.append( item.item("rock") )
     myitems[-1].setdescription("Just a dirty old rock.")    
     

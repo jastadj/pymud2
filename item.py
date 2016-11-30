@@ -10,6 +10,8 @@ class iteminstance(worldobject.worldobjectinstance):
         # init base class data
         worldobject.worldobjectinstance.__init__(self, uidref, jobj)
         
+        self.data.update( {"stack":1} )
+        
         if self.getref().iscontainer():
             self.container = self.getref().container.createpersistentdata()
         
@@ -142,7 +144,7 @@ class pcontainer(object):
     def show(self):
         print "Items:"
         for i in self.inventory:
-            print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getrefname())
+            print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getnameex())
 
 class pcorpse(pcontainer):
     def __init__(self):
@@ -228,7 +230,7 @@ class item(worldobject.worldobject):
         worldobject.worldobject.__init__(self, name, jobj)
         
         # init class data
-        self.data = {}
+        self.data = {"stackable":False}
         
         # optional item structs
         self.weapon = None
@@ -241,7 +243,10 @@ class item(worldobject.worldobject):
 
     def isitem(self):
         return True
-
+    
+    def isstackable(self):
+        return self.data["stackable"]
+    
     def isweapon(self):
         if self.weapon != None:
             return True
@@ -266,6 +271,9 @@ class item(worldobject.worldobject):
         if self.drink != None:
             return True
         else: return False
+    
+    def setstackable(self, stackable):
+        self.data["stackable"] = stackable
     
     def makeweapon(self):
         self.weapon = weapon()
@@ -334,6 +342,7 @@ class item(worldobject.worldobject):
     
     def show(self):
         worldobject.worldobject.show(self)
+        print "isstackable:%s" %self.isstackable()
         print "isweapon:%s" %self.isweapon()
         if self.isweapon():
             self.weapon.show()

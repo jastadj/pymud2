@@ -2,7 +2,7 @@
 class noun(object):
     def __init__(self, name = "no name"):
         
-        self.noundata = { "name":name, "description":"no description", "article":"a"}
+        self.noundata = { "name":name, "description":"no description", "article":"a", "plural":None}
         self.noundata.update( {"adjectives":[], "verb":None, "proper":False} )
                 
         # calc article
@@ -19,6 +19,9 @@ class noun(object):
     def setarticle(self, article):
         self.noundata["article"] = article
     
+    def setplural(self, plural):
+        self.noundata["plural"] = plural
+    
     def addadjective(self, adjective):
         self.noundata["adjectives"].append(adjective)
     
@@ -32,21 +35,24 @@ class noun(object):
     def getname(self):
         return self.noundata["name"]
     
-    def getnameex(self, withverb = False):
+    def getnameex(self, plural = False, withverb = False):
         dstr = ""
         
         # if noun is not proper
-        if not self.isproper():
+        if not self.isproper() and not plural:
             
             # add article
             dstr += "%s " %self.getarticle()
             
-            # add adjectives
-            for a in self.getadjectives():
-                dstr += "%s " %a
+        # add adjectives
+        for a in self.getadjectives():
+            dstr += "%s " %a
         
         # add name
-        dstr += self.getname()
+        if not plural:
+            dstr += self.getname()
+        else:
+            dstr += self.getplural()
         
         # apply verb string
         if withverb:
@@ -70,6 +76,12 @@ class noun(object):
     
     def isproper(self):
         return self.noundata["proper"]
+    
+    def getplural(self):
+        if self.noundata["plural"] == None:
+            return self.noundata["name"] + "s"
+        else:
+            return self.noundata["plural"]
     
     # functions
     def calculatearticle(self):
@@ -138,7 +150,6 @@ if __name__ == "__main__":
     mynoun.addadjective("mangy")
     mynoun.setproper(False)
     mynoun.setverb("sitting patiently")
-    
     print mynoun.getnameex() + " " + mynoun.getverb()
     
     
@@ -147,4 +158,4 @@ if __name__ == "__main__":
     mynounjobj = json.loads(mynounjstr)
     mynouncopy = noun()
     mynouncopy.fromJSON(mynounjobj)
-    print mynouncopy.getnameex() + " " + mynoun.getverb()
+    print mynouncopy.getnameex(True) + " " + mynoun.getverb()
