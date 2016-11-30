@@ -120,9 +120,18 @@ class room(worldobject.worldobject):
             self.spawners.append(newspawner)
             newspawner.setticks( newspawner.getmaxticks() )        
     
+    def getspawners(self):
+        return self.spawners
+    
     def dospawners(self):
         for s in self.spawners:
+            
+            if s.maxcountreached():
+                continue
+            
             s.dotick()
+            
+  
     
 
     def todict(self):
@@ -191,7 +200,7 @@ class room(worldobject.worldobject):
 
         print "Spawners:"
         for s in self.spawners:
-            print "  uid:%d - %s - @ %d/%d" %(s.getobjuid(), s.getref().getnameex(), s.getticks(), s.getmaxticks() )
+            print "  uid:%d - %s - @ %d/%d #%d" %(s.getobjuid(), s.getref().getnameex(), s.getticks(), s.getmaxticks(), s.getcount() )
 
         print "Items:"
         #for i in self.items:

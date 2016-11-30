@@ -5,9 +5,10 @@ import json
 class objectspawner(object):
     def __init__(self, troom = None, tobj = None, maxticks = 60):
         
+        # if no room or object supplied
         if troom == None or tobj == None:
             self.data = {"roomuid":troom, "objuid":tobj, "ticks":0, "maxticks":maxticks}
-            self.data.update( {"lastinstance":None} )
+        # else, either use uid or object
         else:
             if type(troom) == int:
                 troom = hub.worldobjects[troom]
@@ -19,6 +20,9 @@ class objectspawner(object):
                     if not tobj.isactor():
                         tobj = None
             self.data = {"roomuid":troom.getuid(), "objuid":tobj.getuid(), "ticks":0, "maxticks":maxticks}
+        
+        # additional data
+        self.data.update( {"lastinstance":None, "count":0, "maxcount":None} )
     
     def getdata(self):
         return self.data
@@ -45,17 +49,39 @@ class objectspawner(object):
             except:
                 return None
         return None
-
+    
+    def getcount(self):
+        return self.data["count"]
+        
+    def getmaxcount(self):
+        return self.data["maxcount"]
+    
+    def maxcountreached(self):
+        if self.getmaxcount() != None:
+            if self.getcount() >= self.getmaxcount():
+                return True
+        return False
+    
     def setmaxticks(self, maxticks):
         self.data["maxticks"] = maxticks
         
     def setticks(self, ticks):
         self.data["ticks"] = ticks
-        
+    
+    def setmaxcount(self, maxcount):
+        self.data["maxcount"] = maxcount
+    
     def dotick(self):
         self.data["ticks"] += 1
         if self.data["ticks"] >= self.data["maxticks"]:
             self.data["ticks"] = 0
+            
+            #if max count reached, do nothing
+            #this should be cleaned up also by parent, removing the spawner
+            #once max count has been reached
+            
+            if self.maxcountreached():
+                return False
             
             # get room for spawning
             troom = hub.worldobjects[ self.data["roomuid"] ]
@@ -91,6 +117,9 @@ class objectspawner(object):
             
             # set last instance reference to this new object
             self.data["lastinstance"] = newobj.getiid()
+
+            #increment spawn counter
+            self.data["count"] += self.getcount() + 1
 
             # debug
             #print "Spawned %s" %newobj.getnameex()
