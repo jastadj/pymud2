@@ -120,7 +120,7 @@ class actorinstancedata(object):
         self.pattributes = {"hp": tactor.getattribute("maxhp")}
         
         # inventory
-        self.pinventory = []
+        self.pinventory = item.pcontainer()
         
         # equipment layer
         self.pequipment = {"weapons":{}, "armor":{}, "clothing":{} }
@@ -145,6 +145,22 @@ class actorinstancedata(object):
         else:
             return worldobject.worldobjectinstance.getref(self).getnameex()
 
+    def getattribute(self, attribute):
+        if attribute in self.pattributes.keys():
+            return self.pattributes[attribute]
+        else:
+            if not self.isplayer():
+                return self.getref().getattribute(attribute)
+            
+    
+    def setattribute(self, attribute, val):
+        if attribute in self.pattributes.keys():
+            self.pattributes[attribute] = val
+            return True
+        else:
+            if not self.isplayer():
+                return self.getref().setattribute(attribute, val)
+
     def dotick(self):
         
         # if actor is dead
@@ -161,6 +177,8 @@ class actorinstancedata(object):
             self.modhealth(self.healtickval)
         else:
             self.healtick -= 1
+
+
         
     def incombat(self):
         if self.combattarget != None:
@@ -171,23 +189,6 @@ class actorinstancedata(object):
 
     def getcombatspeed(self):
         return 5
-
-    def getattribute(self, attribute):
-        if attribute in self.pattributes.keys():
-            return self.pattributes[attribute]
-        else:
-            if not self.isplayer():
-                return self.getref().getattribute(attribute)
-            
-    
-    def setattribute(self, attribute, val):
-        if attribute in self.pattributes.keys():
-            self.pattributes[attribute] = val
-            return True
-        else:
-            if not self.isplayer():
-                return self.getref().setattribute(attribute, val)
-            
 
     def isalive(self):
         if self.pattributes["hp"] <= 0:
@@ -230,6 +231,9 @@ class actorinstancedata(object):
         # remove mob from instances
         hub.worldobjects_instance.pop(self.getiid(), None)
 
+
+
+
     def getroom(self):
         troom = hub.zones[ self.getcurrentzoneid()].getroom( self.getcurrentroomid() )
         return troom
@@ -248,7 +252,7 @@ class actorinstancedata(object):
 
 
     def getinventory(self):
-        return self.pinventory
+        return self.pinventory.getitems()
         
     def getinventoryandequipment(self):
         ilist = self.getinventory()
@@ -264,15 +268,13 @@ class actorinstancedata(object):
     
     def additem(self, titem):
         if titem != None:
-            self.pinventory.append(titem)
-            return True
+            return self.pinventory.additem(titem)
         else:
             return False
     
     def removeitem(self, titem):
         try:
-            self.pinventory.remove(titem)
-            return True
+            return self.pinventory.removeitem(titem)
         except:
             return False
     
@@ -308,17 +310,15 @@ class actorinstancedata(object):
     def wield(self, titem):
         if not defs.BODYPART_RIGHTHAND in self.pequipment["weapons"]:
             self.pequipment["weapons"].update( {defs.BODYPART_RIGHTHAND:titem} )
-            self.pinventory.remove(titem)
-            return True
-        return False
+            return self.pinventory.removeitem(titem)
+        else: return False
         
     def unwield(self, titem):
         if defs.BODYPART_RIGHTHAND in self.pequipment["weapons"]:
             if self.pequipment["weapons"][defs.BODYPART_RIGHTHAND] == titem:
                 self.pequipment["weapons"].pop(defs.BODYPART_RIGHTHAND, None)
-                self.pinventory.append(titem)
-                return True
-        return False
+                return self.pinventory.additem(titem)
+        else: return False
 
     def getwielding(self):
         if defs.BODYPART_RIGHTHAND in self.pequipment["weapons"]:
@@ -335,9 +335,9 @@ class actorinstancedata(object):
         tdict.update( {"pattributes":self.pattributes } )
 
         # get persistent inventory
-        tdict.update( {"pinventory":[]} )
-        for i in self.pinventory:
-            tdict["pinventory"].append( i.todict() ) 
+        tdict.update( {"pinventory":self.pinventory.todict()} )
+        #for i in self.pinventory:
+        #    tdict["pinventory"].append( i.todict() ) 
         
         # get equipment layers
         tdict.update( {"pequipment":{} } )
@@ -360,9 +360,11 @@ class actorinstancedata(object):
         self.pattributes.update( jobj["pattributes"] )
         
         # get persistent inventory
-        for k in jobj["pinventory"]:
-            newi = item.iteminstance(0, k)
-            self.pinventory.append(newi)
+        #for k in jobj["pinventory"]:
+        #    newi = item.iteminstance(0, k)
+        #    self.pinventory.append(newi)
+        self.pinventory = item.pcontainer()
+        self.pinventory.fromJSON( jobj["pinventory"] )
             
         # get equipment layers
         self.pequipment = {}
@@ -384,8 +386,9 @@ class actorinstancedata(object):
             print "  %s:%s" %(p, self.pattributes[p])
         
         print "Inventory:"
-        for i in self.pinventory:
-            print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getrefname())
+        self.pinventory.show()
+        #for i in self.pinventory:
+        #    print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getrefname())
             
         print "Equipment:"
         for k in self.pequipment.keys():

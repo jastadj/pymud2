@@ -17,7 +17,8 @@ class room(worldobject.worldobject):
         self.data.update( {"descriptors":{}} )
         
         self.spawners = []
-        self.items = []
+        #self.items = []
+        self.items = item.pcontainer()
         self.mobs = []
 
         # if json obj provided, load in data
@@ -60,18 +61,18 @@ class room(worldobject.worldobject):
     # ITEMS
     
     def getitems(self):
-        return self.items
+        return self.items.getitems()
         
     def additem(self,titem):
         if titem != None:
-            self.items.append(titem)
+            self.items.additem(titem)
             return True
         else:
             return False
     
     def removeitem(self, titem):
         try:
-            self.items.remove(titem)
+            self.items.removeitem(titem)
             return True
         except:
             return False
@@ -193,12 +194,13 @@ class room(worldobject.worldobject):
             print "  uid:%d - %s - @ %d/%d" %(s.getobjuid(), s.getref().getnameex(), s.getticks(), s.getmaxticks() )
 
         print "Items:"
-        for i in self.items:
-            print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getrefname())
+        #for i in self.items:
+        #    print "  iid:%d / refid(%d) : %s" %(i.getiid(), i.getuidref(), i.getrefname())
+        self.items.show()
         
         print "Mobs:"
         for m in self.mobs:
-            print "  iid:%d / refid(%d) : %s" %(m.getiid(), m.getuidref(), m.getrefname())
+            print "  iid:%d / refid(%d) : %s" %(m.getiid(), m.getuidref(), m.getnameex())
 
 if __name__ == "__main__":
     import item
@@ -216,7 +218,7 @@ if __name__ == "__main__":
     room1.setdescription("A pretty standard clean living room.  A large coffee table is covered in magazines.")
     room1.adddescriptor({"table":"The coffee table looks like it has been well used."})
     room1.adddescriptor({"magazine":"Some old National Geographics."})
-    room1.addspawner(item2, 60)
+    room1.newspawner(item2, 60)
     room1.additem(item1i)
     room1.additem(item2i)
     room1.addmob(mob1i)
