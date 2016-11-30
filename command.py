@@ -64,7 +64,7 @@ class commandset(object):
             cstr = self.aliases[cstr]
 
         # if string was a directional (n,e,s,w,etc..)
-        if cstr in ["n", "s", "e", "w"]:
+        if cstr in ["n", "s", "e", "w", "d", "u"]:
             return None
 
         for i in range(0, self.count() ):
@@ -117,6 +117,8 @@ def maingameinvalid(tuser):
     elif i == "s": i = "south"
     elif i == "e": i = "east"
     elif i == "w": i = "west"
+    elif i == "d": i = "down"
+    elif i == "u": i = "up"
     
     # check to see if command was an exit
     troom = getcurrentroom(tuser)

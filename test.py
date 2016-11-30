@@ -101,17 +101,16 @@ def defaultzones():
     #####
     # ZONES / ROOMS
     newzone = zone.zone(0, "whiteeagle.zn", True)
-    newzone.newroom("White Eagle Tavern")
-    newzone.newroom("Hallway")
-    newzone.newroom("Store Room")
+    newzone.newroom("White Eagle Tavern") #0
+    newzone.newroom("Hallway") #1
+    newzone.newroom("Store Room") #2
+    newzone.newroom("Cellar") #3
     newzone.getroom(0).setdescription("You are standing in a narrow tavern that runs east to west. It smells of sour booze and stale tobacco. A long polished bar runs along the north side of the room. Various crusty regulars sit huddled together in clumps.")
     newzone.getroom(0).adddescriptor({"bar":"The bar looks fairly scuffed up, possibly due to fighting."})
     newzone.getroom(0).newspawner( hub.finduidbyname("dagger"), 5 )
     newzone.getroom(0).newspawner( hub.finduidbyname("gil"), 5 )
     newzone.getroom(1).newspawner( hub.finduidbyname("rabbit"), 5)
     newzone.getroom(1).newspawner( hub.finduidbyname("sack"), 5000)
-    #newzone.getroom(0).additem( hub.commonitems[1].create())
-    #newzone.getroom(0).addmob( hub.commonmobs[0].create() )
     newzone.getroom(1).setdescription("This hallway leads to the various rentable rooms of the tavern.")
     newzone.getroom(1).additem( hub.commonitems[2].create())
     newzone.getroom(2).setdescription("This is the storeroom of the White Eagle.  Various shelves and crates fill the room.  It smells slightly musty here but looks pretty well maintained.")
@@ -120,8 +119,10 @@ def defaultzones():
     newzone.getroom(2).adddescriptor({"crates":"Several large crates take up most of the space in the storeroom."})
     newzone.getroom(2).newspawner( hub.finduidbyname("bread"), 5)
     newzone.getroom(2).newspawner( hub.finduidbyname("beer"), 5)
+    newzone.getroom(3).setdescription("A dusty old cellar.")
     newzone.connectrooms( newzone.getroom(0), "east", newzone.getroom(1), "west")
     newzone.connectrooms( newzone.getroom(0), "west", newzone.getroom(2), "east")
+    newzone.connectrooms( newzone.getroom(0), "down", newzone.getroom(3), "up")
 
     hub.zones.update( {0:newzone} )
 
