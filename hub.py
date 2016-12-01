@@ -1,8 +1,9 @@
 import defs
 import threading
 
-# thread
-mutex = threading.Lock()
+# threading
+mainmutex = threading.Lock()
+worldobjinstancemutex = threading.Lock()
 
 # class refs
 COMMAND = None
@@ -50,6 +51,17 @@ def addworldinstanceobject(tiobj):
     
     # update master world objects list
     worldobjects_instance.update( tdict )
+
+def removeworldinstanceobject(tiobj):
+    
+    if tiobj.getiid() in worldobjects_instance.keys():
+        if worldobjects_instance.pop(tiobj.getiid(), None) != None:
+            print "DELETED %s" %tiobj.getnameex()
+            return True
+    
+    print "ERROR DELETING %s" %tiobj.getnameex()
+    
+    return False
 
 def finduidbyname(tdesc):
     for o in worldobjects.keys():

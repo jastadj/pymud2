@@ -22,8 +22,12 @@ class objectspawner(object):
             self.data = {"roomuid":troom.getuid(), "objuid":tobj.getuid(), "ticks":0, "maxticks":maxticks}
         
         # additional data
-        self.data.update( {"lastinstance":None, "count":0, "maxcount":None} )
-    
+        self.data.update( {"lastinstance":None, "maxcount":None} )
+        
+        # temporary data
+        self.count = 0
+        
+        
     def getdata(self):
         return self.data
     
@@ -51,7 +55,7 @@ class objectspawner(object):
         return None
     
     def getcount(self):
-        return self.data["count"]
+        return self.count
         
     def getmaxcount(self):
         return self.data["maxcount"]
@@ -100,7 +104,7 @@ class objectspawner(object):
                 newobj = hub.createobject( self.data["objuid"] )
                 
                 # add object to room
-                troom.additem(newobj)
+                newobj = troom.additem(newobj)
 
             elif self.getref().isactor():
                 
@@ -119,7 +123,7 @@ class objectspawner(object):
             self.data["lastinstance"] = newobj.getiid()
 
             #increment spawn counter
-            self.data["count"] += self.getcount() + 1
+            self.count += 1
 
             # debug
             #print "Spawned %s" %newobj.getnameex()
@@ -143,18 +147,23 @@ class worldobjectinstance(object):
     
     def __init__(self, uidref, jobj = None):
         
-        # init persistent item data
-        self.data = {"uidref":uidref}
+        hub.worldobjinstancemutex.acquire()
         
-        self.iid = worldobjectinstance.iidcount
-        # increase iid counter
-        worldobjectinstance.iidcount += 1
+        try:
+            # init persistent item data
+            self.data = {"uidref":uidref}
+            
+            self.iid = worldobjectinstance.iidcount
+            # increase iid counter
+            worldobjectinstance.iidcount += 1
 
-        # register instance object
-        hub.addworldinstanceobject(self)
+            # register instance object
+            hub.addworldinstanceobject(self)
 
-        if jobj != None:
-            worldobjectinstance.fromJSON(self,jobj)
+            if jobj != None:
+                worldobjectinstance.fromJSON(self,jobj)
+        finally:
+            hub.worldobjinstancemutex.release()
 
     def dotick(self):
         pass
@@ -190,11 +199,11 @@ class worldobjectinstance(object):
     def getref(self):
         return hub.worldobjects[ self.data["uidref"] ]
         
-    def getnameex(self, showverb = False):
+    def getnameex(self, plural = False, showverb = False):
         if "customnoun" in self.data.keys():
-            return self.data["customnoun"].getnameex(showverb)
+            return self.data["customnoun"].getnameex(plural, showverb)
         else:
-            return self.getref().getnameex(showverb)
+            return self.getref().getnameex(plural, showverb)
 
     def getnoun(self):
         if "customnoun" in self.data.keys():

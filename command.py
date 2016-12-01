@@ -285,7 +285,8 @@ def gettargetobjfromargs(tuser, tlist, args):
     # look for target item in list
     foundcount = 0
     for i in tlist:
-        if i.getref().hasmatch(monoarg):
+        
+        if i.getref().hasmatch(monoarg, i.getstack()):
             
             # skip item
             if foundcount != itemnum:
@@ -636,8 +637,8 @@ def dogetitem(tuser, cdict, *argv):
         # add item to player
         tuser.char.additem(titem)
         
-        tmsg = "%s picks up %s.\n" %(tuser.char.getnameex(), titem.getref().getnameex() )
-        umsg = "You pick up %s.\n" %titem.getref().getnameex()
+        tmsg = "%s picks up %s.\n" %(tuser.char.getnameex(), titem.getnameex() )
+        umsg = "You pick up %s.\n" %titem.getnameex()
         
         doroombroadcast(troom, tmsg, tuser, umsg)
         
@@ -721,20 +722,34 @@ def dodropitem(tuser, cdict, *argv):
             for i in tuser.char.getinventory():
                 dodropitem(tuser, cdict, i.getnameex().split())
             return True
-    
+
+    # check if first argument is a value (amount to drop)
+    quantity = 1
+    try:
+        quantity = int(args[0])
+        args.remove(args[0])
+    except:
+        quantity = 1
+
     titem = gettargetobjfromargs(tuser, tuser.char.getinventory(), args)
     troom = getcurrentroom(tuser)
     
-    if titem != None:
 
+    
+    if titem != None:
+        
         # remove item from player inventory
-        tuser.char.removeitem(titem)
+        ritem = tuser.char.removeitem(titem, quantity)
+        
+        if ritem == None:
+            tuser.send("You don't have that many %s!\n" %titem.getref().getplural())
+            return False
         
         # add item to room
         troom.additem(titem)
         
-        tmsg = "%s drops %s.\n" %(tuser.char.getnameex(), titem.getref().getnameex())
-        umsg = "You drop %s.\n" %titem.getref().getnameex()
+        tmsg = "%s drops %s.\n" %(tuser.char.getnameex(), titem.getnameex())
+        umsg = "You drop %s.\n" %titem.getnameex()
         doroombroadcast(troom, tmsg, tuser, umsg)
         
         return True
@@ -765,6 +780,8 @@ def doputitem(tuser, cdict, *argv):
     item1 = None
     item2 = None
     
+    troom = getcurrentroom(tuser)
+    
     # get item 1
     spos = 1
     for a in range(1, len(args)+1):
@@ -787,6 +804,10 @@ def doputitem(tuser, cdict, *argv):
             
             # add item 1 to container 2
             item2.container.additem(item1)
+
+            tmsg = "%s puts %s in %s.\n" %(tuser.char.getnameex(), item1.getnameex(), item2.getnameex())
+            umsg = "You put %s in %s.\n" %(item1.getnameex(), item2.getnameex() )
+            doroombroadcast(troom, tmsg, tuser, umsg)
             
             return True
     
@@ -814,7 +835,7 @@ def doeat(tuser, cdict, *argv):
     if titem != None:
         
         # remove item from inventory
-        tuser.char.removeitem(titem)
+        tuser.char.deleteitem(titem)
     
     # else look for item in room
     else:
@@ -823,7 +844,7 @@ def doeat(tuser, cdict, *argv):
         if titem != None:
             
             # remove item from room
-            troom.removeitem(titem)
+            troom.deleteitem(titem)
     
     if titem == None:
         tuser.send("You do not see that!\n")
@@ -863,7 +884,7 @@ def dodrink(tuser, cdict, *argv):
     if titem != None:
         
         # remove item from inventory
-        tuser.char.removeitem(titem)
+        tuser.char.deleteitem(titem)
     
     # else look for item in room
     else:
@@ -872,7 +893,7 @@ def dodrink(tuser, cdict, *argv):
         if titem != None:
             
             # remove item from room
-            troom.removeitem(titem)
+            troom.deleteitem(titem)
     
     if titem == None:
         tuser.send("You do not see that!\n")

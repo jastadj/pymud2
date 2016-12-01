@@ -229,7 +229,7 @@ class actorinstancedata(object):
         troom.additem(tcorpse)
         
         # remove mob from instances
-        hub.worldobjects_instance.pop(self.getiid(), None)
+        hub.removeworldinstanceobject(self)
 
 
 
@@ -272,11 +272,14 @@ class actorinstancedata(object):
         else:
             return False
     
-    def removeitem(self, titem):
+    def removeitem(self, titem, quantity = 1):
         try:
-            return self.pinventory.removeitem(titem)
+            return self.pinventory.removeitem(titem, quantity)
         except:
-            return False
+            return None
+    
+    def deleteitem(self, titem):
+        return self.pinventory.deleteitem(titem)
     
     def modhealth(self, val):
         chealth = self.getattribute("hp")

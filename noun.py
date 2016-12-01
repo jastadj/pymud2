@@ -32,11 +32,29 @@ class noun(object):
         self.noundata["proper"] = proper
     
     # getters
-    def getname(self):
-        return self.noundata["name"]
+    def getname(self, quantity = 1):
+        if quantity > 1:
+            return self.getplural()
+        else:
+            return self.noundata["name"]
     
-    def getnameex(self, plural = False, withverb = False):
+    def getnameex(self, quantity = 1, withverb = False):
         dstr = ""
+        plural = False
+        
+        if quantity > 1:
+            plural = True
+            
+            if quantity == 2: dstr += "two "
+            elif quantity == 3: dstr += "three "
+            elif quantity == 4: dstr += "four "
+            elif quantity == 5: dstr += "five "
+            elif quantity == 6: dstr += "six "
+            elif quantity == 7: dstr += "seven "
+            elif quantity == 8: dstr += "eight "
+            elif quantity == 9: dstr += "nine "
+            elif quantity == 10: dstr += "ten "
+            elif quantity > 10: dstr += "many "
         
         # if noun is not proper
         if not self.isproper() and not plural:
@@ -49,10 +67,7 @@ class noun(object):
             dstr += "%s " %a
         
         # add name
-        if not plural:
-            dstr += self.getname()
-        else:
-            dstr += self.getplural()
+        dstr += self.getname(quantity)
         
         # apply verb string
         if withverb:
@@ -97,7 +112,7 @@ class noun(object):
         if self.getname()[0] in vowels:
             self.setarticle("an")
     
-    def hasmatch(self, tstr):
+    def hasmatch(self, tstr, quantity = 1):
         
         # empty or return lines are not valid
         if len(tstr) == 0: return False
@@ -108,9 +123,9 @@ class noun(object):
         # last word should be noun name
         tname = tdesc[-1]
         tdesc.remove(tname)
-        
+
         # noun name matches at minimum
-        if tname.lower() == self.getname().lower():
+        if tname.lower() == self.getname(quantity).lower():
             
             validwords = []
             
@@ -158,4 +173,4 @@ if __name__ == "__main__":
     mynounjobj = json.loads(mynounjstr)
     mynouncopy = noun()
     mynouncopy.fromJSON(mynounjobj)
-    print mynouncopy.getnameex(True) + " " + mynoun.getverb()
+    print mynouncopy.getnameex(5) + " " + mynoun.getverb()

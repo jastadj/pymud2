@@ -46,7 +46,8 @@ def defaultitems():
     myitems.append( item.item("corpse") )
     myitems[-1].makecorpse()
     
-    myitems.append( item.item("gold coin") )
+    myitems.append( item.item("coin") )
+    myitems[-1].addadjective("gold")
     myitems[-1].setdescription("Gold currency.")
     myitems[-1].setstackable(True)
     
@@ -105,6 +106,7 @@ def defaultzones():
     newzone.newroom("Hallway") #1
     newzone.newroom("Store Room") #2
     newzone.newroom("Cellar") #3
+    newzone.newroom("Tatton Road") #4
     newzone.getroom(0).setdescription("You are standing in a narrow tavern that runs east to west. It smells of sour booze and stale tobacco. A long polished bar runs along the north side of the room. Various crusty regulars sit huddled together in clumps.")
     newzone.getroom(0).adddescriptor({"bar":"The bar looks fairly scuffed up, possibly due to fighting."})
     newzone.getroom(0).newspawner( hub.finduidbyname("dagger"), 5 )
@@ -121,9 +123,13 @@ def defaultzones():
     newzone.getroom(2).newspawner( hub.finduidbyname("bread"), 5)
     newzone.getroom(2).newspawner( hub.finduidbyname("beer"), 5)
     newzone.getroom(3).setdescription("A dusty old cellar.")
+    newzone.getroom(3).newspawner( hub.finduidbyname("coin"), 5)
+    newzone.getroom(3).getspawners()[-1].setmaxcount(5)
+    newzone.getroom(4).setdescription("Tatton road stretches from east to west.  To the north lies White Eagle tavern.")
     newzone.connectrooms( newzone.getroom(0), "east", newzone.getroom(1), "west")
     newzone.connectrooms( newzone.getroom(0), "west", newzone.getroom(2), "east")
     newzone.connectrooms( newzone.getroom(0), "down", newzone.getroom(3), "up")
+    newzone.connectrooms( newzone.getroom(0), "south", newzone.getroom(4), "north")
 
     hub.zones.update( {0:newzone} )
 

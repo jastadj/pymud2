@@ -64,19 +64,14 @@ class room(worldobject.worldobject):
         return self.items.getitems()
         
     def additem(self,titem):
-        if titem != None:
-            self.items.additem(titem)
-            return True
-        else:
-            return False
+        return self.items.additem(titem)
     
     def removeitem(self, titem):
-        try:
-            self.items.removeitem(titem)
-            return True
-        except:
-            return False
-        
+        return self.items.removeitem(titem)
+
+    
+    def deleteitem(self, titem):
+        return self.items.deleteitem(titem)
 
     #####
     # MOBS

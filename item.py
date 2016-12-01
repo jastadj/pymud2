@@ -10,13 +10,17 @@ class iteminstance(worldobject.worldobjectinstance):
         # init base class data
         worldobject.worldobjectinstance.__init__(self, uidref, jobj)
         
-        self.data.update( {"stack":1} )
+        self.idata = {"stack":1}
         
         if self.getref().iscontainer():
             self.container = self.getref().container.createpersistentdata()
         
         if jobj != None:
             self.fromJSON(jobj)
+    
+    def getnameex(self):
+        
+        return worldobject.worldobjectinstance.getnameex(self, self.getstack())
     
     def getlookstr(self):
         
@@ -31,13 +35,45 @@ class iteminstance(worldobject.worldobjectinstance):
                 lookstr += "It Contains:\n"
                 
                 for i in citems:
-                    lookstr += "  %s\n" %i.getref().getnameex()
+                    lookstr += "  %s\n" %i.getnameex()
                     
             
         return lookstr
+    
+    def getstack(self):
+        return self.idata["stack"]
         
+    def setstack(self, stackval):
+        if self.getref().isstackable():
+            self.idata["stack"] = stackval
+    
+    def split(self, quantity):
+        
+        # if item is not stackable
+        if not self.getref().isstackable():
+            return None
+        
+        #debug
+        print "splitting stack %d / %d from %s" %(quantity, self.getstack(), self.getnameex())
+        
+        # invalid quantity for stack
+        if quantity < 1 or quantity >= self.getstack():
+            return None
+        
+        # create new item and subttrack stack
+        sitem = self.getref().create()
+        sitem.setstack(quantity)
+        
+        self.setstack( self.getstack() - quantity)
+        
+        print "split new item quantity = %d, parent item quantity = %d" %(sitem.getstack(), self.getstack())
+        
+        return sitem
+    
     def todict(self):
         tdict = worldobject.worldobjectinstance.todict(self)
+        
+        tdict.update( {"idata":self.idata} )
         
         if self.getref().iscontainer():
             tdict.update( {"container": self.container.todict() } )
@@ -46,11 +82,14 @@ class iteminstance(worldobject.worldobjectinstance):
     
     def fromJSON(self, jobj):
         
+        self.idata = jobj["idata"]
+        
         if self.getref().iscontainer():
             self.container.fromJSON(jobj["container"])
         
     def show(self):
         worldobject.worldobjectinstance.show(self)
+        print "stack:%d" %self.getstack()
         
         if self.getref().iscontainer():
             self.container.show()
@@ -113,17 +152,63 @@ class pcontainer(object):
     
     def additem(self, titem):
         if titem == None:
-            return False
+            return None
+            
+        # check if there is a stackable item already in container
+        for i in self.inventory:
+            if i.getref().getuid() == titem.getref().getuid():
+                if i.getref().isstackable():
+                    
+                    print "ADDING ITEM, MERGING INTO STACK"
+                    
+                    # get stack count of item to merge
+                    titemcount = titem.getstack()
+                    
+                    # merge item stack count with base item
+                    i.setstack( i.getstack() + titemcount)
+                    
+                    # delete item from instances since it merged
+                    hub.removeworldinstanceobject(titem)
+                    
+                    return i
+        
+        # else, not stackable, add to list
         self.inventory.append(titem)
-        return True
+        return titem
     
-    def removeitem(self, titem):
-        if titem == None: return False
+    def removeitem(self, titem, quantity = 1):
+        if titem == None: return None
         if titem in self.inventory:
+            
+            # if item is stackable
+            if titem.getref().isstackable():
+                
+                # if stackable item == specified quantity
+                if titem.getstack() == quantity:
+                    self.inventory.remove(titem)
+                    return titem
+                
+                # if stackable item has enough to split
+                if titem.getstack() > quantity:
+                    
+                    # split the stack
+                    ritem = titem.split(quantity)
+                    return ritem
+                
+                # else, cannot split
+                return None
+            
+            # else if item is not stackable, remove and return
             self.inventory.remove(titem)
-            return True
-        return False
+            return titem
 
+        return None
+
+    def deleteitem(self, titem):
+        if self.removeitem(titem):
+            return hub.removeworldinstanceobject(titem)
+        return False
+        
     def todict(self):
         
         tdict = {}
@@ -139,7 +224,7 @@ class pcontainer(object):
         
         for i in jobj["items"]:          
             newitem = iteminstance(0, i)
-            self.inventory.append(newitem)
+            self.additem(newitem)
 
     def show(self):
         print "Items:"

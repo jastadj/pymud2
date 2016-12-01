@@ -21,7 +21,7 @@ client_modes.update( {"createchar3":createchar.createchar}) # check keep confirm
 
 client_modes.update( {"lobby":hub.lobby} ) # test lobby
 
-# main modes
+# main modesj
 client_modes.update( {"maingamestart":hub.maingame}) # main game prompt
 client_modes.update( {"maingame":hub.maingame}) # main game prompt
 
@@ -34,7 +34,7 @@ def dotimer():
 
 def dotick():
 
-    hub.mutex.acquire()
+    hub.mainmutex.acquire()
     
     try:
         # update all rooms
@@ -46,7 +46,7 @@ def dotick():
             if u.char != None:
                 u.char.dotick()
     finally:
-        hub.mutex.release()
+        hub.mainmutex.release()
 
 def ticktest():
     while True:
@@ -56,7 +56,7 @@ def ticktest():
         
 def handleclient(tclient):
     
-    hub.mutex.acquire()
+    hub.mainmutex.acquire()
     
     try:
         
@@ -83,7 +83,7 @@ def handleclient(tclient):
         tclient.skip_input = 0
     
     finally:
-        hub.mutex.release()
+        hub.mainmutex.release()
 
 if __name__ == "__main__":
     import hubinit
