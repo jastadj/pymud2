@@ -51,6 +51,12 @@ def defaultitems():
     myitems[-1].setdescription("Gold currency.")
     myitems[-1].setstackable(True)
     
+    myitems.append( item.item("sign") )
+    myitems[-1].makesign()
+    myitems[-1].sign.settext("  #c3WELCOME TO THE WHITE EAGLE#cr\n")
+    myitems[-1].setstatic(True)
+    myitems[-1].setunlisted(True)
+    
     myitems.append( item.item("rock") )
     myitems[-1].setdescription("Just a dirty old rock.")    
     
@@ -109,6 +115,8 @@ def defaultzones():
     newzone.newroom("Tatton Road") #4
     newzone.getroom(0).setdescription("You are standing in a narrow tavern that runs east to west. It smells of sour booze and stale tobacco. A long polished bar runs along the north side of the room. Various crusty regulars sit huddled together in clumps.")
     newzone.getroom(0).adddescriptor({"bar":"The bar looks fairly scuffed up, possibly due to fighting."})
+    newzone.getroom(0).newspawner( 2, 5000)
+    #newzone.getroom(0).getspawners()[-1].setmaxcount(1)
     newzone.getroom(0).newspawner( hub.finduidbyname("dagger"), 5 )
     newzone.getroom(0).getspawners()[-1].setmaxcount(1)
     newzone.getroom(0).newspawner( hub.finduidbyname("gil"), 5 )

@@ -95,6 +95,25 @@ class iteminstance(worldobject.worldobjectinstance):
             self.container.show()
 
 
+class sign(object):
+    def __init__(self):
+        self.sign = {"sign":""}
+        
+    def settext(self, signtext):
+        self.sign["sign"] = signtext
+    
+    def gettext(self):
+        return self.sign["sign"]
+    
+    def todict(self):
+        tdict = {"sign":self.gettext() }
+        return tdict
+        
+    def fromJSON(self, jobj):
+        self.sign["sign"] = jobj["sign"]
+    
+    def show(self):
+        print "sign!"
 
 class drink(object):
     def __init__(self):
@@ -315,19 +334,26 @@ class item(worldobject.worldobject):
         worldobject.worldobject.__init__(self, name, jobj)
         
         # init class data
-        self.data = {"stackable":False}
+        self.data = {"stackable":False, "static":False, "unlisted":False}
         
         # optional item structs
         self.weapon = None
         self.container = None
         self.food = None
         self.drink = None
+        self.sign = None
         
         if jobj != None:
             self.fromJSON(jobj)
 
     def isitem(self):
         return True
+    
+    def isunlisted(self):
+        return self.data["unlisted"]
+    
+    def isstatic(self):
+        return self.data["static"]
     
     def isstackable(self):
         return self.data["stackable"]
@@ -356,6 +382,17 @@ class item(worldobject.worldobject):
         if self.drink != None:
             return True
         else: return False
+        
+    def issign(self):
+        if self.sign != None:
+            return True
+        else: return False
+    
+    def setunlisted(self, unlisted):
+        self.data["unlisted"] = unlisted
+    
+    def setstatic(self, static):
+        self.data["static"] = static
     
     def setstackable(self, stackable):
         self.data["stackable"] = stackable
@@ -374,6 +411,9 @@ class item(worldobject.worldobject):
     
     def makecorpse(self):
         self.container = corpse()
+        
+    def makesign(self):
+        self.sign = sign()
     
     def todict(self):
         tdict = worldobject.worldobject.todict(self)
@@ -394,6 +434,9 @@ class item(worldobject.worldobject):
         
         if self.isdrink():
             tdict.update( {"drink":self.drink.todict() } )
+            
+        if self.issign():
+            tdict.update( {"sign":self.sign.todict() } )
         
         return tdict
     
@@ -419,6 +462,10 @@ class item(worldobject.worldobject):
         if "drink" in jobj.keys():
             self.drink = drink()
             self.drink.fromJSON( jobj["drink"])
+            
+        if "sign" in jobj.keys():
+            self.sign = sign()
+            self.sign.fromJSON( jobj["sign"])
         
     def create(self):
         newinstance = iteminstance(self.uid)
@@ -428,6 +475,8 @@ class item(worldobject.worldobject):
     def show(self):
         worldobject.worldobject.show(self)
         print "isstackable:%s" %self.isstackable()
+        print "isstatic:%s" %self.isstatic()
+        print "isunlisted:%s" %self.isunlisted()
         print "isweapon:%s" %self.isweapon()
         if self.isweapon():
             self.weapon.show()
@@ -440,29 +489,45 @@ class item(worldobject.worldobject):
         print "isdrink:%s" %self.isdrink()
         if self.isdrink():
             self.drink.show()
+        print "issign:%s" %self.issign()
         
 if __name__ == "__main__":
     
-    print "\nItem 1:"
-    item1 = item("dagger")
-    item1.makeweapon()
-    item1.show()
-
-    print "\nItem 2:"
-    item2 = item("sack")
-    item2.makecontainer()
-    item2.show()
-
-    print "\nItem 1 Instance:"
-    item1i = item1.create()
-    item1i.show()
-
-    print "\nItem 2 Instance:"
-    item2i = item2.create()
-    item2i.container.additem(item1i)
-    item2i.show()
+    dotest = 2
     
-    jstrings = item2i.toJSONstr()
-    print "\nItem 2 Instance Copy"
-    item2icopy = iteminstance(0, json.loads(jstrings) )
-    item2icopy.show()
+    if dotest == 1:
+        print "\nItem 1:"
+        item1 = item("dagger")
+        item1.makeweapon()
+        item1.show()
+
+        print "\nItem 2:"
+        item2 = item("sack")
+        item2.makecontainer()
+        item2.show()
+
+        print "\nItem 1 Instance:"
+        item1i = item1.create()
+        item1i.show()
+
+        print "\nItem 2 Instance:"
+        item2i = item2.create()
+        item2i.container.additem(item1i)
+        item2i.show()
+        
+        jstrings = item2i.toJSONstr()
+        print "\nItem 2 Instance Copy"
+        item2icopy = iteminstance(0, json.loads(jstrings) )
+        item2icopy.show()
+    
+    if dotest == 2:
+        print "ITEM 1 SIGN:\n"
+        item1 = item("sign")
+        item1.makesign()
+        item1.sign.settext("THIS IS A SIGN!\n")
+        item1.show()
+        print item1.sign.gettext()
+        jstrings = item1.toJSONstr()
+        
+        item1copy = item("test", json.loads(jstrings))
+        

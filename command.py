@@ -97,6 +97,7 @@ def initmaincommands():
     cd.add("kill", "Kill target", dokill, True)
     cd.add("eat", "Eat something", doeat, True)
     cd.add("drink", "Drink something", dodrink, True)
+    cd.add("read", "Read something", doread, True)
     
     cd.add("debug", "Do a debug #", dodebug, True)
     cd.add("showuid", "Show object of uid#", dodebugshowuid, True)
@@ -286,16 +287,27 @@ def gettargetobjfromargs(tuser, tlist, args):
     foundcount = 0
     for i in tlist:
         
-        if i.getref().hasmatch(monoarg, i.getstack()):
+        # find item if plural
+        if i.getref().isitem():
             
+            if i.getref().hasmatch(monoarg, i.getstack()):lefadjtajt
+                # skip item
+                if foundcount != itemnum:
+                    foundcount += 1
+                    continue
+                
+                # return found item
+                return i
+        
+        # find item if singular
+        elif i.getref().hasmatch(monoarg):
             # skip item
             if foundcount != itemnum:
                 foundcount += 1
                 continue
             
             # return found item
-            return i
-    
+            return i    
     
     return None
 
@@ -738,6 +750,10 @@ def dodropitem(tuser, cdict, *argv):
     
     if titem != None:
         
+        if titem.getref().isstatic():
+            tuser.send("You cannot pick that up!\n")
+            return False
+        
         # remove item from player inventory
         ritem = tuser.char.removeitem(titem, quantity)
         
@@ -912,6 +928,48 @@ def dodrink(tuser, cdict, *argv):
     umsg = "You drink %s.\n" %(titem.getnameex())
     doroombroadcast(troom, tmsg, tuser, umsg)
 
+def doread(tuser, cdict, *argv):
+    args = []
+    # no arguments
+    if argv[0] == None:
+        pass
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+    
+    if len(args) == 0:
+        tuser.send("Read what?\n")
+        return False    
+        
+    troom = getcurrentroom(tuser)
+    
+    # look for item in inventory first
+    titem = gettargetobjfromargs(tuser, tuser.char.getinventory(), args)
+    
+    # look for item in room
+    if titem == None:
+        titem = gettargetobjfromargs(tuser, troom.getitems(), args)
+        
+     
+    # no item found
+    if titem == None:
+        tuser.send("You do not see that!\n")
+        return False
+    
+    # make sure item is readable
+    if not titem.getref().issign():
+        tuser.send("You cannot read that!\n")
+        return False
+    
+    # read sign
+    tuser.send( titem.getref().sign.gettext() )
+    
+    # broadcast message
+    tmsg = "%s reads %s.\n" %(tuser.char.getnameex(), titem.getnameex())
+    #umsg = "You drink %s.\n" %(titem.getnameex())
+    doroombroadcast(troom, tmsg, tuser, None)
+
 ###########################################
 ##      ROOM
 
@@ -965,7 +1023,8 @@ def doroomlook(tuser, troom):
             tstrings += "    %s %s\n" %(m.getnameex(), postprint)
     
     for i in troom.getitems():
-        tstrings += "    %s\n" %i.getnameex()
+        if not i.getref().isunlisted():
+            tstrings += "    %s\n" %i.getnameex()
         
     tuser.send(tstrings)
         
