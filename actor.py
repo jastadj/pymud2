@@ -315,6 +315,8 @@ class actorinstancedata(object):
             tdmg = twpn.getref().weapon.getdamage()
         return tdmg
     
+
+    # WEAPON
     def wield(self, titem):
         if not defs.BODYPART_RIGHTHAND in self.pequipment["weapons"]:
             self.pequipment["weapons"].update( {defs.BODYPART_RIGHTHAND:titem.getiid() } )
@@ -335,16 +337,61 @@ class actorinstancedata(object):
             return hub.worldobjects_instance[ self.pequipment["weapons"][defs.BODYPART_RIGHTHAND] ]
         return None
     
+    
+    # ARMOR
+    def getarmorlayer(self):
+        return self.pequipment["armor"]
+    
+    def canwear(self, titem):
+        
+        # make sure item is armor
+        if not titem.getref().isarmor(): return False
+        
+        # make sure item is in inv
+        if not titem in self.pinventory.getitems(): return False
+
+        # check that required slot is available
+        reqslots = titem.getref().armor.getbodyparts()
+        for slot in reqslots:
+            if slot in self.pequipment["armor"].keys():
+                return False
+                
+        return True
+    
     def weararmor(self, titem):
         
-        # that that item is wearable
-        if not titem.isarmor(): return False
+        if not self.canwear(titem): return False
         
-        pass
+        # slots available, wear item
+        self.pequipment["inventory"].additem(titem)
+        
+        reqslots = titem.getref().armor.getbodyparts()
+        for slot in reqslots:
+            self.pequipment["armor"].update( {slot:titem.getiid()} )
+        
+        # remove item from inv
+        return self.pinventory.removeitem(titem)
     
     def removearmor(self, titem):
-        pass
-    
+        
+        if not titem.getref().isarmor():
+            return False
+        
+        if not titem in self.pequipment["inventory"].getitems():
+            return False
+        
+        # remove slots used
+        reqslots = titem.armor.getbodyparts()
+        
+        for slot in reqslots:
+            self.pequipment["armor"].pop(slot, None)
+        
+        # remove armor from equipment
+        self.pequipment["inventory"].removeitem(titem)
+        
+        # add armor to inv
+        return self.pinventory.additem(titem)
+
     def todict(self):
         tdict = {}
         

@@ -563,7 +563,9 @@ def doinventory(tuser, cdict):
         tstrings += "You are wielding "
         tstrings += tuser.char.getwielding().getref().getnameex() + ".\n"
         
-        
+    armorlayer = tuser.char.getarmorlayer()
+    for a in armorlayer:
+        tstrings += 
     tstrings += "You are carring:\n"
     
     if len(tinv) == 0:
@@ -673,14 +675,10 @@ def dowear(tuser, cdict, *argv):
     troom = getcurrentroom(tuser)
     
     if titem != None:
-
-        # check if item is armor/clothing
-        if not titem.getref().isarmor():
-            tuser.send("You cannot wear that!\n")
-            return False
         
         # check if able to wear armor/clothing
-        #....
+        if not tuser.char.canwear(titem):
+            tuser.send("Unable to wear for some reason or another...\n")
         
         # wear item
         tuser.char.weararmor(titem)
@@ -714,7 +712,9 @@ def doremove(tuser, cdict, *argv):
     if titem != None:
 
         # check if item is armor/clothing currently equipped
-        #....
+        if not titem in tuser.char.getequipped():
+            tuser.send("That is not currently being worn!\n")
+            return False        
         
         # wear item
         tuser.char.removearmor(titem)
