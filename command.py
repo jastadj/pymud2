@@ -524,10 +524,8 @@ def doinventory(tuser, cdict):
     
     twielded = tuser.char.getwielding()
     
+    if tuser.char.getwielding() != None:
     tstrings += "You are wielding "
-    if tuser.char.getwielding() == None:
-        tstrings += "nothing.\n"
-    else:
         tstrings += tuser.char.getwielding().getref().getnameex() + ".\n"
     
     
@@ -679,6 +677,13 @@ def dolook(tuser, cdict, *argv):
     if tobj != None:
         descstr = tobj.getlookstr()
         tuser.send("%s" %descstr)
+        
+        # if stacked, show count
+        if tobj.getref().isitem():
+            if tobj.getref().isstackable():
+                if tobj.getstack() > 1:
+                    tuser.send("There are %d %s.\n" %(tobj.getstack(), tobj.getnameex()) )
+        
         return
     else:
         tuser.send("You do not see that here!\n")

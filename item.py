@@ -162,6 +162,27 @@ class weapon(object):
         for d in self.weapon.keys():
             print "  %s:%s" %(d, self.weapon[d])
 
+class armor(object):
+    def __init__(self):
+        self.armor = {"protection":1}
+    
+    def getprotection(self):
+        return self.armor["protection"]
+    
+    def setprotection(self, protection):
+        self.armor["protection"] = protection
+    
+    def todict(self):
+        return self.armor
+        
+    def fromJSON(self, jobj):
+        self.armor = jobj
+    
+    def show(self):
+        print "Armor:"
+        for d in self.armor.keys():
+            print "  %s:%s" %(d, self.armor[d])    
+
 class pcontainer(object):
     def __init__(self):
         self.inventory = []
@@ -341,6 +362,7 @@ class item(worldobject.worldobject):
         
         # optional item structs
         self.weapon = None
+        self.armor = None
         self.container = None
         self.food = None
         self.drink = None
@@ -363,6 +385,11 @@ class item(worldobject.worldobject):
     
     def isweapon(self):
         if self.weapon != None:
+            return True
+        else: return False
+    
+    def isarmor(self):
+        if self.armor != None:
             return True
         else: return False
     
@@ -403,6 +430,9 @@ class item(worldobject.worldobject):
     def makeweapon(self):
         self.weapon = weapon()
     
+    def makearmor(self):
+        self.armor = armor()
+    
     def makecontainer(self):
         self.container = container()
     
@@ -425,6 +455,9 @@ class item(worldobject.worldobject):
         
         if self.isweapon():
             tdict.update( {"weapon":self.weapon.todict()} )
+        
+        if self.isarmor():
+            tdict.update( {"armor":self.armor.todict()} )
         
         if self.iscontainer():
             if self.container.__class__.__name__ == "container":
@@ -450,6 +483,10 @@ class item(worldobject.worldobject):
         if "weapon" in jobj.keys():
             self.weapon = weapon()
             self.weapon.fromJSON( jobj["weapon"])
+    
+        if "armor" in jobj.keys():
+            self.armor = armor()
+            self.armor.fromJSON( jobj["armor"] )
     
         if "container" in jobj.keys():
             self.container = container()
@@ -483,6 +520,9 @@ class item(worldobject.worldobject):
         print "isweapon:%s" %self.isweapon()
         if self.isweapon():
             self.weapon.show()
+        print "isarmor:%s" %self.isarmor()
+        if self.isarmor():
+            self.armor.show()
         print "iscontainer:%s" %self.iscontainer()
         if self.iscontainer():
             self.container.show()

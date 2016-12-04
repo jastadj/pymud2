@@ -85,6 +85,11 @@ def defaultitems():
     myitems[-1].setdescription("A mug of beer.")
     myitems[-1].makedrink()
     
+    myitems.append( item.item("jacket") )
+    myitems[-1].setdescription("A well oiled dark leather jacket.")
+    myitems[-1].addadjective("leather")
+    myitems[-1].makearmor()
+    
     
     # store all common items in common items list
     hub.commonitems = myitems
@@ -115,6 +120,9 @@ def defaultzones():
     newzone.newroom("Store Room") #2
     newzone.newroom("Cellar") #3
     newzone.newroom("Tatton Road") #4
+    newzone.newroom("Tatton Road") #5
+    newzone.newroom("Tatton Road") #6
+    newzone.newroom("Armorer") #7
     newzone.getroom(0).setdescription("You are standing in a narrow tavern that runs east to west. It smells of sour booze and stale tobacco. A long polished bar runs along the north side of the room. Various crusty regulars sit huddled together in clumps.")
     newzone.getroom(0).adddescriptor({"bar":"The bar looks fairly scuffed up, possibly due to fighting."})
     newzone.getroom(0).newspawner( hub.finduidbyname("white eagle sign"), 5000)
@@ -134,11 +142,18 @@ def defaultzones():
     newzone.getroom(3).setdescription("A dusty old cellar.")
     newzone.getroom(3).newspawner( hub.finduidbyname("coin"), 5)
     newzone.getroom(3).getspawners()[-1].setstack(5)
-    newzone.getroom(4).setdescription("Tatton road stretches from east to west.  To the north lies White Eagle tavern.  You see a sign hanging above the door.")
+    newzone.getroom(4).setdescription("Tatton road stretches from east to west.")
+    newzone.getroom(5).setdescription("Tatton road stretches from east to west.")
+    newzone.getroom(6).setdescription("Tatton road stretches from east to west.")
+    newzone.getroom(7).setdescription("You are standing in the armorer's shop.  It smells of leather and oil.")
+    newzone.getroom(7).newspawner( hub.finduidbyname("leather jacket"), 5)
     newzone.connectrooms( newzone.getroom(0), "east", newzone.getroom(1), "west")
     newzone.connectrooms( newzone.getroom(0), "west", newzone.getroom(2), "east")
     newzone.connectrooms( newzone.getroom(0), "down", newzone.getroom(3), "up")
     newzone.connectrooms( newzone.getroom(0), "south", newzone.getroom(4), "north")
+    newzone.connectrooms( newzone.getroom(4), "west", newzone.getroom(5), "east")
+    newzone.connectrooms( newzone.getroom(4), "east", newzone.getroom(6), "west")
+    newzone.connectrooms( newzone.getroom(4), "south", newzone.getroom(7), "north")
 
     hub.zones.update( {0:newzone} )
 
