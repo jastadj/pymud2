@@ -272,9 +272,9 @@ class actorinstancedata(object):
         else:
             return False
     
-    def removeitem(self, titem, quantity = 1):
+    def removeitem(self, titem):
         try:
-            return self.pinventory.removeitem(titem, quantity)
+            return self.pinventory.removeitem(titem)
         except:
             return None
     

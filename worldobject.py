@@ -7,7 +7,7 @@ class objectspawner(object):
         
         # if no room or object supplied
         if troom == None or tobj == None:
-            self.data = {"roomuid":troom, "objuid":tobj, "ticks":0, "maxticks":maxticks}
+            self.data = {"roomuid":troom, "objuid":tobj}
         # else, either use uid or object
         else:
             if type(troom) == int:
@@ -19,10 +19,11 @@ class objectspawner(object):
                 if not tobj.isitem():
                     if not tobj.isactor():
                         tobj = None
-            self.data = {"roomuid":troom.getuid(), "objuid":tobj.getuid(), "ticks":0, "maxticks":maxticks}
+            self.data = {"roomuid":troom.getuid(), "objuid":tobj.getuid()}
         
         # additional data
-        self.data.update( {"lastinstance":None, "maxcount":None} )
+        self.data.update( {"ticks":0, "maxticks":maxticks, "lastinstance":None, "maxcount":None} )
+        self.data.update( {"stack":1} )
         
         # temporary data
         self.count = 0
@@ -54,6 +55,9 @@ class objectspawner(object):
                 return None
         return None
     
+    def getstack(self):
+        return self.data["stack"]
+    
     def getcount(self):
         return self.count
         
@@ -74,6 +78,11 @@ class objectspawner(object):
     
     def setmaxcount(self, maxcount):
         self.data["maxcount"] = maxcount
+        
+    def setstack(self, stack):
+        if self.getref().isitem():
+            if self.getref().isstackable():
+                self.data["stack"] = stack
     
     def dotick(self):
         self.data["ticks"] += 1
@@ -102,6 +111,10 @@ class objectspawner(object):
 
                 # create object
                 newobj = hub.createobject( self.data["objuid"] )
+                
+                # if stackable, set stack size from spawner
+                if newobj.getref().isstackable():
+                    newobj.setstack( self.data["stack"] )
                 
                 # add object to room
                 newobj = troom.additem(newobj)

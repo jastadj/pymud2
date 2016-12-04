@@ -178,7 +178,8 @@ class pcontainer(object):
             if i.getref().getuid() == titem.getref().getuid():
                 if i.getref().isstackable():
                     
-                    print "ADDING ITEM, MERGING INTO STACK"
+                    #DEBUG
+                    #print "ADDING ITEM, MERGING INTO STACK"
                     
                     # get stack count of item to merge
                     titemcount = titem.getstack()
@@ -195,10 +196,11 @@ class pcontainer(object):
         self.inventory.append(titem)
         return titem
     
-    def removeitem(self, titem, quantity = 1):
+    def removeitem(self, titem):
         if titem == None: return None
         if titem in self.inventory:
             
+            """
             # if item is stackable
             if titem.getref().isstackable():
                 
@@ -216,6 +218,7 @@ class pcontainer(object):
                 
                 # else, cannot split
                 return None
+            """
             
             # else if item is not stackable, remove and return
             self.inventory.remove(titem)

@@ -65,7 +65,8 @@ def removeworldinstanceobject(tiobj):
 
 def finduidbyname(tdesc):
     for o in worldobjects.keys():
-        if worldobjects[o].hasmatch(tdesc):
+        singular,plural = worldobjects[o].hasmatch(tdesc)
+        if singular == True or plural == True:
             return o
     return None
 

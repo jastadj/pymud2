@@ -280,35 +280,98 @@ def gettargetobjfromargs(tuser, tlist, args):
     except:
         itemnum = 0
     
+    # quantity provided?
+    quantity = None
+    try:
+        quantity = int(args[0])
+        args.remove(args[0])
+    except:
+        quantity = None
+    
+    # no arguments provided?
+    if len(args) == 0: return None
+    
     # get string from supplied arguments
     monoarg = " ".join(args)
     
-    # look for target item in list
+    # look for target object in list
     foundcount = 0
     for i in tlist:
         
-        # find item if plural
+        # object search is item
         if i.getref().isitem():
             
-            if i.getref().hasmatch(monoarg, i.getstack()):lefadjtajt
-                # skip item
-                if foundcount != itemnum:
-                    foundcount += 1
-                    continue
+            # if match found for plural item
+            singular,plural = i.getref().hasmatch(monoarg)
+            
+            # nothing matches, continue
+            if singular == False and plural == False: continue
+
+            # skip item if needed
+            if foundcount != itemnum:
+                foundcount += 1
+                continue
+
+            #########################
+            ## DEBUG
+            #print "GETTARGETOBJFROMARGS - found item - %s, searching for monoarg=%s" %(i.getnameex(), monoarg)
+            if quantity:
+                print "Quantity = %d" %quantity
+            
+            # target item = found item
+            titem = i
+            
+            # singular match
+            if singular:
                 
-                # return found item
-                return i
+                # DEBUG
+                #print "GETTARGETOBJFROMARGS - Singular Match Found!"
+                
+                # if singular but a item has a stack, split one item from stack
+                if i.getref().isstackable():
+                    #DEBUG
+                    #print " GETTARGETOBJFROMARGS - ITEM STACK = %d" %i.getstack()
+                    if i.getstack() > 1:
+                        #DEBUG
+                        #print "GETTARGETOBJFROMARGS - Splitting one from the stack!"
+                        titem = i.split(1)
+                
+            if plural:
+                
+                #DEBUG
+                #print "GETTARGETOBJFROMARGS - Plural Match Found!"
+                
+                # if quantity is supplised
+                if quantity != None:
+                    
+                    #DEBUG
+                    #print "GETTARGETOBJFROMARGS - not impl, pulling %d from stack" %quantity
+                    
+                    # if quantity supplied is not valid
+                    if quantity > i.getstack():
+                        tuser.send("INVALID QUANTITY FROM ITEM STACK!\n")
+                        return None
+                    elif quantity < 0:
+                        tuser.send("INVALID QUANTITY FROM ITEM STACK!\n")
+                        return None
+                    
+                    # split stack from quantity
+                    titem = i.split(quantity)
+                
+            
+            # return found item
+            return titem
         
-        # find item if singular
+        # else object is mob?
         elif i.getref().hasmatch(monoarg):
             # skip item
             if foundcount != itemnum:
                 foundcount += 1
                 continue
             
-            # return found item
-            return i    
-    
+            # return found mob
+            return i
+            
     return None
 
 ###########################################
@@ -636,13 +699,16 @@ def dogetitem(tuser, cdict, *argv):
     if len(args) == 0:
         tuser.send("Get what?\n")
         return False
-        
+    
     troom = getcurrentroom(tuser)
     titem = gettargetobjfromargs(tuser,troom.getitems(), args)
     
     # if object was found
     if titem != None:
-
+        
+        #### DEBUG
+        #print "DOGETITEM STACK = %d" %titem.getstack()
+        
         # remove item from room
         troom.removeitem(titem)
         
@@ -678,7 +744,7 @@ def dogetitem(tuser, cdict, *argv):
                     titem = gettargetobjfromargs(tuser, troom.getitems(), args[a:])
                 
                 # if item was found
-                if titem != None:
+                if titem != None and titem.getref().iscontainer():
                     item2 = titem
                     spos = a
                     break
@@ -693,6 +759,7 @@ def dogetitem(tuser, cdict, *argv):
             # get item 1 from item 2
             item1 = gettargetobjfromargs(tuser, item2.container.getitems(), args2)
             if item1 != None:
+                
                 
                 #remove item1 from item 2
                 item2.container.removeitem(item1)
@@ -736,13 +803,15 @@ def dodropitem(tuser, cdict, *argv):
             return True
 
     # check if first argument is a value (amount to drop)
+    """
     quantity = 1
     try:
         quantity = int(args[0])
         args.remove(args[0])
     except:
         quantity = 1
-
+    """
+    
     titem = gettargetobjfromargs(tuser, tuser.char.getinventory(), args)
     troom = getcurrentroom(tuser)
     
@@ -755,11 +824,14 @@ def dodropitem(tuser, cdict, *argv):
             return False
         
         # remove item from player inventory
-        ritem = tuser.char.removeitem(titem, quantity)
+        tuser.char.removeitem(titem)
+        """
+        ritem = tuser.char.removeitem(titem)
         
         if ritem == None:
             tuser.send("You don't have that many %s!\n" %titem.getref().getplural())
             return False
+        """
         
         # add item to room
         troom.additem(titem)
@@ -967,8 +1039,9 @@ def doread(tuser, cdict, *argv):
     
     # broadcast message
     tmsg = "%s reads %s.\n" %(tuser.char.getnameex(), titem.getnameex())
+    umsg = ""
     #umsg = "You drink %s.\n" %(titem.getnameex())
-    doroombroadcast(troom, tmsg, tuser, None)
+    doroombroadcast(troom, tmsg, tuser, umsg)
 
 ###########################################
 ##      ROOM

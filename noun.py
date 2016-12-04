@@ -112,7 +112,7 @@ class noun(object):
         if self.getname()[0] in vowels:
             self.setarticle("an")
     
-    def hasmatch(self, tstr, quantity = 1):
+    def hasmatch(self, tstr):
         
         # empty or return lines are not valid
         if len(tstr) == 0: return False
@@ -124,31 +124,40 @@ class noun(object):
         tname = tdesc[-1]
         tdesc.remove(tname)
 
-        # noun name matches at minimum
-        if tname.lower() == self.getname(quantity).lower():
-            
-            validwords = []
-            
-            if not self.isproper():
-                # get valid words
-                validwords += self.getadjectives()
-                # add article to the list
-                validwords += self.getarticle()
-                
-                # lower all valid words
-                for vw in validwords:
-                    vw = vw.lower()
-                
-            # check if any of the other words match
-            for a in tdesc:
-                if a.lower() not in validwords:
-                    return False
+        # match types
+        pluralmatch = False
+        singularmatch = False
 
-        # noun name does not match
-        else: return False
+        # noun name matches at minimum
+        if tname.lower() == self.getname(2).lower():
+            pluralmatch = True
+        if tname.lower() == self.getname(1).lower():
+            singularmatch = True
         
-        # matching passes
-        return True
+        if pluralmatch and singularmatch == False:
+            return singularmatch, pluralmatch
+            
+            
+        validwords = []
+        
+        if not self.isproper():
+            # get valid words
+            validwords += self.getadjectives()
+            # add article to the list
+            validwords += self.getarticle()
+            
+            # lower all valid words
+            for vw in validwords:
+                vw = vw.lower()
+            
+        # check if any of the other words match
+        for a in tdesc:
+            if a.lower() not in validwords:
+                return False, False
+
+        # return matches
+        return singularmatch, pluralmatch
+
     
     def todict(self):
         tdict = {"noundata":self.noundata}
