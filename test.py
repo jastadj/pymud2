@@ -89,6 +89,9 @@ def defaultitems():
     myitems[-1].setdescription("A well oiled dark leather jacket.")
     myitems[-1].addadjective("leather")
     myitems[-1].makearmor()
+    myitems[-1].armor.addbodypart( defs.BODYPART_LEFTARM)
+    myitems[-1].armor.addbodypart( defs.BODYPART_RIGHTARM)
+    myitems[-1].armor.addbodypart( defs.BODYPART_TORSO)
     
     
     # store all common items in common items list

@@ -164,13 +164,21 @@ class weapon(object):
 
 class armor(object):
     def __init__(self):
-        self.armor = {"protection":1}
+        self.armor = {"protection":1, "bodyparts":[]}
     
     def getprotection(self):
         return self.armor["protection"]
     
     def setprotection(self, protection):
         self.armor["protection"] = protection
+    
+    def getbodyparts(self):
+        return self.armor["bodyparts"]
+    
+    def addbodypart(self, bodypart):
+        bplist = self.armor["bodyparts"]
+        bplist.append(bodypart)
+        self.armor["bodyparts"] = list( set(bplist) )
     
     def todict(self):
         return self.armor
@@ -189,6 +197,13 @@ class pcontainer(object):
     
     def getitems(self):
         return self.inventory
+    
+    def getitemindex(self, titem):
+        
+        if not titem in self.inventory:
+            return None
+        
+        return self.inventory.index(titem)
     
     def additem(self, titem):
         if titem == None:

@@ -93,6 +93,8 @@ def initmaincommands():
     cd.add("put", "Put an item into something", doputitem, True)
     cd.add("wield", "Wield a weapon", dowield, True)
     cd.add("unwield", "Unwield a weapon", dounwield, True)
+    cd.add("wear", "Wear armor or clothing", dowear, True)
+    cd.add("remove", "Remove armor or clothing", doremove, True)
     cd.add("score", "Show player info", doscore, False)
     cd.add("kill", "Kill target", dokill, True)
     cd.add("eat", "Eat something", doeat, True)
@@ -525,10 +527,10 @@ def doinventory(tuser, cdict):
     twielded = tuser.char.getwielding()
     
     if tuser.char.getwielding() != None:
-    tstrings += "You are wielding "
+        tstrings += "You are wielding "
         tstrings += tuser.char.getwielding().getref().getnameex() + ".\n"
-    
-    
+        
+        
     tstrings += "You are carring:\n"
     
     if len(tinv) == 0:
@@ -620,6 +622,80 @@ def dounwield(tuser, cdict, *argv):
     tuser.send("You do not have that!\n")
     return False
 
+def dowear(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        pass
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+    
+    if len(args) == 0:
+        tuser.send("Wear what?\n")
+        return False
+        
+    titem = gettargetobjfromargs(tuser, tuser.char.getinventory(), args)
+    troom = getcurrentroom(tuser)
+    
+    if titem != None:
+
+        # check if item is armor/clothing
+        if not titem.getref().isarmor():
+            tuser.send("You cannot wear that!\n")
+            return False
+        
+        # check if able to wear armor/clothing
+        if tuser.char.getwielding() != None:
+            tuser.send("You are already wielding a weapon!\n")
+            return False
+        
+        # wear item
+        tuser.char.weararmor(titem)
+        
+        tmsg = "%s wear %s.\n" %(tuser.char.getnameex(), titem.getref().getnameex())
+        umsg = "You wear %s.\n" %titem.getref().getnameex()
+        doroombroadcast(troom, tmsg, tuser, umsg)
+        
+        return True
+
+    tuser.send("You do not have that!\n")
+    return False    
+
+def doremove(tuser, cdict, *argv):
+    args = []
+    # no arguments, do a room look
+    if argv[0] == None:
+        pass
+    # arguments
+    else:
+        for a in argv[0]:
+            args.append(a)
+    
+    if len(args) == 0:
+        tuser.send("Remove what?\n")
+        return False
+        
+    titem = gettargetobjfromargs(tuser, tuser.char.getinventory(), args)
+    troom = getcurrentroom(tuser)
+    
+    if titem != None:
+
+        # check if item is armor/clothing currently equipped
+        
+        
+        # wear item
+        tuser.char.removearmor(titem)
+        
+        tmsg = "%s removes %s.\n" %(tuser.char.getnameex(), titem.getref().getnameex())
+        umsg = "You remove %s.\n" %titem.getref().getnameex()
+        doroombroadcast(troom, tmsg, tuser, umsg)
+        
+        return True
+
+    tuser.send("You do not have that!\n")
+    return False 
 
 ###########################################
 ##      ITEMS

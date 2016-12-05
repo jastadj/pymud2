@@ -123,7 +123,7 @@ class actorinstancedata(object):
         self.pinventory = item.pcontainer()
         
         # equipment layer
-        self.pequipment = {"weapons":{}, "armor":{}, "clothing":{} }
+        self.pequipment = {"inventory":item.pcontainer() ,"weapons":{}, "armor":{}, "clothing":{} }
 
         # combat
         self.combattarget = None
@@ -261,9 +261,14 @@ class actorinstancedata(object):
     
     def getequipped(self):
         elist = []
+        
+        elist = self.pequipment["inventory"].getitems()
+        
+        """
         for k in self.pequipment.keys():
             for e in self.pequipment[k].keys():
                 elist.append( self.pequipment[k][e])
+        """
         return elist
     
     def additem(self, titem):
@@ -312,22 +317,34 @@ class actorinstancedata(object):
     
     def wield(self, titem):
         if not defs.BODYPART_RIGHTHAND in self.pequipment["weapons"]:
-            self.pequipment["weapons"].update( {defs.BODYPART_RIGHTHAND:titem} )
+            self.pequipment["weapons"].update( {defs.BODYPART_RIGHTHAND:titem.getiid() } )
+            self.pequipment["inventory"].additem(titem)
             return self.pinventory.removeitem(titem)
         else: return False
         
     def unwield(self, titem):
         if defs.BODYPART_RIGHTHAND in self.pequipment["weapons"]:
-            if self.pequipment["weapons"][defs.BODYPART_RIGHTHAND] == titem:
+            if self.pequipment["weapons"][defs.BODYPART_RIGHTHAND] == titem.getiid():
                 self.pequipment["weapons"].pop(defs.BODYPART_RIGHTHAND, None)
+                self.pequipment["inventory"].removeitem(titem)
                 return self.pinventory.additem(titem)
         else: return False
 
     def getwielding(self):
         if defs.BODYPART_RIGHTHAND in self.pequipment["weapons"]:
-            return self.pequipment["weapons"][defs.BODYPART_RIGHTHAND]
+            return hub.worldobjects_instance[ self.pequipment["weapons"][defs.BODYPART_RIGHTHAND] ]
         return None
+    
+    def weararmor(self, titem):
         
+        # that that item is wearable
+        if not titem.isarmor(): return False
+        
+        pass
+    
+    def removearmor(self, titem):
+        pass
+    
     def todict(self):
         tdict = {}
         
@@ -345,18 +362,24 @@ class actorinstancedata(object):
         # get equipment layers
         tdict.update( {"pequipment":{} } )
         for k in self.pequipment.keys():
-            tdict["pequipment"].update( {k:{}} )
             
-            for e in self.pequipment[k].keys():
-                titem = self.pequipment[k][e]
-                tdict["pequipment"][k].update( {int(e): titem.todict()} )
+            if k == "inventory":
+                tdict["pequipment"].update( {"inventory": self.pequipment["inventory"].todict() } )
+                    
+            else:
+                tdict["pequipment"].update( {k: self.pequipment[k]} )
+                """
+                for e in self.pequipment[k].keys():
+                    titem = self.pequipment[k][e]
+                    tdict["pequipment"][k].update( {int(e): titem.todict()} )
+                """
         
         return tdict
 
         
     def fromJSON(self, jobj):
         
-        # get persistent dat
+        # get persistent data
         self.pdata.update( jobj["pdata"] )
         
         # get persistent attributes
@@ -372,11 +395,18 @@ class actorinstancedata(object):
         # get equipment layers
         self.pequipment = {}
         for k in jobj["pequipment"].keys():
-            self.pequipment.update( {k:{}} )
             
-            for e in jobj["pequipment"][k].keys():
-                titem = item.iteminstance(0, jobj["pequipment"][k][e])
-                self.pequipment[k].update( {int(e):titem} )
+            if k == "inventory":
+                self.pequipment["inventory"] = item.pcontainer()
+                self.pequipment["inventory"].fromJSON( jobj["pequipment"]["inventory"] )
+            
+            else:
+                self.pequipment.update( {k: jobj["pequipment"][k]} )
+                """
+                for e in jobj["pequipment"][k].keys():
+                    titem = item.iteminstance(0, jobj["pequipment"][k][e])
+                    self.pequipment[k].update( {int(e):titem} )
+                """
         
     def show(self):
         
