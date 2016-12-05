@@ -64,7 +64,7 @@ class commandset(object):
             cstr = self.aliases[cstr]
 
         # if string was a directional (n,e,s,w,etc..)
-        if cstr in ["n", "s", "e", "w", "d", "u"]:
+        if cstr in defs.DIRECTION_ALIAS:
             return None
 
         for i in range(0, self.count() ):
@@ -84,6 +84,7 @@ def initmaincommands():
     cd = commandset()
     cd.add("help", "Show help menu", showhelpmenu)
     cd.commands[-1].cdict.update({"source":cd})
+    cd.add("quit", "Quit the game", doquit, False)
     cd.add("color", "Color on or off", docolor, True)
     cd.add("look", "Look at something", dolook, True)
     cd.add("say" , "Say something", dosay, True)
@@ -116,12 +117,16 @@ def maingameinvalid(tuser):
     # auto alias common directions
     i = tuser.getlastinput()
     
+    if i in defs.DIRECTION_ALIAS:
+        i = defs.DIRECTION_ALIAS[i]
+    """
     if i == "n": i = "north"
     elif i == "s": i = "south"
     elif i == "e": i = "east"
     elif i == "w": i = "west"
     elif i == "d": i = "down"
     elif i == "u": i = "up"
+    """
     
     # check to see if command was an exit
     troom = getcurrentroom(tuser)
@@ -245,6 +250,17 @@ def showhelpmenu(tuser, cdict):
         tuser.send("%s - %s\n" %(tset.commands[i].cdict["name"], tset.commands[i].cdict["helpstring"]) )
     tuser.send("#cr")
 
+def doquit(tuser, cdict):
+    
+    # broadcast disconnect
+    cmsg = "%s disconnected.\n" %(tuser.char.getname())
+    umsg = "Disconnecting...\n"
+    
+    doroombroadcast(getcurrentroom(tuser), cmsg, tuser, umsg)
+    
+    tuser.setmode("disconnected")
+    tuser.skip_input = 1
+
 def docolor(tuser, cdict, *argv):
     args = []
     # no arguments, do a room look
@@ -365,7 +381,11 @@ def gettargetobjfromargs(tuser, tlist, args):
             return titem
         
         # else object is mob?
-        elif i.getref().hasmatch(monoarg):
+        else:
+            singular, plural = i.getref().hasmatch(monoarg)
+            if singular == False and plural == False:
+                continue
+            
             # skip item
             if foundcount != itemnum:
                 foundcount += 1
@@ -375,6 +395,19 @@ def gettargetobjfromargs(tuser, tlist, args):
             return i
             
     return None
+
+def getdirectionopposite(exitname):
+    
+    if exitname in defs.DIRECTION_OPPOSITES:
+        return defs.DIRECTION_OPPOSITES[exitname]
+    
+    elif exitname in defs.DIRECTION_OPPOSITES.values():
+        for k in defs.DIRECTION_OPPOSITES.keys():
+            if defs.DIRECTION_OPPOSITES[k] == exitname:
+                return k
+    
+    # no directional opposite found, return generic
+    return "somewhere"
 
 ###########################################
 ##      COMMUNICATION
@@ -647,9 +680,7 @@ def dowear(tuser, cdict, *argv):
             return False
         
         # check if able to wear armor/clothing
-        if tuser.char.getwielding() != None:
-            tuser.send("You are already wielding a weapon!\n")
-            return False
+        #....
         
         # wear item
         tuser.char.weararmor(titem)
@@ -683,7 +714,7 @@ def doremove(tuser, cdict, *argv):
     if titem != None:
 
         # check if item is armor/clothing currently equipped
-        
+        #....
         
         # wear item
         tuser.char.removearmor(titem)
@@ -758,7 +789,7 @@ def dolook(tuser, cdict, *argv):
         if tobj.getref().isitem():
             if tobj.getref().isstackable():
                 if tobj.getstack() > 1:
-                    tuser.send("There are %d %s.\n" %(tobj.getstack(), tobj.getnameex()) )
+                    tuser.send("There are %d %s.\n" %(tobj.getstack(), tobj.getref().getplural()) )
         
         return
     else:
@@ -1162,6 +1193,7 @@ def doroomlook(tuser, troom):
             tstrings += "%s " %e
         tstrings += "\n"
     
+    # show mobs in the room
     for m in troom.getmobs():
         
         mverb = m.getnoun().getverb()
@@ -1176,9 +1208,51 @@ def doroomlook(tuser, troom):
         else:
             tstrings += "    %s %s\n" %(m.getnameex(), postprint)
     
+    # show items in the room
     for i in troom.getitems():
         if not i.getref().isunlisted():
             tstrings += "    %s\n" %i.getnameex()
+
+
+    # show players in the room, remove player from list
+    clist = getallclientsinroom(troom)
+    try:
+        clist.remove(tuser)
+    except:
+        pass
+    clistlen = len(clist)
+    if clistlen != 0:
+        cshowstr = "\n#c3"
+        for c in range(0, clistlen):
+            
+            cname = clist[c].char.getnameex()
+            
+            # if first character in list
+            if c == 0:
+                cshowstr += "%s" %cname
+
+            # if index not the first
+            else:
+                # if char is last entry
+                if c == clistlen-1:
+                    # if more than two characters in room
+                    if clistlen > 2:
+                        cshowstr += ", and %s" %cname
+                    else:
+                        cshowstr += " and %s" %cname
+                else:
+                    cshowstr += ", %s" %cname
+        if clistlen == 1:
+            cshowstr += " is"
+        else:
+            cshowstr += " are"
+        
+        cshowstr += " here.#cr\n"
+        
+        tstrings += cshowstr
+        
+                    
+                
         
     tuser.send(tstrings)
         
@@ -1188,8 +1262,35 @@ def doroomexit(tuser, exitname):
     
     # find exit string, and change users room to exit room number
     if exitname in troom.getexits().keys():
+        
+        # broadcast user leaving current room
+        tmsg1 = ""
+        if exitname in defs.CARDINAL_DIRECTIONS:
+            tmsg1 = "%s leaves to the %s.\n" %(tuser.char.getnameex(), exitname)
+        else:
+            tmsg1 = "%s leaves %s.\n" %(tuser.char.getnameex(), exitname)
+        umsg1 = "You leave %s.\n" %(exitname)
+        doroombroadcast(troom, tmsg1, tuser, umsg1)        
+        
+        # change room
         tuser.char.setcurrentroomid( troom.getexits()[exitname])
-        doroomlook(tuser, getcurrentroom(tuser) )
+        # broadcast user entering target room
+        tmsg2 = ""
+        if exitname in defs.CARDINAL_DIRECTIONS:
+            tmsg2 = "%s enters from the %s.\n" %(tuser.char.getnameex(), getdirectionopposite(exitname) )
+        else:
+            tmsg2 = "%s enters from %s.\n" %(tuser.char.getnameex(), getdirectionopposite(exitname) )
+        umsg2 = ""
+        newroom = getcurrentroom(tuser)
+        
+        doroombroadcast(newroom, tmsg2, tuser, umsg2)
+                
+        # look at room upon entering
+        doroomlook(tuser, newroom )
+        
+        
+        
+        
 
 
 #####################################################################

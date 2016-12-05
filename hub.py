@@ -165,5 +165,8 @@ def maingame(tuser):
         
         do_passes -= 1
 
+# disconnect
+def disconnected(tuser):
+    tuser.disconnect()
   
     

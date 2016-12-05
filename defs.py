@@ -23,6 +23,10 @@ BODYPART_RIGHTLEG = 9
 BODYPART_LEFTFOOT = 10
 BODYPART_RIGHTFOOT = 11
 
+CARDINAL_DIRECTIONS = ["north","south","east","west"]
+DIRECTION_ALIAS = {"n":"north", "s":"south", "e":"east", "w":"west","u":"up","d":"down"}
+DIRECTION_OPPOSITES = {"north":"south", "east":"west", "up":"down"}
+
 def configtestmode():
 
     print "Configuring for test mode:"

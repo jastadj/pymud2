@@ -25,6 +25,9 @@ client_modes.update( {"lobby":hub.lobby} ) # test lobby
 client_modes.update( {"maingamestart":hub.maingame}) # main game prompt
 client_modes.update( {"maingame":hub.maingame}) # main game prompt
 
+
+client_modes.update( {"disconnected":hub.disconnected}) # disconnect mode
+
 # timer update
 def dotimer():
     if hub.timer.getelapsedsec() >= 2:
@@ -67,10 +70,6 @@ def handleclient(tclient):
         
             # client output, goto client mode function pointer
             client_modes[ tclient.mode ](tclient)
-            
-            # client inputj
-            if cc == "quit":
-                tclient.disconnect()
             
             # decrement input skip for next pass
             if tclient.skip_input != 0:
