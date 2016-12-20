@@ -565,7 +565,9 @@ def doinventory(tuser, cdict):
         
     armorlayer = tuser.char.getarmorlayer()
     for a in armorlayer:
-        tstrings += 
+        tstrings += "%s <worn on ...>\n" %hub.worldobjects_instance[armorlayer[a]].getnameex()
+        
+    
     tstrings += "You are carring:\n"
     
     if len(tinv) == 0:
